@@ -5,6 +5,47 @@ from numpy.linalg import inv
 from scipy.optimize import leastsq
 from uncertainties import ufloat, unumpy
 
+def load_parameter_text_file(pathToFile):
+    '''Returns a dictionary of float and/or ufloat parameters from a parameter
+    file.
+
+    Parameters
+    ----------
+    pathToFile : string
+        The path to the text file with the parameters listed in comma separated
+        value format.
+
+    Returns
+    -------
+    parameters : dictionary
+
+    The source file must be comma separated and have one parameter per line.
+    For example:
+
+    'c,0.45,0.05\nd,pi/2,0.02' or 'c,0.45\nd,pi/2'
+
+    The first item on the line must be the variable name. The second item is
+    the value and the optional third item is the uncertainty in the value. If
+    there is an uncertainty the value will be stored as a ufloat, if not it
+    will be stored as a float.
+
+    '''
+
+    f = open(pathToFile, 'r')
+    parameters = {}
+    # parse the text file
+    for line in f:
+        # remove any whitespace characters and split into a list
+        par = line.strip().split(',')
+        # if there is an uncertainty value try to make a ufloat
+        try:
+            parameters[par[0]] = ufloat((eval(par[1]), eval(par1[2])))
+        # else keep it as a float
+        except:
+            parameters[par[0]] = eval(par[1])
+
+    return parameters
+
 class Bicycle(object):
     # these are the various parameter sets
     ptypes = ['Benchmark', 'Sharp', 'Moore', 'Peterson']
@@ -28,17 +69,28 @@ class Bicycle(object):
             print a+b+c+d
             return None
 
-    def __init__(self, shortname):
+    def __init__(self, shortname, forceRawCalc=False):
         '''
         Sets the parameters if there any that are already saved.
 
-        shortname: string
+        Arguments
+        ---------
+        shortname : string
             shortname of your bicicleta, one word, first letter is capped and
             should match a directory under bicycles/
+
+        forceRawCalc : boolean
+            Force a recalculation of the parameters from the raw data, else it
+            will only do this calculation if there are no parameter files.
+
         '''
 
         self.shortname = shortname
-        self.directory = ('bicycles/' + shortname + '/')
+        self.directory = os.path.join('bicycles', shortname)
+
+        # first lets find out what data exists
+        for path, directories, files in os.walk():
+
         self.params = {}
 
         # are there any parameters already listed? grab any parameters and
