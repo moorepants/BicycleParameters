@@ -47,8 +47,10 @@ def load_parameter_text_file(pathToFile):
     return parameters
 
 class Bicycle(object):
-    # these are the various parameter sets
-    ptypes = ['Benchmark', 'Sharp', 'Moore', 'Peterson']
+    '''An object for a bicycle. A bicycle has parameters. That's about it for
+    now.
+
+    '''
 
     def __new__(cls, shortname):
         '''Returns a NoneType object if there is no directory'''
@@ -56,7 +58,7 @@ class Bicycle(object):
         # put some
         # fucking data in the folder so we have something to work with!
         try:
-            if os.path.isdir('bicycles/' + shortname) == True:
+            if os.path.isdir(os.path.join('bicycles', shortname)) == True:
                 print "We have foundeth a directory named: bicycles/" + shortname
                 return super(Bicycle, cls).__new__(cls)
             else:
@@ -66,7 +68,7 @@ class Bicycle(object):
             b = "bicycle in bicycles/shortname, where 'shortname' is the "
             c = "capitalized one word name of your bicycle. Then I can "
             d = "actually created a bicycle object."
-            print a+b+c+d
+            print a + b + c + d
             return None
 
     def __init__(self, shortname, forceRawCalc=False):
@@ -87,55 +89,34 @@ class Bicycle(object):
 
         self.shortname = shortname
         self.directory = os.path.join('bicycles', shortname)
+        self.parameters = {}
 
-        # first lets find out what data exists
-        for path, directories, files in os.walk():
+        # check for the two data directories
+        rawDataDirectory = False
+        parameterDirectory = False
 
-        self.params = {}
+        if 'RawData' in os.listdir(self.directory):
+            rawDataDirectory = True
+        if 'Parameters' in os.listdir(self.directory):
+            parameterDirectory = True
 
-        # are there any parameters already listed? grab any parameters and
-        # store them
-        match = False
-        for typ in self.ptypes:
-            pfile = False
-            for fname in os.listdir(self.directory):
-                # name of parameter file
-                fnamep = self.shortname + typ + '.p'
-                fnametxt = self.shortname + typ + '.txt'
-                # check for a pickle file first
-                if fname == fnamep:
-                    print "Found a pickle file", fname
-                    # grab the .p file first if there is one
-                    f = open(self.directory + fname, 'r')
-                    self.params[typ] = pickle.load(f)
-                    # set this flag so that
-                    pfile = True
-                    match = True
-                    f.close()
-                # then look for the .txt files, but only if there wasn't a
-                # pickled version
-                elif fname == fnametxt and pfile == False:
-                    print "found a txt file", fname
-                    match = True
-                    f = open(self.directory + fname, 'r')
-                    self.params[typ] = {}
-                    # parse the text file
-                    for i, line in enumerate(f):
-                        list1 = line[:-1].split(',')
-                        # if there is an uncertainty value try to make a ufloat
-                        try:
-                            self.params[typ][list1[0]] = ufloat((eval(list1[1]),
-                                                                 eval(list1[2])))
-                        # else keep it as a float
-                        except:
-                            self.params[typ][list1[0]] = eval(list1[1])
-                else:
-                    pass
+        if forceRawCalc and rawDataDirectory:
+            self.parameters['Benchmark'] = calculate_from_raw()
+        elif not forceRawCalc and parameterDirectory:
+            pDirectory = os.path.join(self.directory, 'Parameters')
+            parFiles = os.listdir(pDirectory)
+            for parFile in parFiles:
+                # remove the extension
+                fname = os.path.splittext(parFile)[0]
+                # get the bike and the parameter set type
+                bike, ptype = space_out_camel_case(fname, output='list')
+                # load the parameters
+                pathToFile = os.path.join(pDirectory, parFile)
+                self.parameters[ptype] = load_parameter_text_file(pathToFile)
+        else:
+            print "Where's the data?"
 
-        if match == False:
-            print "There are no parameters, try calculate_from_measured"
-
-    def save(self, filetype='pickle'):
+    def save(self, filetype='text'):
         '''
         Saves all the parameters to file.
 
@@ -418,11 +399,22 @@ def fit_goodness(ym, yp):
     rsq = SSR/SST
     return rsq, SSE, SST, SSR
 
-def space_out_camel_case(s):
+def space_out_camel_case(s, output='string'):
         """Adds spaces to a camel case string.  Failure to space out string
         returns the original string.
+
+        Examples
+        --------
         >>> space_out_camel_case('DMLSServicesOtherBSTextLLC')
         'DMLS Services Other BS Text LLC'
+        >>> space_out_camel_case('DMLSServicesOtherBSTextLLC', output='list')
+        ['DMLS', 'Services', 'Other', 'BS', 'Text', 'LLC']
+
         """
-        import re
-        return re.sub('((?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z]))', ' ', s)
+        if output = 'string':
+            return re.sub('((?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z]))', ' ', s)
+        elif output = 'list':
+            string = re.sub('((?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z]))', ',', s)
+            return string.split(',')
+        else:
+            raise ValueError
