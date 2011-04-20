@@ -1,50 +1,11 @@
 import os
+import re
 import pickle
+from math import pi
 import numpy as np
 from numpy.linalg import inv
 from scipy.optimize import leastsq
 from uncertainties import ufloat, unumpy
-
-def load_parameter_text_file(pathToFile):
-    '''Returns a dictionary of float and/or ufloat parameters from a parameter
-    file.
-
-    Parameters
-    ----------
-    pathToFile : string
-        The path to the text file with the parameters listed in comma separated
-        value format.
-
-    Returns
-    -------
-    parameters : dictionary
-
-    The source file must be comma separated and have one parameter per line.
-    For example:
-
-    'c,0.45,0.05\nd,pi/2,0.02' or 'c,0.45\nd,pi/2'
-
-    The first item on the line must be the variable name. The second item is
-    the value and the optional third item is the uncertainty in the value. If
-    there is an uncertainty the value will be stored as a ufloat, if not it
-    will be stored as a float.
-
-    '''
-
-    f = open(pathToFile, 'r')
-    parameters = {}
-    # parse the text file
-    for line in f:
-        # remove any whitespace characters and split into a list
-        par = line.strip().split(',')
-        # if there is an uncertainty value try to make a ufloat
-        try:
-            parameters[par[0]] = ufloat((eval(par[1]), eval(par1[2])))
-        # else keep it as a float
-        except:
-            parameters[par[0]] = eval(par[1])
-
-    return parameters
 
 class Bicycle(object):
     '''An object for a bicycle. A bicycle has parameters. That's about it for
@@ -91,27 +52,21 @@ class Bicycle(object):
         self.directory = os.path.join('bicycles', shortname)
         self.parameters = {}
 
-        # check for the two data directories
-        rawDataDirectory = False
-        parameterDirectory = False
-
-        if 'RawData' in os.listdir(self.directory):
-            rawDataDirectory = True
-        if 'Parameters' in os.listdir(self.directory):
-            parameterDirectory = True
-
-        if forceRawCalc and rawDataDirectory:
-            self.parameters['Benchmark'] = calculate_from_raw()
-        elif not forceRawCalc and parameterDirectory:
-            pDirectory = os.path.join(self.directory, 'Parameters')
-            parFiles = os.listdir(pDirectory)
+        # if you want to force a recalculation and there is a RawData directory
+        if forceRawCalc and 'RawData' in os.listdir(self.directory):
+            self.parameters['Benchmark'] = calculate_from_measured()
+        elif not forceRawCalc and 'Parameters' not in os.listdir(self.directory):
+            self.parameters['Benchmark'] = calculate_from_measured()
+        elif not forceRawCalc and 'Parameters' in os.listdir(self.directory):
+            parDir = os.path.join(self.directory, 'Parameters')
+            parFiles = os.listdir(parDir)
             for parFile in parFiles:
                 # remove the extension
-                fname = os.path.splittext(parFile)[0]
+                fname = os.path.splitext(parFile)[0]
                 # get the bike and the parameter set type
                 bike, ptype = space_out_camel_case(fname, output='list')
                 # load the parameters
-                pathToFile = os.path.join(pDirectory, parFile)
+                pathToFile = os.path.join(parDir, parFile)
                 self.parameters[ptype] = load_parameter_text_file(pathToFile)
         else:
             print "Where's the data?"
@@ -145,47 +100,40 @@ class Bicycle(object):
         Calculates the parameters from measured data.
 
         '''
-        # is there a ____Measured.p? if so, load it in
-        if os.path.isfile(self.directory + self.shortname + 'Measured.p'):
-            # load the measured data file
-            f = open(self.directory + self.shortname + 'Measured.p', 'r')
-            ddU = pickle.load(f)
-            f.close()
-        # else get the data from the original text file and save a pickled
-        # version
-        else:
-            f = open(self.directory + self.shortname + 'Measured.txt')
-            ddU = {}
-            for line in f:
-                list1 = line[:-1].split('=')
-                list2 = list1[1].split(',')
-                # 1. it is a string (name and shortname)
-                # 4. it is an array with a sigma array
-                # 5. if is an array with no sigma array
-                # 6. it is a variable name with no value
-                # 2. it is a float and a sigma
-                # 3. it is a float with no sigma
-                if list1[0] == 'name' or list1[0] == 'shortname':
-                    ddU[list1[0]] = list1[1]
-                elif list1[1] == '':
-                    # then there is no value for this one
-                    ddU[list1[0]] = None
-                elif list1[1][0] == '[':
-                    list2 = list1[1].split('],[')
-                    # then this one is an array
-                    noms = [float(a) for a in list2[0][1:].split(',')]
-                    if list2[1] == '':
-                        stds = np.zeros_like(noms)
-                    else:
-                        stds = [float(a) for a in list2[1][:-1].split(',')]
-                    ddU[list1[0]] = unumpy.uarray((noms, stds))
+        pathToFile = os.path.join(self.directory, 'RawData',
+                                  self.shortname + 'Measured.txt')
+        f = open(pathToFile)
+        ddU = {}
+        for line in f:
+            list1 = line[:-1].split('=')
+            list2 = list1[1].split(',')
+            # 1. it is a string (name and shortname)
+            # 4. it is an array with a sigma array
+            # 5. if is an array with no sigma array
+            # 6. it is a variable name with no value
+            # 2. it is a float and a sigma
+            # 3. it is a float with no sigma
+            if list1[0] == 'name' or list1[0] == 'shortname':
+                ddU[list1[0]] = list1[1]
+            elif list1[1] == '':
+                # then there is no value for this one
+                ddU[list1[0]] = None
+            elif list1[1][0] == '[':
+                list2 = list1[1].split('],[')
+                # then this one is an array
+                noms = [float(a) for a in list2[0][1:].split(',')]
+                if list2[1] == '':
+                    stds = np.zeros_like(noms)
                 else:
-                    nom = float(list2[0])
-                    if list2[1] == '':
-                        std = 0.
-                    else:
-                        std = float(list2[1])
-                    ddU[list1[0]] = ufloat((nom, std))
+                    stds = [float(a) for a in list2[1][:-1].split(',')]
+                ddU[list1[0]] = unumpy.uarray((noms, stds))
+            else:
+                nom = float(list2[0])
+                if list2[1] == '':
+                    std = 0.
+                else:
+                    std = float(list2[1])
+                ddU[list1[0]] = ufloat((nom, std))
 
         for k, v in ddU.items():
             if k[-1] == 'T' and v == None:
@@ -217,17 +165,15 @@ class Bicycle(object):
                     Tdict[k] = len(v)
                 print Tdict
 
-
-
         # calculate all the benchmark parameters
         par = {}
 
         # calculate the wheel radii
-        par['rR'] = ddU['rearWheelDist']/2./np.pi/ddU['rearWheelRot']
-        par['rF'] = ddU['frontWheelDist']/2./np.pi/ddU['frontWheelRot']
+        par['rR'] = ddU['rearWheelDist']/2./pi/ddU['rearWheelRot']
+        par['rF'] = ddU['frontWheelDist']/2./pi/ddU['frontWheelRot']
 
         # steer axis tilt in radians
-        par['lambda'] = np.pi/180.*(90. - ddU['headTubeAngle'])
+        par['lambda'] = pi/180.*(90. - ddU['headTubeAngle'])
 
         # calculate the front wheel trail
         forkOffset = ddU['forkOffset']
@@ -295,7 +241,7 @@ class Bicycle(object):
         par['xH'] = forkCoM[0]
         par['zH'] = forkCoM[1]
 
-        self.params['Benchmark'] = par
+        return par
 
 def fit_data(filename):
     '''
@@ -411,10 +357,53 @@ def space_out_camel_case(s, output='string'):
         ['DMLS', 'Services', 'Other', 'BS', 'Text', 'LLC']
 
         """
-        if output = 'string':
-            return re.sub('((?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z]))', ' ', s)
-        elif output = 'list':
-            string = re.sub('((?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z]))', ',', s)
-            return string.split(',')
+        if output == 'string':
+            return re.sub('((?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z]))', ' ',
+                          s).strip()
+        elif output == 'list':
+            string = re.sub('((?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z]))', ' ',
+                            s).strip()
+            return string.split(' ')
         else:
             raise ValueError
+
+def load_parameter_text_file(pathToFile):
+    '''Returns a dictionary of float and/or ufloat parameters from a parameter
+    file.
+
+    Parameters
+    ----------
+    pathToFile : string
+        The path to the text file with the parameters listed in comma separated
+        value format.
+
+    Returns
+    -------
+    parameters : dictionary
+
+    The source file must be comma separated and have one parameter per line.
+    For example:
+
+    'c,0.45,0.05\nd,pi/2,0.02' or 'c,0.45\nd,pi/2'
+
+    The first item on the line must be the variable name. The second item is
+    the value and the optional third item is the uncertainty in the value. If
+    there is an uncertainty the value will be stored as a ufloat, if not it
+    will be stored as a float.
+
+    '''
+
+    f = open(pathToFile, 'r')
+    parameters = {}
+    # parse the text file
+    for line in f:
+        # remove any whitespace characters and split into a list
+        par = line.strip().split(',')
+        # if there is an uncertainty value try to make a ufloat
+        try:
+            parameters[par[0]] = ufloat((eval(par[1]), eval(par[2])))
+        # else keep it as a float
+        except:
+            parameters[par[0]] = eval(par[1])
+
+    return parameters
