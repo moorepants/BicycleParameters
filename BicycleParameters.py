@@ -13,7 +13,7 @@ class Bicycle(object):
 
     '''
 
-    def __new__(cls, shortname):
+    def __new__(cls, shortname, forceRawCalc=False):
         '''Returns a NoneType object if there is no directory'''
         # is there a data directory for this bicycle? if not, tell the user to
         # put some
@@ -54,9 +54,9 @@ class Bicycle(object):
 
         # if you want to force a recalculation and there is a RawData directory
         if forceRawCalc and 'RawData' in os.listdir(self.directory):
-            self.parameters['Benchmark'] = calculate_from_measured()
+            self.parameters['Benchmark'] = self.calculate_from_measured()
         elif not forceRawCalc and 'Parameters' not in os.listdir(self.directory):
-            self.parameters['Benchmark'] = calculate_from_measured()
+            self.parameters['Benchmark'] = self.calculate_from_measured()
         elif not forceRawCalc and 'Parameters' in os.listdir(self.directory):
             parDir = os.path.join(self.directory, 'Parameters')
             parFiles = os.listdir(parDir)
@@ -95,18 +95,19 @@ class Bicycle(object):
         elif filetype == 'text':
             print "Doesn't work yet"
 
-    def calculate_from_measured(self):
-        '''
-        Calculates the parameters from measured data.
+    def calculate_from_measured(self, forcePeriodCalc=False):
+        '''Calculates the parameters from measured data.
 
         '''
         pathToFile = os.path.join(self.directory, 'RawData',
                                   self.shortname + 'Measured.txt')
-        f = open(pathToFile)
         ddU = {}
+        f = open(pathToFile)
         for line in f:
             list1 = line[:-1].split('=')
+            print list1
             list2 = list1[1].split(',')
+            print list2
             # 1. it is a string (name and shortname)
             # 4. it is an array with a sigma array
             # 5. if is an array with no sigma array
