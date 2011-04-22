@@ -369,28 +369,25 @@ def space_out_camel_case(s, output='string'):
             raise ValueError
 
 def load_parameter_text_file(pathToFile):
-    '''Returns a dictionary of float and/or ufloat parameters from a parameter
-    file.
+    '''Returns a dictionary of ufloat parameters from a parameter file.
 
     Parameters
     ----------
     pathToFile : string
-        The path to the text file with the parameters listed in comma separated
-        value format.
+        The path to the text file with the parameters listed in the specified
+        format.
 
     Returns
     -------
     parameters : dictionary
 
-    The source file must be comma separated and have one parameter per line.
     For example:
 
-    'c,0.45,0.05\nd,pi/2,0.02' or 'c,0.45\nd,pi/2'
+    'c = 0.08 +/- 0.01\nd=0.314+/-0.002\nt = 0.1+/-0.01, 0.12+/-0.02'
 
-    The first item on the line must be the variable name. The second item is
-    the value and the optional third item is the uncertainty in the value. If
-    there is an uncertainty the value will be stored as a ufloat, if not it
-    will be stored as a float.
+    The first item on the line must be the variable name and the second is an
+    equals sign. The values to the right of the equal sign much contain an
+    uncertainty and multiple comma seperated values will be averaged.
 
     '''
 
@@ -398,13 +395,13 @@ def load_parameter_text_file(pathToFile):
     parameters = {}
     # parse the text file
     for line in f:
-        # remove any whitespace characters and split into a list
-        par = line.strip().split(',')
-        # if there is an uncertainty value try to make a ufloat
-        try:
-            parameters[par[0]] = ufloat((eval(par[1]), eval(par[2])))
-        # else keep it as a float
-        except:
-            parameters[par[0]] = eval(par[1])
+        if line[0] != '#':
+            # remove any whitespace characters and split into a list
+            equality = line.strip().split('=')
+            # ['a ', ' 0.1 +/- 0.05 , 0.09 +/- 0.05']
+            vals = equality[1].strip().split(',')
+            # ['0.1 +/- 0.05 ', ' 0.09 +/- 0.05']
+            ufloats = [ufloat(x) for x in vals]
+            parameters[equality[0].strip()] = np.mean(ufloats)
 
     return parameters
