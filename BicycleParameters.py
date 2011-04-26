@@ -5,6 +5,7 @@ from math import pi
 import numpy as np
 from numpy.linalg import inv
 from scipy.optimize import leastsq
+from scipy.io import loadmat
 from uncertainties import ufloat, unumpy
 
 class Bicycle(object):
@@ -16,8 +17,7 @@ class Bicycle(object):
     def __new__(cls, shortname, forceRawCalc=False):
         '''Returns a NoneType object if there is no directory'''
         # is there a data directory for this bicycle? if not, tell the user to
-        # put some
-        # fucking data in the folder so we have something to work with!
+        # put some data in the folder so we have something to work with!
         try:
             if os.path.isdir(os.path.join('bicycles', shortname)) == True:
                 print "We have foundeth a directory named: bicycles/" + shortname
@@ -99,42 +99,42 @@ class Bicycle(object):
         '''Calculates the parameters from measured data.
 
         '''
-        pathToFile = os.path.join(self.directory, 'RawData',
-                                  self.shortname + 'Measured.txt')
-        ddU = {}
-        f = open(pathToFile)
-        for line in f:
-            list1 = line[:-1].split('=')
-            print list1
-            list2 = list1[1].split(',')
-            print list2
-            # 1. it is a string (name and shortname)
-            # 4. it is an array with a sigma array
-            # 5. if is an array with no sigma array
-            # 6. it is a variable name with no value
-            # 2. it is a float and a sigma
-            # 3. it is a float with no sigma
-            if list1[0] == 'name' or list1[0] == 'shortname':
-                ddU[list1[0]] = list1[1]
-            elif list1[1] == '':
-                # then there is no value for this one
-                ddU[list1[0]] = None
-            elif list1[1][0] == '[':
-                list2 = list1[1].split('],[')
-                # then this one is an array
-                noms = [float(a) for a in list2[0][1:].split(',')]
-                if list2[1] == '':
-                    stds = np.zeros_like(noms)
-                else:
-                    stds = [float(a) for a in list2[1][:-1].split(',')]
-                ddU[list1[0]] = unumpy.uarray((noms, stds))
+        rawDataDir = os.path.join(self.directory, 'RawData')
+        pathToFile = os.path.join(rawDataDir, self.shortname + 'Measured.txt')
+
+        # load the measured parameters
+        mp = load_parameter_text_file(pathToFile)
+
+        # if the the user doesn't specifiy to force period calculation, then
+        # see if enough data is actually available in the Measured.txt file to
+        # do the calculations
+        if not forcePeriodcalc:
+            # check to see if mp contains at enough periods to not need
+            # recalculation
+            ncTSum = 0
+            ntTSum = 0
+            isForkSplit = False
+            for key in mp.keys():
+                if key[:2] == 'Tc':
+                    ncTSum += 1
+                elif key[:2] == 'Tt':
+                    ntTSum += 1
+                # if there is an 'S' then the fork is split in two parts
+                if key[2] == 'S' or key[1] == 'S':
+                    isForkSplit = True
+
+            # if there isn't enough data then force the period cals again
+            if isForkSplit:
+                if ncTSum < 5 and ntTSum < 11:
+                    forcPeriodCalc = True
             else:
-                nom = float(list2[0])
-                if list2[1] == '':
-                    std = 0.
-                else:
-                    std = float(list2[1])
-                ddU[list1[0]] = ufloat((nom, std))
+                if ncTSum < 4 and ntTSum < 8:
+                    forcePeriodCalc = True
+
+        if forcePeriodCalc == True:
+            matFiles = [x for x in os.listdir(rawDataDir) if
+                        x.endswith('.mat')]
+
 
         for k, v in ddU.items():
             if k[-1] == 'T' and v == None:
@@ -243,6 +243,37 @@ class Bicycle(object):
         par['zH'] = forkCoM[1]
 
         return par
+
+def select_good_data(data, percent):
+    '''Returns a slice of the data from the maximum value to a percent of the
+    max.
+
+    Parameters
+    ----------
+    data : ndarray, shape(1,)
+        This should be a decaying function.
+    percent : float
+        The percent of the maximum to clip.
+
+    '''
+    maxVal = np.max(np.abs(data))
+    maxInd = np.argmax(np.abs(data))
+    #for i, v in reversed(list(enumerate(data))):
+
+def average_rectified_sections(data):
+    data = data - np.mean(data)
+    # find the zero crossings
+    zero_crossings = np.where(np.diff(np.sign(data)))[0]
+    crossings = np.concatenate(0, np.append(zero_crossings, len(data) - 1))
+    secMean = []
+    localMeanInd = []
+    for sec in np.split(data, zero_crossings):
+        localMeanInd.append(np.argmax(sec))
+        secMean.append(np.mean(sec))
+    meanInd = []
+    for val in meanInd:
+        meanInd.append(crossings[i] + localMeanInd)
+    return meanInd, secMean
 
 def fit_data(filename):
     '''
@@ -368,6 +399,21 @@ def space_out_camel_case(s, output='string'):
         else:
             raise ValueError
 
+def filename_to_dict(filename):
+    '''Returns a dictionay of values based on the pendulum data file name.
+
+    '''
+    o = space_out_camel_case(os.path.splitext(filename)[0], output='list')
+    # this only accounts for single digit trial numbers
+    trial = o[-1][-1]
+    o[-1] = o[-1][:-1]
+    o.append(trial)
+    breakdown = ['bicycle', 'part', 'pendulum', 'angleOrder', 'trial']
+    dat = {}
+    for word, val  in zip(breakdown, o):
+        dat[word] = val
+    return dat
+
 def load_parameter_text_file(pathToFile):
     '''Returns a dictionary of ufloat parameters from a parameter file.
 
@@ -405,3 +451,28 @@ def load_parameter_text_file(pathToFile):
             parameters[equality[0].strip()] = np.mean(ufloats)
 
     return parameters
+
+def load_pendulum_data_mat_file(pathToFile):
+    '''Returns a dictionay containing the data from the pendulum data mat file.
+
+    '''
+    pendDat = {}
+    loadmat(pathToFile, mdict=pendDat)
+    #clean up the matlab imports
+    del(pendDat['__globals__'], pendDat['__header__'], pendDat['__version__'])
+    for k, v in pendDat.items():
+        try:
+            #change to an ascii string
+            pendDat[k] = v[0].encode('ascii')
+        except:
+            #if an array of a single number
+            if np.shape(v)[0] == 1:
+                pendDat[k] = v[0][0]
+            #else if the notes are empty
+            elif np.shape(v)[0] == 0:
+                pendDat[k] = ''
+            #else it is the data which needs to be a one dimensional array
+            else:
+                pendDat[k] = v.reshape((len(v),))
+    return pendDat
+
