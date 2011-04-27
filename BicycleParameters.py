@@ -4,8 +4,9 @@ import pickle
 from math import pi
 import numpy as np
 from numpy.linalg import inv
-from scipy.optimize import leastsq
+from scipy.optimize import leastsq, newton
 from scipy.io import loadmat
+import matplotlib.pyplot as plt
 from uncertainties import ufloat, unumpy
 
 class Bicycle(object):
@@ -108,107 +109,137 @@ class Bicycle(object):
         # if the the user doesn't specifiy to force period calculation, then
         # see if enough data is actually available in the Measured.txt file to
         # do the calculations
-        if not forcePeriodcalc:
+        if not forcePeriodCalc:
             # check to see if mp contains at enough periods to not need
             # recalculation
             ncTSum = 0
             ntTSum = 0
             isForkSplit = False
             for key in mp.keys():
+                # check for any periods in the keys
                 if key[:2] == 'Tc':
                     ncTSum += 1
                 elif key[:2] == 'Tt':
                     ntTSum += 1
                 # if there is an 'S' then the fork is split in two parts
-                if key[2] == 'S' or key[1] == 'S':
+                if key[:1] == 'S' or key[1:2] == 'S':
                     isForkSplit = True
+
+            print "ncTSum:", ncTSum
+            print "ntTSum:", ntTSum
 
             # if there isn't enough data then force the period cals again
             if isForkSplit:
-                if ncTSum < 5 and ntTSum < 11:
-                    forcPeriodCalc = True
+                if ncTSum < 5 or ntTSum < 11:
+                    forcePeriodCalc = True
             else:
-                if ncTSum < 4 and ntTSum < 8:
+                if ncTSum < 4 or ntTSum < 8:
                     forcePeriodCalc = True
 
+        print "isForkSplit:", isForkSplit
+        print "forcePeriodCalc", forcePeriodCalc
+
         if forcePeriodCalc == True:
+            # get the list of mat files associated with this bike
             matFiles = [x for x in os.listdir(rawDataDir) if
-                        x.endswith('.mat')]
-
-
-        for k, v in ddU.items():
-            if k[-1] == 'T' and v == None:
-                print k
-                # then this is a period that has no value, so we should
-                # calculate it from the oscillation data
-                body, pendulum = space_out_camel_case(k[:-1]).strip().split(' ')
-                # now find the files that matches
-                Tdict = {}
-                for f in os.listdir(self.directory):
-                    flist = space_out_camel_case(f[:-2]).strip().split(' ')
-                    # now you have [bike, body, pend, angle, measurement]
-                    bikematch = self.shortname == flist[0]
-                    bodymatch = body.capitalize() == flist[1]
-                    try:
-                        pendmatch = pendulum == flist[2]
-                    except:
-                        pendmatch = False
-                    if bikematch and bodymatch and pendmatch:
-                        try:
-                            Tdict[flist[3][:-1]].append(flist[3][-1])
-                        except:
-                            Tdict[flist[3][:-1]] = [flist[3][-1]]
-                    # now you have something like:
-                    # Tdict = {'First':['1','2','3'],
-                    #          'Second':['1','2','3'],
-                    #          'Third':['1','2','3']}
-                for k, v in Tdict.items():
-                    Tdict[k] = len(v)
-                print Tdict
+                        x.startswith(self.shortname) and x.endswith('.mat')]
+            # set up the subscripting for the period key
+            subscripts = {'Fwheel': 'F',
+                          'Rwheel': 'R',
+                          'Frame': 'B'}
+            if isForkSplit:
+                subscripts['Fork'] = 'S'
+                subscripts['Handlebar'] = 'H'
+            else:
+                subscripts['Fork'] = 'H'
+            ordinal = {'First' : '1',
+                       'Second' : '2',
+                       'Third' : '3',
+                       'Fourth' : '4',
+                       'Fifth' : '5',
+                       'Sixth' : '6'}
+            # calculate the period for each file
+            for f in matFiles:
+                print "Calculating the period for:", f
+                matData = load_pendulum_data_mat_file(os.path.join(rawDataDir,
+                    f))
+                if 'ActualRate' in matData.keys():
+                    sampleRate = matData['ActualRate']
+                else:
+                    sampleRate = matData['sampleRate']
+                try:
+                    angle = matData['angle']
+                except:
+                    angle = matData['angleOrder']
+                pend = matData['pendulum'][0].lower()
+                part = subscripts[matData['part']]
+                orien = ordinal[angle]
+                key = 'T' + pend + part + orien
+                period = get_period_from_truncated(matData['data'],
+                        sampleRate)
+                print key, period
+                # either append the the period or if it isn't there yet, then
+                # make a new list
+                try:
+                    mp[key].append(period)
+                except KeyError:
+                    mp[key] = [period]
+            # now average all the periods
+            for k, v in mp.items():
+                if k.startswith('T'):
+                    mp[k] = np.mean(v)
 
         # calculate all the benchmark parameters
         par = {}
 
         # calculate the wheel radii
-        par['rR'] = ddU['rearWheelDist']/2./pi/ddU['rearWheelRot']
-        par['rF'] = ddU['frontWheelDist']/2./pi/ddU['frontWheelRot']
+        par['rF'] = mp['dR'] / 2./ pi / mp['nF']
+        par['rR'] = mp['dR'] / 2./ pi / mp['nR']
 
-        # steer axis tilt in radians
-        par['lambda'] = pi/180.*(90. - ddU['headTubeAngle'])
+        # calculate the frame/fork fundamental geometry
+        if ['w'] in mp.keys():
+            # steer axis tilt in radians
+            par['lambda'] = pi/180.*(90. - mp['headTubeAngle'])
+            # calculate the front wheel trail
+            forkOffset = mp['forkOffset']
+            # wheelbase
+            par['w'] = mp['w']
+        else:
+            a = mp['h1'] + mp['h2'] - mp['h3'] + .5 * mp['d1'] - .5 * mp['d2']
+            b = mp['h4'] - .5 * mp['d3'] - mp['h5'] + .5 * mp['d4']
+            c = np.sqrt(-(a - b)**2 + (mp['d'] + .5 * (mp['d2'] + mp['d3'])))
+            par['lambda'] = lambda_from_abc(par['rF'], par['rR'], a, b, c)
+            forkOffset = b
+            par['w'] = (a + b) * np.cos(par['lambda']) + c * np.sin(par['lambda'])
 
-        # calculate the front wheel trail
-        forkOffset = ddU['forkOffset']
-        par['c'] = (par['rF']*unumpy.sin(par['lambda'])
-                      - forkOffset)/unumpy.cos(par['lambda'])
-
-        # wheelbase
-        par['w'] = ddU['wheelbase']
+        # trail
+        par['c'] = trail(par['rF'], par['lambda'], forkOffset)[0]
 
         # calculate the frame rotation angle
         # alpha is the angle between the negative z pendulum (horizontal) and the
         # positive (up) steer axis, rotation about positive y
-        alphaFrame = ddU['frameAngle']
+        alphaFrame = mp['frameAngle']
         # beta is the angle between the x bike frame and the x pendulum frame, rotation
         # about positive y
-        betaFrame = par['lambda'] - alphaFrame*np.pi/180
+        betaFrame = par['lambda'] - alphaFrame * pi / 180
 
         # calculate the slope of the CoM line
-        frameM = -unumpy.tan(betaFrame)
+        frameM = -np.tan(betaFrame)
 
         # calculate the z-intercept of the CoM line
         # frameMassDist is positive according to the pendulum ref frame
-        frameMassDist = ddU['frameMassDist']
+        frameMassDist = mp['frameMassDist']
         cb = unumpy.cos(betaFrame)
         frameB = -frameMassDist/cb - par['rR']
 
         # calculate the fork rotation angle
-        betaFork = par['lambda'] - ddU['forkAngle']*np.pi/180.
+        betaFork = par['lambda'] - mp['forkAngle']*pi/180.
 
         # calculate the slope of the fork CoM line
         forkM = -unumpy.tan(betaFork)
 
         # calculate the z-intercept of the CoM line
-        forkMassDist = ddU['forkMassDist']
+        forkMassDist = mp['forkMassDist']
         cb = unumpy.cos(betaFork)
         tb = unumpy.tan(betaFork)
         forkB = - par['rF'] - forkMassDist/cb + par['w']*tb
@@ -244,6 +275,57 @@ class Bicycle(object):
 
         return par
 
+def trail(rF, lam, fo):
+    '''Caluculate the trail and mechanical trail
+
+    Parameters:
+    -----------
+    rF: float
+        The front wheel radius
+    lam: float
+        The steer axis tilt (pi/2 - headtube angle). The angle between the
+        headtube and a vertical line.
+    fo: float
+        The fork offset
+
+    Returns:
+    --------
+    c: float
+        Trail
+    cm: float
+        Mechanical Trail
+
+    '''
+
+    # trail
+    c = (rF * np.sin(lam) - fo) / np.cos(lam)
+    # mechanical trail
+    cm = c * np.cos(lam)
+    return c, cm
+
+def lambda_from_abc(rF, rR, a, b, c):
+    '''Returns the steer axis tilt, lamba, for the parameter set based on the
+    offsets from the steer axis.
+
+    '''
+    def lam_equality(lam, rF, rR, a, b, c):
+        return np.sin(lam) - (rF - rR + c * np.cos(lam)) / (a + b)
+    guess = np.arctan(c / (a + b)) # guess based on equal wheel radii
+    # the following assumes that the uncertainty caluclated for the guess is
+    # the same as the uncertainty for the true solution. This is not true! and
+    # will surely breakdown the further the guess is away from the true
+    # solution. There may be a way to calculate the correct uncertainity, but
+    # that needs to be figured out.
+    lam = newton(lam_equality, guess.nominal_value, args=(rF, rR, a, b, c))
+    return ufloat((lam, guess.std_dev()))
+
+def get_period_from_truncated(data, sampleFrequency):
+    #dataRec = average_rectified_sections(data)
+    dataRec = data
+    #dataGood = select_good_data(dataRec, 0.1)
+    dataGood = dataRec
+    return get_period(dataGood, sampleFrequency)
+
 def select_good_data(data, percent):
     '''Returns a slice of the data from the maximum value to a percent of the
     max.
@@ -255,74 +337,133 @@ def select_good_data(data, percent):
     percent : float
         The percent of the maximum to clip.
 
+    This basically snips of the beginning and end of the data so that the super
+    damped tails are gone and any weirdness at the beginning.
+
     '''
     maxVal = np.max(np.abs(data))
     maxInd = np.argmax(np.abs(data))
-    #for i, v in reversed(list(enumerate(data))):
+    for i, v in reversed(list(enumerate(data))):
+        if v > percent*maxVal:
+            minInd = i
+            break
+
+    return data[maxInd:minInd]
 
 def average_rectified_sections(data):
-    data = data - np.mean(data)
-    # find the zero crossings
-    zero_crossings = np.where(np.diff(np.sign(data)))[0]
-    crossings = np.concatenate(0, np.append(zero_crossings, len(data) - 1))
-    secMean = []
-    localMeanInd = []
-    for sec in np.split(data, zero_crossings):
-        localMeanInd.append(np.argmax(sec))
-        secMean.append(np.mean(sec))
-    meanInd = []
-    for val in meanInd:
-        meanInd.append(crossings[i] + localMeanInd)
-    return meanInd, secMean
-
-def fit_data(filename):
-    '''
-    Returns the period and uncertainty for a decaying oscillation.
+    '''Returns a slice of an oscillating data vector based on the max and min
+    of the mean of the sections created by retifiying the data.
 
     Parameters
     ----------
-    filename : string
-        directory + filename of the pickled data file
+    data : ndarray, shape(n,)
+
+    Returns
+    -------
+    data : ndarray, shape(m,)
+        A slice where m is typically less than n.
+
+    This is a function to try to handle the fact that some of the data from the
+    torsional pendulum had a beating like phenomena and we only want to select
+    a section of the data that doesn't seem to exhibit the phenomena.
+
+    '''
+    # subtract the mean so that there are zero crossings
+    meanSubData = data - np.mean(data)
+    # find the zero crossings
+    zeroCrossings = np.where(np.diff(np.sign(meanSubData)))[0]
+    # add a zero to the beginning
+    crossings = np.concatenate((np.array([0]), zeroCrossings))
+    # find the mean value of the rectified sections and the local indice
+    secMean = []
+    localMeanInd = []
+    for sec in np.split(np.abs(meanSubData), zeroCrossings):
+        localMeanInd.append(np.argmax(sec))
+        secMean.append(np.mean(sec))
+    meanInd = []
+    # make the global indices
+    for i, val in enumerate(crossings):
+        meanInd.append(val + localMeanInd[i])
+    # only take the top part of the data because some the zero crossings can be
+    # a lot at one point mainly due to the resolution of the daq box
+    threshold = np.mean(secMean)
+    secMeanOverThresh = []
+    indice = []
+    for i, val in enumerate(secMean):
+        if val > threshold:
+            secMeanOverThresh.append(val)
+            indice.append(meanInd[i])
+    # now return the data based on the max value and the min value
+    maxInd = indice[np.argmax(secMeanOverThresh)]
+    minInd = indice[np.argmin(secMeanOverThresh)]
+
+    return data[maxInd:minInd]
+
+def get_period(data, sampleFrequency):
+    '''Returns the period and uncertainty for data resembling a decaying
+    oscillation.
+
+    Parameters
+    ----------
+    data : ndarray, shape(n,)
+        A time series that resembles a decaying oscillation.
+    sampleFrequency : int
+        The frequency that data was sampled at.
 
     Returns
     -------
     T : ufloat
-        the period of oscillation and its uncertainty
+        The period of oscillation and its uncertainty.
 
     '''
-    df = open(filename)
-    pendDat = pickle.load(df)
-    df.close()
-    y = pendDat['data'].ravel()
-    time = pendDat['duration']
-    x = np.linspace(0, time, num=len(y))
+
+    y = data
+    x = np.linspace(0., 1./sampleFrequency, num=len(y))
     # decaying oscillating exponential function
     fitfunc = lambda p, t: p[0] + np.exp(-p[3]*p[4]*t)*(p[1]*np.sin(p[4]*np.sqrt(1-p[3]**2)*t) + p[2]*np.cos(p[4]*np.sqrt(1-p[3]**2)*t))
+    #def fitfunc(p, t):
+        #'''Decaying oscillation function.'''
+        #a = p[0]
+        #b = np.exp(-p[3] * p[4] * t)
+        #c = p[1] * np.sin(p[4] * np.sqrt(1 - p[3]**2) * t)
+        #d = p[2] * np.cos(p[4] * np.sqrt(1 - p[3]**2) * t)
+        #return a + b * (c + d)
     # initial guesses
     p0 = np.array([1.35, -.5, -.75, 0.01, 3.93])
+    #p0 = np.array([2.5, -.75, -.75, 0.001, 4.3])
     # create the error function
     errfunc = lambda p, t, y: fitfunc(p, t) - y
     # minimize the error function
-    p1, success = op.leastsq(errfunc, p0[:], args=(x, y))
-    # plot the fitted curve
+    p1, success = leastsq(errfunc, p0[:], args=(x, y))
+    print p1, success
     lscurve = fitfunc(p1, x)
+    plt.plot(x, y, '.')
+    plt.plot(x, lscurve, '-')
+    plt.show()
     rsq, SSE, SST, SSR = fit_goodness(y, lscurve)
-    sigma = np.sqrt(SSE/(len(y)-len(p0)))
+    print rsq, SSE, SST, SSR
+    sigma = np.sqrt(SSE / (len(y) - len(p0)))
+    print 'sigma', sigma
     # calculate the jacobian
     L = jac_fitfunc(p1, x)
+    print "L", L
     # the Hessian
     H = np.dot(L.T, L)
+    print "H", H
+    print "inv(H)", inv(H)
     # the covariance matrix
-    U = sigma**2.*np.linalg.inv(H)
+    U = sigma**2. * inv(H)
+    print "U", U
     # the standard deviations
     sigp = np.sqrt(U.diagonal())
+    print sigp
     # frequency and period
     wo = ufloat((p1[4], sigp[4]))
     zeta = ufloat((p1[3], sigp[3]))
-    wd = (1. - zeta**2.)**(1./2.)*wo
-    f = wd/2./np.pi
+    wd = (1. - zeta ** 2.) ** (1. / 2.) * wo
+    f = wd / 2. / pi
     # return the period
-    return 1./f
+    return 1. / f
 
 def jac_fitfunc(p, t):
     '''
@@ -341,17 +482,16 @@ def jac_fitfunc(p, t):
     parameters vector. A 5 x N matrix where N is the number of time steps.
 
     '''
-    jac = zeros((len(p), len(t)))
-    e = np.exp(-p[3]*p[4]*t)
+    jac = np.zeros((len(p), len(t)))
+    e = np.exp(-p[3] * p[4] * t)
     dampsq = np.sqrt(1 - p[3]**2)
-    s = np.sin(dampsq*p[4]*t)
-    c = np.cos(dampsq*p[4]*t)
-    jac[0] = ones_like(t)
-    jac[1] = e*s
-    jac[2] = e*c
-    jac[3] = -p[4]*t*e*(p[1]*s + p[2]*c) + e*(-p[1]*p[3]*p[4]*t/dampsq*c
-            + p[2]*p[3]*p[4]*t/dampsq*s)
-    jac[4] = -p[3]*t*e*(p[1]*s + p[2]*c) + e*dampsq*t*(p[1]*c - p[2]*s)
+    s = np.sin(dampsq * p[4] * t)
+    c = np.cos(dampsq * p[4] * t)
+    jac[0] = np.ones_like(t)
+    jac[1] = e * s
+    jac[2] = e * c
+    jac[3] = -p[4] * t * e * (p[1] * s + p[2] * c) + e * (-p[1] * p[3] * p[4] * t / dampsq * c + p[2] * p[3] * p[4] * t / dampsq * s)
+    jac[4] = -p[3] * t * e * (p[1] * s + p[2] * c) + e * dampsq * t * (p[1] * c - p[2] * s)
     return jac.T
 
 def fit_goodness(ym, yp):
