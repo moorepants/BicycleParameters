@@ -3,6 +3,7 @@ import re
 import pickle
 from math import pi
 import numpy as np
+from numpy import ma
 from numpy.linalg import inv
 from scipy.optimize import leastsq, newton
 from scipy.io import loadmat
@@ -399,7 +400,7 @@ def average_rectified_sections(data):
 
     return data[maxInd:minInd]
 
-def get_period(data, sampleFrequency):
+def get_period(data, sampleRate):
     '''Returns the period and uncertainty for data resembling a decaying
     oscillation.
 
@@ -407,7 +408,7 @@ def get_period(data, sampleFrequency):
     ----------
     data : ndarray, shape(n,)
         A time series that resembles a decaying oscillation.
-    sampleFrequency : int
+    sampleRate : int
         The frequency that data was sampled at.
 
     Returns
@@ -418,7 +419,7 @@ def get_period(data, sampleFrequency):
     '''
 
     y = data
-    x = np.linspace(0., 1./sampleFrequency, num=len(y))
+    x = np.linspace(0., 1./sampleRate, num=len(y))
     # decaying oscillating exponential function
     fitfunc = lambda p, t: p[0] + np.exp(-p[3]*p[4]*t)*(p[1]*np.sin(p[4]*np.sqrt(1-p[3]**2)*t) + p[2]*np.cos(p[4]*np.sqrt(1-p[3]**2)*t))
     #def fitfunc(p, t):
@@ -429,8 +430,10 @@ def get_period(data, sampleFrequency):
         #d = p[2] * np.cos(p[4] * np.sqrt(1 - p[3]**2) * t)
         #return a + b * (c + d)
     # initial guesses
-    p0 = np.array([1.35, -.5, -.75, 0.01, 3.93])
+    #p0 = np.array([1.35, -.5, -.75, 0.01, 3.93])
     #p0 = np.array([2.5, -.75, -.75, 0.001, 4.3])
+    p0 = make_guess(data, sampleRate)
+    print "guess:", p0
     # create the error function
     errfunc = lambda p, t, y: fitfunc(p, t) - y
     # minimize the error function
@@ -464,6 +467,52 @@ def get_period(data, sampleFrequency):
     f = wd / 2. / pi
     # return the period
     return 1. / f
+
+def make_guess(data, sampleRate):
+    '''Returns a decent starting point for fitting the decaying oscillation
+    function.
+
+    '''
+    p = np.zeros(5)
+
+    # the first unknown is the shift along the y axis
+    p[0] = np.mean(data)
+
+    # work with the mean subtracted data from now on
+    data = data - p[0]
+
+    # what is the initial slope of the curve
+    if data[10] > data[0]:
+        slope = 1
+    else:
+        slope = -1
+
+    # the second is the amplitude for the sin function
+    p[1] = slope * np.max(data) / 2
+
+    # the third is the amplitude for the cos function
+    p[2] = slope * np.max(data)
+
+    # the fourth is the damping ratio and is typically small, 0.001 < zeta < 0.02
+    p[3] = 0.001
+
+    # the fifth is the undamped natural frequency
+    # first remove the data around zero
+    dataMasked = ma.masked_inside(data, -0.1, 0.1)
+    # find the zero crossings
+    zeroCrossings = np.where(np.diff(np.sign(dataMasked)))[0]
+    # remove redundant crossings
+    zero = []
+    for i, v in enumerate(zeroCrossings):
+        if abs(v - zeroCrossings[i - 1]) > 20:
+            zero.append(v)
+    # get the samples per period
+    samplesPerPeriod = 2*np.mean(np.diff(zero))
+    # now the frequency
+    p[4] = (samplesPerPeriod/sampleRate/2./pi)**-1
+
+    return p
+
 
 def jac_fitfunc(p, t):
     '''
