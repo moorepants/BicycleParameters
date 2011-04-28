@@ -159,7 +159,7 @@ class Bicycle(object):
                        'Fourth' : '4',
                        'Fifth' : '5',
                        'Sixth' : '6'}
-            # calculate the period for each file
+            # calculate the period for each file for this bicycle
             for f in matFiles:
                 print "Calculating the period for:", f
                 matData = load_pendulum_data_mat_file(os.path.join(rawDataDir,
@@ -169,9 +169,9 @@ class Bicycle(object):
                 else:
                     sampleRate = matData['sampleRate']
                 try:
-                    angle = matData['angle']
-                except:
                     angle = matData['angleOrder']
+                except:
+                    angle = matData['angle']
                 pend = matData['pendulum'][0].lower()
                 part = subscripts[matData['part']]
                 orien = ordinal[angle]
@@ -190,6 +190,11 @@ class Bicycle(object):
                 if k.startswith('T'):
                     mp[k] = np.mean(v)
 
+        print '\n'
+
+        for k, v in mp.items():
+            if k.startswith('T'):
+                print k, v
         # calculate all the benchmark parameters
         par = {}
 
@@ -312,11 +317,13 @@ def lambda_from_abc(rF, rR, a, b, c):
     def lam_equality(lam, rF, rR, a, b, c):
         return np.sin(lam) - (rF - rR + c * np.cos(lam)) / (a + b)
     guess = np.arctan(c / (a + b)) # guess based on equal wheel radii
+    
     # the following assumes that the uncertainty caluclated for the guess is
     # the same as the uncertainty for the true solution. This is not true! and
     # will surely breakdown the further the guess is away from the true
     # solution. There may be a way to calculate the correct uncertainity, but
     # that needs to be figured out.
+
     lam = newton(lam_equality, guess.nominal_value, args=(rF, rR, a, b, c))
     return ufloat((lam, guess.std_dev()))
 
@@ -431,35 +438,35 @@ def get_period(data, sampleRate):
         #return a + b * (c + d)
     # initial guesses
     #p0 = np.array([1.35, -.5, -.75, 0.01, 3.93])
-    #p0 = np.array([2.5, -.75, -.75, 0.001, 4.3])
-    p0 = make_guess(data, sampleRate)
-    print "guess:", p0
+    p0 = np.array([2.5, -.75, -.75, 0.001, 4.3])
+    #p0 = make_guess(data, sampleRate)
+    #print "guess:", p0
     # create the error function
     errfunc = lambda p, t, y: fitfunc(p, t) - y
     # minimize the error function
     p1, success = leastsq(errfunc, p0[:], args=(x, y))
     print p1, success
     lscurve = fitfunc(p1, x)
-    plt.plot(x, y, '.')
-    plt.plot(x, lscurve, '-')
-    plt.show()
+    #plt.plot(x, y, '.')
+    #plt.plot(x, lscurve, '-')
+    #plt.show()
     rsq, SSE, SST, SSR = fit_goodness(y, lscurve)
-    print rsq, SSE, SST, SSR
+    #print rsq, SSE, SST, SSR
     sigma = np.sqrt(SSE / (len(y) - len(p0)))
-    print 'sigma', sigma
+    #print 'sigma', sigma
     # calculate the jacobian
     L = jac_fitfunc(p1, x)
-    print "L", L
+    #print "L", L
     # the Hessian
     H = np.dot(L.T, L)
-    print "H", H
-    print "inv(H)", inv(H)
+    #print "H", H
+    #print "inv(H)", inv(H)
     # the covariance matrix
     U = sigma**2. * inv(H)
-    print "U", U
+    #print "U", U
     # the standard deviations
     sigp = np.sqrt(U.diagonal())
-    print sigp
+    #print sigp
     # frequency and period
     wo = ufloat((p1[4], sigp[4]))
     zeta = ufloat((p1[3], sigp[3]))
