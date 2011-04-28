@@ -419,7 +419,7 @@ def get_period(data, sampleRate):
     '''
 
     y = data
-    x = np.linspace(0., 1./sampleRate, num=len(y))
+    x = np.linspace(0., (len(y) - 1)/sampleRate, num=len(y))
     # decaying oscillating exponential function
     fitfunc = lambda p, t: p[0] + np.exp(-p[3]*p[4]*t)*(p[1]*np.sin(p[4]*np.sqrt(1-p[3]**2)*t) + p[2]*np.cos(p[4]*np.sqrt(1-p[3]**2)*t))
     #def fitfunc(p, t):
