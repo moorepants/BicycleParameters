@@ -8,7 +8,7 @@ from numpy.linalg import inv
 from scipy.optimize import leastsq, newton
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
-from uncertainties import ufloat, unumpy
+from uncertainties import ufloat, unumpy, umath
 
 class Bicycle(object):
     '''An object for a bicycle. A bicycle has parameters. That's about it for
@@ -102,10 +102,10 @@ class Bicycle(object):
 
         '''
         rawDataDir = os.path.join(self.directory, 'RawData')
-        pathToFile = os.path.join(rawDataDir, self.shortname + 'Measured.txt')
+        pathToRawFile = os.path.join(rawDataDir, self.shortname + 'Measured.txt')
 
         # load the measured parameters
-        mp = load_parameter_text_file(pathToFile)
+        mp = load_parameter_text_file(pathToRawFile)
 
         # if the the user doesn't specifiy to force period calculation, then
         # see if enough data is actually available in the *Measured.txt file to
@@ -127,20 +127,35 @@ class Bicycle(object):
                 # generate a variable name for this period
                 periodKey = get_period_key(matData, isForkSplit)
                 # calculate the period
-                sampleRate = get_sampleRate(matData)
+                sampleRate = get_sample_rate(matData)
                 period = get_period_from_truncated(matData['data'], sampleRate)
-                print key, period
+                print periodKey, period
                 # either append the the period or if it isn't there yet, then
                 # make a new list
                 try:
-                    mp[key].append(period)
+                    mp[periodKey].append(period)
                 except KeyError:
-                    mp[key] = [period]
+                    mp[periodKey] = [period]
 
             # now average all the periods
             for k, v in mp.items():
                 if k.startswith('T'):
                     mp[k] = np.mean(v)
+
+            # clear any period data from the file
+            f = open(pathToRawFile, 'r')
+            allButPeriods = ''
+            for line in f:
+                if not line.startswith('T'):
+                    allButPeriods += line
+            for k, v in mp.items():
+                if k.startswith('T'):
+                    allButPeriods += k + ' = ' + str(v) + '\n'
+            f.close()
+
+            f = open(pathToRawFile, 'w')
+            f.write(allButPeriods)
+            f.close()
 
         return calculate_benchmark_from_measured(mp)
 
@@ -160,72 +175,142 @@ def calculate_benchmark_from_measured(mp):
 
     '''
 
+    isForkSplit = is_fork_split(mp)
+
     par = {}
 
     # calculate the wheelbase, steer axis tilt and trail
     par = calculate_benchmark_geometry(mp, par)
 
-    # calculate the frame rotation angle
-    # alpha is the angle between the negative z pendulum (horizontal) and the
-    # positive (up) steer axis, rotation about positive y
-    alphaFrame = mp['frameAngle']
-    # beta is the angle between the x bike frame and the x pendulum frame, rotation
-    # about positive y
-    betaFrame = par['lam'] - alphaFrame * pi / 180
+    # get the slopes and intercepts for each part
+    slopes, intercepts = part_com_lines(mp, par, isForkSplit)
 
-    # calculate the slope of the CoM line
-    frameM = -np.tan(betaFrame)
-
-    # calculate the z-intercept of the CoM line
-    # frameMassDist is positive according to the pendulum ref frame
-    frameMassDist = mp['frameMassDist']
-    cb = unumpy.cos(betaFrame)
-    frameB = -frameMassDist/cb - par['rR']
-
-    # calculate the fork rotation angle
-    betaFork = par['lam'] - mp['forkAngle']*pi/180.
-
-    # calculate the slope of the fork CoM line
-    forkM = -unumpy.tan(betaFork)
-
-    # calculate the z-intercept of the CoM line
-    forkMassDist = mp['forkMassDist']
-    cb = unumpy.cos(betaFork)
-    tb = unumpy.tan(betaFork)
-    forkB = - par['rF'] - forkMassDist/cb + par['w']*tb
-
-    # intialize the matrices for the center of mass locations
-    frameCoM = zeros((2), dtype='object')
-    forkCoM = zeros((2), dtype='object')
-
-    comb = np.array([[0, 1], [0, 2], [1, 2]])
-    # calculate the frame center of mass position
-    # initialize the matrix to store the line intersections
-    lineX = zeros((3, 2), dtype='object')
-    # for each line intersection...
-    for j, row in enumerate(comb):
-        a = unumpy.matrix(np.vstack([-frameM[row], np.ones((2))]).T)
-        b = frameB[row]
-        lineX[j] = np.dot(a.I, b)
-    frameCoM[:] = np.mean(lineX, axis=0)
-    # calculate the fork center of mass position
-    # reinitialize the matrix to store the line intersections
-    lineX = zeros((3, 2), dtype='object')
-    # for each line intersection...
-    for j, row in enumerate(comb):
-        a = unumpy.matrix(np.vstack([-forkM[row], np.ones((2))]).T)
-        b = forkB[row]
-        lineX[j] = np.dot(a.I, b)
-    forkCoM[:] = np.mean(lineX, axis=0)
-
-    par['xB'] = frameCoM[0]
-    par['zB'] = frameCoM[1]
-    par['xH'] = forkCoM[0]
-    par['zH'] = forkCoM[1]
+    for part in slopes.keys():
+        par['x' + part], par['z' + part] = center_of_mass(slopes[part],
+            intercepts[part])
 
     return par
 
-def com_line(alpha, a, par, part, isForkSplit):
+def part_com_lines(mp, par, isForkSplit):
+    '''Returns the slopes and intercepts for all of the center of mass lines
+    for each part.
+
+    Parameters
+    ----------
+    mp : dictionary
+        Dictionary with the measured parameters.
+
+    Returns
+    -------
+    slopes : dictionary
+        Contains a list of slopes for each part.
+    intercepts : dictionary
+        Contains a list of intercepts for each part.
+
+    The slopes and intercepts lists are in order with respect to each other and
+    the keyword is either 'B', 'H' or 'S'.
+
+    '''
+    # find the slope and intercept for pendulum axis
+    if isForkSplit:
+        l1, l2 = calculate_l1_l2(mp['h6'], mp['h7'], mp['d5'], mp['d6'], mp['l'])
+        slopes = {'B':[], 'H':[], 'S':[]}
+        intercepts = {'B':[], 'H':[], 'S':[]}
+    else:
+        l1, l2 = 0., 0.
+        slopes = {'B':[], 'H':[]}
+        intercepts = {'B':[], 'H':[]}
+
+    for key, val in mp.items():
+        if key.startswith('alpha'):
+            a = mp['a' + key[5:]]
+            part = key[5]
+            m, b = com_line(val, a, par, part, isForkSplit, l1, l2)
+            slopes[key[5]].append(m)
+            intercepts[key[5]].append(b)
+
+    return slopes, intercepts
+
+def center_of_mass(slopes, intercepts):
+    '''Returns the center of mass relative to the slopes and intercepts
+    coordinate system.
+
+    Parameters
+    ----------
+    slopes : ndarray, shape(n,)
+        The slope of every line used to calculate the center of mass.
+    intercepts : ndarray, shape(n,)
+        The intercept of every line used to calculate the center of mass.
+
+    Returns
+    -------
+        x : float
+            The abscissa of the center of mass.
+        y : float
+            The ordinate of the center of mass.
+
+    '''
+    num = range(len(slopes))
+    allComb = cartesian((num, num))
+    comb = []
+    # remove doubles
+    for row in allComb:
+        if row[0] != row[1]:
+            comb.append(row)
+    comb = np.array(comb)
+
+    # initialize the matrix to store the line intersections
+    lineX = np.zeros((len(comb), 2), dtype='object')
+    # for each line intersection...
+    for j, row in enumerate(comb):
+        sl = np.array([slopes[row[0]], slopes[row[1]]])
+        a = unumpy.matrix(np.vstack((-sl, np.ones((2)))).T)
+        b = np.array([intercepts[row[0]], intercepts[row[1]]])
+        lineX[j] = np.dot(a.I, b)
+    com = np.mean(lineX, axis=0)
+
+    return com[0], com[1]
+
+def calculate_l1_l2(h6, h7, d5, d6, l):
+    '''Returns the distance along (l2) and perpendicular (l1) to the steer axis from the
+    front wheel center to the handlebar reference point.
+
+    Parameters
+    ----------
+    h6 : float
+        Distance from the table to the top of the front axle.
+    h7 : float
+        Distance from the table to the top of the handlebar reference circle.
+    d5 : float
+        Diameter of the front axle.
+    d6 : float
+        Diameter of the handlebar reference circle.
+    l : float
+        Outer distance from the front axle to the handlebar reference circle.
+
+    Returns
+    -------
+    l1 : float
+        The distance from the front wheel center to the handlebar reference
+        center perpendicular to the steer axis. The positive sense is if the
+        handlebar reference point is more forward than the front wheel center
+        relative to the steer axis normal.
+    l2 : float
+       The distance from the front wheel center to the handlebar reference
+       center parallel to the steer axis. The positive sense is if the
+       handlebar reference point is above the front wheel center with reference
+       to the steer axis.
+
+    '''
+    r5 = d5 / 2.
+    r6 = d6 / 2.
+    l1 = h7 - h6 + r5 - r6
+    l0 = l - r5 - r6
+    gamma = umath.asin(l1 / l0)
+    l2 = l0 * umath.cos(gamma)
+    return l1, l2
+
+def com_line(alpha, a, par, part, isForkSplit, l1, l2):
     '''Returns the slope and intercept for the line that passes through the
     part's center of mass with reference to the benchmark bicycle coordinate
     system.
@@ -244,12 +329,16 @@ def com_line(alpha, a, par, part, isForkSplit):
         typically the wheel centers. This is positive if the point falls to the
         left of the axis and negative otherwise.
     par : dictionary
-        Benchmark parameters. Must include lam, rR, w
+        Benchmark parameters. Must include lam, rR, rF, w
     part : string
         The subscript denoting which part this refers to.
     isForkSplit : boolean
         True if the fork is broken into a handlebar and fork and false if the
         fork and handlebar was measured together.
+    l1, l2 : floats
+        The location of the handlebar reference point relative to the front
+        wheel center when the fork is split. This is measured perpendicular to
+        and along the steer axis, respectively.
 
     Returns
     -------
@@ -264,22 +353,74 @@ def com_line(alpha, a, par, part, isForkSplit):
     beta = par['lam'] - alpha * pi / 180
 
     # calculate the slope of the center of mass line
-    m = -np.tan(beta)
+    m = -umath.tan(beta)
 
     # calculate the z intercept
     # this the bicycle frame
     if part == 'B':
-        b = -a/np.cos(beta) - par['rR']
+        b = -a / umath.cos(beta) - par['rR']
     # this is the fork (without handlebar) or the fork and handlebar combined
     elif part == 'S' or (not isForkSplit and part == 'H'):
-        b = -par['rF'] - a/np.cos(beta) + par['w']*np.tan(beta)
+        b = -a / umath.cos(beta) - par['rF'] + par['w'] * umath.tan(beta)
     # this is the handlebar (without fork)
     elif isForkSplit and part == 'H':
-        b = 1
+        u1 = l2 * umath.sin(par['lam']) - l1 * umath.cos(par['lam'])
+        u2 = u1 / umath.tan(par['lam']) + l1 / umath.sin(par['lam'])
+        b = -a / umath.cos(beta) - (par['rF'] + u2) + (par['w'] - u1) * umath.tan(par['lam'])
     else:
         raise
 
     return m, b
+
+def cartesian(arrays, out=None):
+    """
+    Generate a cartesian product of input arrays.
+
+    Parameters
+    ----------
+    arrays : list of array-like
+        1-D arrays to form the cartesian product of.
+    out : ndarray
+        Array to place the cartesian product in.
+
+    Returns
+    -------
+    out : ndarray
+        2-D array of shape (M, len(arrays)) containing cartesian products
+        formed of input arrays.
+
+    Examples
+    --------
+    >>> cartesian(([1, 2, 3], [4, 5], [6, 7]))
+    array([[1, 4, 6],
+           [1, 4, 7],
+           [1, 5, 6],
+           [1, 5, 7],
+           [2, 4, 6],
+           [2, 4, 7],
+           [2, 5, 6],
+           [2, 5, 7],
+           [3, 4, 6],
+           [3, 4, 7],
+           [3, 5, 6],
+           [3, 5, 7]])
+
+    """
+
+    arrays = [np.asarray(x) for x in arrays]
+    dtype = arrays[0].dtype
+
+    n = np.prod([x.size for x in arrays])
+    if out is None:
+        out = np.zeros([n, len(arrays)], dtype=dtype)
+
+    m = n / arrays[0].size
+    out[:,0] = np.repeat(arrays[0], m)
+    if arrays[1:]:
+        cartesian(arrays[1:], out=out[0:m,1:])
+        for j in xrange(1, arrays[0].size):
+            out[j*m:(j+1)*m,1:] = out[0:m,1:]
+    return out
 
 def calculate_benchmark_geometry(mp, par):
     '''Returns the wheelbase, steer axis tilt and the trail.
@@ -314,7 +455,7 @@ def calculate_benchmark_geometry(mp, par):
         d = (mp['d1'], mp['d2'], mp['d3'], mp['d4'], mp['d'])
         a, b, c = calculate_abc_geometry(h, d)
         par['lam'] = lambda_from_abc(par['rF'], par['rR'], a, b, c)
-        par['w'] = (a + b) * np.cos(par['lam']) + c * np.sin(par['lambda'])
+        par['w'] = (a + b) * umath.cos(par['lam']) + c * umath.sin(par['lam'])
         forkOffset = b
 
     # trail
@@ -351,10 +492,10 @@ def calculate_abc_geometry(h, d):
     # get the perpendicular distances
     a = h1 + h2 - h3 + .5 * d1 - .5 * d2
     b = h4 - .5 * d3 - h5 + .5 * d4
-    c = np.sqrt(-(a - b)**2 + (d + .5 * (d2 + d3)))
+    c = umath.sqrt(-(a - b)**2 + (d + .5 * (d2 + d3)))
     return a, b, c
 
-def get_sampleRate(matData)
+def get_sample_rate(matData):
     '''Returns the sample rate for the data.'''
     if 'ActualRate' in matData.keys():
         sampleRate = matData['ActualRate']
@@ -385,6 +526,7 @@ def get_period_key(matData, isForkSplit):
     subscripts = {'Fwheel': 'F',
                   'Rwheel': 'R',
                   'Frame': 'B'}
+    print "isForkSplit", isForkSplit
     if isForkSplit:
         subscripts['Fork'] = 'S'
         subscripts['Handlebar'] = 'H'
@@ -424,6 +566,7 @@ def check_for_period(mp):
         fork and handlebar was measured together.
 
     '''
+    forcePeriodCalc = False
     #Check to see if mp contains at enough periods to not need
     # recalculation
     ncTSum = 0
@@ -455,6 +598,28 @@ def check_for_period(mp):
 
     return forcePeriodCalc, isForkSplit
 
+def is_fork_split(mp):
+    '''Returns true if the fork was split into two parts and false if not.
+
+    Parameters
+    ----------
+    mp : dictionary
+        The measured data.
+
+    Returns
+    -------
+    isForkSplit : boolean
+
+    '''
+    isForkSplit = False
+    for key in mp.keys():
+        # if there is an 'S' then the fork is split in two parts
+        if key[:1] == 'S' or key[1:2] == 'S':
+            isForkSplit = True
+
+    return isForkSplit
+
+
 def trail(rF, lam, fo):
     '''Caluculate the trail and mechanical trail
 
@@ -478,9 +643,9 @@ def trail(rF, lam, fo):
     '''
 
     # trail
-    c = (rF * np.sin(lam) - fo) / np.cos(lam)
+    c = (rF * umath.sin(lam) - fo) / umath.cos(lam)
     # mechanical trail
-    cm = c * np.cos(lam)
+    cm = c * umath.cos(lam)
     return c, cm
 
 def lambda_from_abc(rF, rR, a, b, c):
@@ -489,8 +654,8 @@ def lambda_from_abc(rF, rR, a, b, c):
 
     '''
     def lam_equality(lam, rF, rR, a, b, c):
-        return np.sin(lam) - (rF - rR + c * np.cos(lam)) / (a + b)
-    guess = np.arctan(c / (a + b)) # guess based on equal wheel radii
+        return umath.sin(lam) - (rF - rR + c * umath.cos(lam)) / (a + b)
+    guess = umath.atan(c / (a + b)) # guess based on equal wheel radii
 
     # The following assumes that the uncertainty caluclated for the guess is
     # the same as the uncertainty for the true solution. This is not true! and
@@ -499,7 +664,10 @@ def lambda_from_abc(rF, rR, a, b, c):
     # that needs to be figured out. I guess I could use least squares and do it
     # the same way as get_period.
 
-    lam = newton(lam_equality, guess.nominal_value, args=(rF, rR, a, b, c))
+    args = (rF.nominal_value, rR.nominal_value, a.nominal_value,
+            b.nominal_value, c.nominal_value)
+
+    lam = newton(lam_equality, guess.nominal_value, args=args)
     return ufloat((lam, guess.std_dev()))
 
 def get_period_from_truncated(data, sampleFrequency):
