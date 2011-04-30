@@ -119,45 +119,70 @@ class Bicycle(object):
                         if x[:len(self.shortname)] == self.shortname
                         and x.endswith('.mat')]
             # calculate the period for each file for this bicycle
-            for f in matFiles:
-                print "Calculating the period for:", f
-                # load the pendulum data
-                pathToMatFile = os.path.join(rawDataDir, f)
-                matData = load_pendulum_mat_file(pathToMatFile)
-                # generate a variable name for this period
-                periodKey = get_period_key(matData, isForkSplit)
-                # calculate the period
-                sampleRate = get_sample_rate(matData)
-                period = get_period_from_truncated(matData['data'], sampleRate)
-                print periodKey, period
-                # either append the the period or if it isn't there yet, then
-                # make a new list
-                try:
-                    mp[periodKey].append(period)
-                except KeyError:
-                    mp[periodKey] = [period]
+            periods = calc_periods_for_files(rawDataDir, matFiles)
 
-            # now average all the periods
-            for k, v in mp.items():
-                if k.startswith('T'):
-                    mp[k] = np.mean(v)
-
-            # clear any period data from the file
-            f = open(pathToRawFile, 'r')
-            allButPeriods = ''
-            for line in f:
-                if not line.startswith('T'):
-                    allButPeriods += line
-            for k, v in mp.items():
-                if k.startswith('T'):
-                    allButPeriods += k + ' = ' + str(v) + '\n'
-            f.close()
-
-            f = open(pathToRawFile, 'w')
-            f.write(allButPeriods)
-            f.close()
+            write_periods_to_file(pathToRawFile, periods)
 
         return calculate_benchmark_from_measured(mp)
+
+def calc_periods_for_files(directory, filenames):
+    '''Calculates the period for all filenames in directory.'''
+
+    periods = {}
+
+    for f in filenames:
+        print "Calculating the period for:", f
+        # load the pendulum data
+        pathToMatFile = os.path.join(directory, f)
+        matData = load_pendulum_mat_file(pathToMatFile)
+        # generate a variable name for this period
+        periodKey = get_period_key(matData, isForkSplit)
+        # calculate the period
+        sampleRate = get_sample_rate(matData)
+        period = get_period_from_truncated(matData['data'], sampleRate)
+        # either append the the period or if it isn't there yet, then
+        # make a new list
+        try:
+            periods[periodKey].append(period)
+        except KeyError:
+            periods[periodKey] = [period]
+
+    # now average all the periods
+    for k, v in periods.items():
+        if k.startswith('T'):
+            periods[k] = np.mean(v)
+
+    return periods
+
+def write_periods_to_file(pathToRawFile, mp):
+    '''Writes the provided periods to file.
+
+    Parameters
+    ----------
+    pathToRawFile : string
+        The path to the *Measured.txt file
+    mp : dictionary
+        The measured parameters dictionary. Should contain complete period
+        data.
+
+    '''
+
+    # clear any period data from the file
+    f = open(pathToRawFile, 'r')
+    baseData = ''
+    for line in f:
+        if not line.startswith('T'):
+            baseData += line
+    # add the periods to the base data
+    for k, v in mp.items():
+        if k.startswith('T'):
+            baseData += k + ' = ' + str(v) + '\n'
+    f.close()
+
+    # write it to the file
+    f = open(pathToRawFile, 'w')
+    f.write(allButPeriods)
+    f.close()
 
 def calculate_benchmark_from_measured(mp):
     '''Returns the benchmark (Meijaard 2007) parameter set based on the
