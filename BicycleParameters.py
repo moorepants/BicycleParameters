@@ -56,9 +56,15 @@ class Bicycle(object):
 
         # if you want to force a recalculation and there is a RawData directory
         if forceRawCalc and 'RawData' in os.listdir(self.directory):
-            self.parameters['Benchmark'] = self.calculate_from_measured()
+            par, slopes, intercepts= self.calculate_from_measured()
+            self.parameters['Benchmark'] = par
+            self.slopes = slopes
+            self.intercepts = intercepts
         elif not forceRawCalc and 'Parameters' not in os.listdir(self.directory):
-            self.parameters['Benchmark'] = self.calculate_from_measured()
+            par, slopes, intercepts= self.calculate_from_measured()
+            self.parameters['Benchmark'] = par
+            self.slopes = slopes
+            self.intercepts = intercepts
         elif not forceRawCalc and 'Parameters' in os.listdir(self.directory):
             parDir = os.path.join(self.directory, 'Parameters')
             parFiles = os.listdir(parDir)
@@ -105,13 +111,13 @@ class Bicycle(object):
         pathToRawFile = os.path.join(rawDataDir, self.shortname + 'Measured.txt')
 
         # load the measured parameters
-        mp = load_parameter_text_file(pathToRawFile)
+        self.parameters['Measured'] = load_parameter_text_file(pathToRawFile)
 
         # if the the user doesn't specifiy to force period calculation, then
         # see if enough data is actually available in the *Measured.txt file to
         # do the calculations
         if not forcePeriodCalc:
-            forcePeriodCalc, isForkSplit = check_for_period(mp)
+            forcePeriodCalc, isForkSplit = check_for_period(self.parameters['Measured'])
 
         if forcePeriodCalc == True:
             # get the list of mat files associated with this bike
@@ -123,7 +129,72 @@ class Bicycle(object):
 
             write_periods_to_file(pathToRawFile, periods)
 
-        return calculate_benchmark_from_measured(mp)
+        return calculate_benchmark_from_measured(self.parameters['Measured'])
+
+    def plot_bicycle_geometry(self):
+        '''Returns a figure showing the basic bicycle geometry, the centers of
+        mass and the moments of inertia.
+
+        '''
+        par = self.parameters['Benchmark']
+        slopes = self.slopes
+        intercepts = self.intercepts
+
+        fig = plt.figure()
+        ax = plt.axes()
+        # plot the rear wheel
+        c = plt.Circle((0., par['rR'].nominal_value),
+                       radius=par['rR'].nominal_value)
+        ax.add_patch(c)
+        # plot the front wheel
+        c = plt.Circle((par['w'].nominal_value, par['rF'].nominal_value),
+                       radius=par['rF'].nominal_value)
+        ax.add_patch(c)
+        comLineLength = par['w'].nominal_value / 4.
+        numColors = len(slopes.keys())
+        cmap = plt.get_cmap('gist_rainbow')
+        for j, pair in enumerate(slopes.items()):
+            part, slopeSet = pair
+            xcom = par['x' + part].nominal_value
+            zcom = par['z' + part].nominal_value
+            plt.plot(xcom, -zcom, 'k+', markersize=12)
+            for i, m in enumerate(slopeSet):
+                m = m.nominal_value
+                xPlus = comLineLength / 2. * np.cos(np.arctan(m))
+                x = np.array([xcom - xPlus,
+                              xcom + xPlus])
+                y = -m * x - intercepts[part][i].nominal_value
+                plt.plot(x, y, color=cmap(1. * j / numColors))
+        # plot the ground line
+        x = np.array([-par['rR'].nominal_value,
+                      par['w'].nominal_value + par['rF'].nominal_value])
+        plt.plot(x, np.zeros_like(x), 'k')
+        # plot the fundamental bike
+        deex, deez = get_bike_geometry(par)
+        plt.plot(deex, -deez, 'k')
+        plt.axis('equal')
+        plt.ylim((0, 1))
+        plt.title(self.shortname)
+
+        return fig
+
+def get_bike_geometry(par):
+    d1 = umath.cos(par['lam']) * (par['c'] + par['w'] -
+                par['rR'] * umath.tan(par['lam']))
+    d3 = -umath.cos(par['lam']) * (par['c'] - par['rF'] *
+                umath.tan(par['lam']))
+    deex = np.zeros(4)
+    deez = np.zeros(4)
+    deex[0] = 0.
+    deex[1] = (d1*unumpy.cos(par['lam'])).nominal_value
+    deex[2] = (par['w']-d3*unumpy.cos(par['lam'])).nominal_value
+    deex[3] = par['w'].nominal_value
+    deez[0] = -par['rR'].nominal_value
+    deez[1] = -(par['rR']+d1*unumpy.sin(par['lam'])).nominal_value
+    deez[2] = -(par['rF']-d3*unumpy.sin(par['lam'])).nominal_value
+    deez[3] = -par['rF'].nominal_value
+
+    return deex, deez
 
 def calc_periods_for_files(directory, filenames):
     '''Calculates the period for all filenames in directory.'''
@@ -214,7 +285,7 @@ def calculate_benchmark_from_measured(mp):
         par['x' + part], par['z' + part] = center_of_mass(slopes[part],
             intercepts[part])
 
-    return par
+    return par, slopes, intercepts
 
 def part_com_lines(mp, par, isForkSplit):
     '''Returns the slopes and intercepts for all of the center of mass lines
@@ -392,6 +463,7 @@ def com_line(alpha, a, par, part, isForkSplit, l1, l2):
         u1 = l2 * umath.sin(par['lam']) - l1 * umath.cos(par['lam'])
         u2 = u1 / umath.tan(par['lam']) + l1 / umath.sin(par['lam'])
         b = -a / umath.cos(beta) - (par['rF'] + u2) + (par['w'] - u1) * umath.tan(par['lam'])
+        print "u1 and u2", u1, u2
     else:
         raise
 
@@ -447,6 +519,7 @@ def cartesian(arrays, out=None):
             out[j*m:(j+1)*m,1:] = out[0:m,1:]
     return out
 
+
 def calculate_benchmark_geometry(mp, par):
     '''Returns the wheelbase, steer axis tilt and the trail.
 
@@ -464,7 +537,7 @@ def calculate_benchmark_geometry(mp, par):
 
     '''
     # calculate the wheel radii
-    par['rF'] = mp['dR'] / 2./ pi / mp['nF']
+    par['rF'] = mp['dF'] / 2./ pi / mp['nF']
     par['rR'] = mp['dR'] / 2./ pi / mp['nR']
 
     # calculate the frame/fork fundamental geometry
