@@ -1,10 +1,9 @@
 import os
 import re
-import pickle
 from math import pi
+
 import numpy as np
 from numpy import ma
-from numpy.linalg import inv
 from scipy.optimize import leastsq, newton
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
@@ -113,14 +112,14 @@ class Bicycle(object):
         # load the measured parameters
         self.parameters['Measured'] = load_parameter_text_file(pathToRawFile)
 
-        isForkSplit = is_fork_split(self.parameters['Measured'])
+        forkIsSplit = is_fork_split(self.parameters['Measured'])
 
         # if the the user doesn't specifiy to force period calculation, then
         # see if enough data is actually available in the *Measured.txt file to
         # do the calculations
         if not forcePeriodCalc:
             forcePeriodCalc = check_for_period(self.parameters['Measured'],
-                                               isForkSplit)
+                                               forkIsSplit)
 
         if forcePeriodCalc == True:
             # get the list of mat files associated with this bike
@@ -128,7 +127,7 @@ class Bicycle(object):
                         if x[:len(self.shortname)] == self.shortname
                         and x.endswith('.mat')]
             # calculate the period for each file for this bicycle
-            periods = calc_periods_for_files(rawDataDir, matFiles, isForkSplit)
+            periods = calc_periods_for_files(rawDataDir, matFiles, forkIsSplit)
 
             write_periods_to_file(pathToRawFile, periods)
 
@@ -219,7 +218,7 @@ def fundamental_geometry_plot_data(par):
 
     return unumpy.nominal_values(x), unumpy.nominal_values(z)
 
-def calc_periods_for_files(directory, filenames, isForkSplit):
+def calc_periods_for_files(directory, filenames, forkIsSplit):
     '''Calculates the period for all filenames in directory.'''
 
     periods = {}
@@ -230,7 +229,7 @@ def calc_periods_for_files(directory, filenames, isForkSplit):
         pathToMatFile = os.path.join(directory, f)
         matData = load_pendulum_mat_file(pathToMatFile)
         # generate a variable name for this period
-        periodKey = get_period_key(matData, isForkSplit)
+        periodKey = get_period_key(matData, forkIsSplit)
         # calculate the period
         sampleRate = get_sample_rate(matData)
         period = get_period_from_truncated(matData['data'], sampleRate)
@@ -296,23 +295,70 @@ def calculate_benchmark_from_measured(mp):
 
     '''
 
-    isForkSplit = is_fork_split(mp)
+    forkIsSplit = is_fork_split(mp)
 
     par = {}
 
     # calculate the wheelbase, steer axis tilt and trail
     par = calculate_benchmark_geometry(mp, par)
 
-    # get the slopes and intercepts for each part
-    slopes, intercepts = part_com_lines(mp, par, isForkSplit)
+    # masses
+    par['mB'] = mp['mB']
+    par['mF'] = mp['mF']
+    par['mR'] = mp['mR']
+    if forkIsSplit:
+        par['mS'] = mp['mS']
+        par['mG'] = mp['mG']
+    else:
+        par['mH'] = mp['mH']
 
+    # get the slopes and intercepts for each part
+    slopes, intercepts = part_com_lines(mp, par, forkIsSplit)
+
+    # calculate the centers of mass
     for part in slopes.keys():
         par['x' + part], par['z' + part] = center_of_mass(slopes[part],
             intercepts[part])
 
+    # find the center of mass of the handlebar/fork assembly if the fork was
+    # split
+    if forkIsSplit:
+        coordinates = np.array([[par['xS'], par['xG']],
+                                [0., 0.],
+                                [par['zS'], par['zG']]])
+        masses = np.array([par['mS'], par['mG']])
+        mH, cH = total_com(coordinates, masses)
+        par['mH'] = mH
+        par['xH'] = cH[0]
+        par['zH'] = cH[2]
+
     return par, slopes, intercepts
 
-def part_com_lines(mp, par, isForkSplit):
+def total_com(coordinates, masses):
+    '''Returns the center of mass of a group of objects if the indivdual
+    centers of mass and mass is provided.
+
+    coordinates : ndarray, shape(3,n)
+        The rows are the x, y and z coordinates, respectively and the columns
+        are for each object.
+    masses : ndarray, shape(3,)
+        An array of the masses of multiple objects, the order should correspond
+        to the columns of coordinates.
+
+    Returns
+    -------
+    mT : float
+        Total mass of the objects.
+    cT : ndarray, shape(3,)
+        The x, y, and z coordinates of the total center of mass.
+
+    '''
+    products = masses * coordinates
+    mT = np.sum(masses)
+    cT = np.sum(products, axis=1) / mT
+    return mT, cT
+
+def part_com_lines(mp, par, forkIsSplit):
     '''Returns the slopes and intercepts for all of the center of mass lines
     for each part.
 
@@ -333,7 +379,7 @@ def part_com_lines(mp, par, isForkSplit):
 
     '''
     # find the slope and intercept for pendulum axis
-    if isForkSplit:
+    if forkIsSplit:
         l1, l2 = calculate_l1_l2(mp['h6'], mp['h7'], mp['d5'], mp['d6'], mp['l'])
         slopes = {'B':[], 'G':[], 'S':[]}
         intercepts = {'B':[], 'G':[], 'S':[]}
@@ -623,14 +669,14 @@ def get_sample_rate(matData):
         sampleRate = matData['sampleRate']
     return sampleRate
 
-def get_period_key(matData, isForkSplit):
+def get_period_key(matData, forkIsSplit):
     '''Returns a dictionary key for the period entries.
 
     Parameters
     ----------
     matData : dictionary
         The data imported from a pendulum mat file.
-    isForkSplit : boolean
+    forkIsSplit : boolean
         True if the fork is broken into a handlebar and fork and false if the
         fork and handlebar was measured together.
 
@@ -646,7 +692,7 @@ def get_period_key(matData, isForkSplit):
     subscripts = {'Fwheel': 'F',
                   'Rwheel': 'R',
                   'Frame': 'B'}
-    if isForkSplit:
+    if forkIsSplit:
         subscripts['Fork'] = 'S'
         subscripts['Handlebar'] = 'G'
     else:
@@ -667,7 +713,7 @@ def get_period_key(matData, isForkSplit):
     orienNum = ordinal[orienWord]
     return 'T' + pend + part + orienNum
 
-def check_for_period(mp, isForkSplit):
+def check_for_period(mp, forkIsSplit):
     '''Returns whether the fork is split into two pieces and whether the period
     calculations need to happen again.
 
@@ -675,12 +721,15 @@ def check_for_period(mp, isForkSplit):
     ----------
     mp : dictionary
         Dictionary the measured parameters.
+    forkIsSplit : boolean
+        True if the fork is broken into a handlebar and fork and false if the
+        fork and handlebar was measured together.
 
     Returns
     -------
     forcePeriodCalc : boolean
         True if there wasn't enough period data in mp, false if there was.
-    isForkSplit : boolean
+    forkIsSplit : boolean
         True if the fork is broken into a handlebar and fork and false if the
         fork and handlebar was measured together.
 
@@ -698,7 +747,7 @@ def check_for_period(mp, isForkSplit):
             ntTSum += 1
 
     # if there isn't enough data then force the period cals again
-    if isForkSplit:
+    if forkIsSplit:
         if ncTSum < 5 or ntTSum < 11:
             forcePeriodCalc = True
     else:
@@ -717,16 +766,18 @@ def is_fork_split(mp):
 
     Returns
     -------
-    isForkSplit : boolean
+    forkIsSplit : boolean
 
     '''
-    isForkSplit = False
+    # this isn't that robust, for example if you had an S and no G then this
+    # wouldn't catch it
+    forkIsSplit = False
     for key in mp.keys():
         # if there is an 'S' then the fork is split in two parts
         if key[:1] == 'S' or key[1:2] == 'S':
-            isForkSplit = True
+            forkIsSplit = True
 
-    return isForkSplit
+    return forkIsSplit
 
 def trail(rF, lam, fo):
     '''Caluculate the trail and mechanical trail
@@ -913,7 +964,7 @@ def get_period(data, sampleRate):
     #print "H", H
     #print "inv(H)", inv(H)
     # the covariance matrix
-    U = sigma**2. * inv(H)
+    U = sigma**2. * numpy.linalg.inv(H)
     #print "U", U
     # the standard deviations
     sigp = np.sqrt(U.diagonal())
