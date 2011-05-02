@@ -131,7 +131,7 @@ class Bicycle(object):
 
         return calculate_benchmark_from_measured(self.parameters['Measured'])
 
-    def plot_bicycle_geometry(self):
+    def plot_bicycle_geometry(self, show=True):
         '''Returns a figure showing the basic bicycle geometry, the centers of
         mass and the moments of inertia.
 
@@ -144,11 +144,13 @@ class Bicycle(object):
         ax = plt.axes()
         # plot the rear wheel
         c = plt.Circle((0., par['rR'].nominal_value),
-                       radius=par['rR'].nominal_value)
+                       radius=par['rR'].nominal_value,
+                       fill=False)
         ax.add_patch(c)
         # plot the front wheel
         c = plt.Circle((par['w'].nominal_value, par['rF'].nominal_value),
-                       radius=par['rF'].nominal_value)
+                       radius=par['rF'].nominal_value,
+                       fill=False)
         ax.add_patch(c)
         comLineLength = par['w'].nominal_value / 4.
         numColors = len(slopes.keys())
@@ -165,38 +167,54 @@ class Bicycle(object):
                               xcom + xPlus])
                 y = -m * x - intercepts[part][i].nominal_value
                 plt.plot(x, y, color=cmap(1. * j / numColors))
+                plt.text(x[0], y[0], str(i + 1))
         # plot the ground line
         x = np.array([-par['rR'].nominal_value,
                       par['w'].nominal_value + par['rF'].nominal_value])
         plt.plot(x, np.zeros_like(x), 'k')
         # plot the fundamental bike
-        deex, deez = get_bike_geometry(par)
+        deex, deez = fundamental_geometry_plot_data(par)
         plt.plot(deex, -deez, 'k')
         plt.axis('equal')
         plt.ylim((0, 1))
         plt.title(self.shortname)
 
-        fig.show()
+        if show:
+            fig.show()
 
         return fig
 
-def get_bike_geometry(par):
+def fundamental_geometry_plot_data(par):
+    '''Returns the coordinates for line end points of the bicycle fundamental
+    geometry.
+
+    Parameters
+    ----------
+    par : dictionary
+        Benchmark bicycle parameters.
+
+    Returns
+    -------
+    x : ndarray
+    z : ndarray
+
+    '''
     d1 = umath.cos(par['lam']) * (par['c'] + par['w'] -
                 par['rR'] * umath.tan(par['lam']))
     d3 = -umath.cos(par['lam']) * (par['c'] - par['rF'] *
                 umath.tan(par['lam']))
-    deex = np.zeros(4)
-    deez = np.zeros(4)
-    deex[0] = 0.
-    deex[1] = (d1*unumpy.cos(par['lam'])).nominal_value
-    deex[2] = (par['w']-d3*unumpy.cos(par['lam'])).nominal_value
-    deex[3] = par['w'].nominal_value
-    deez[0] = -par['rR'].nominal_value
-    deez[1] = -(par['rR']+d1*unumpy.sin(par['lam'])).nominal_value
-    deez[2] = -(par['rF']-d3*unumpy.sin(par['lam'])).nominal_value
-    deez[3] = -par['rF'].nominal_value
+    x = np.zeros(4, dtype="object")
+    z = np.zeros(4, dtype="object")
+    x[0] = 0.
+    x[1] = d1 * umath.cos(par['lam'])
+    x[2] = par['w'] - d3 * umath.cos(par['lam'])
+    x[3] = par['w']
+    z[0] = -par['rR']
+    z[1] = -par['rR'] - d1 * umath.sin(par['lam'])
+    z[2] = -par['rF'] + d3 * umath.sin(par['lam'])
+    z[3] = -par['rF']
 
-    return deex, deez
+    return unumpy.nominal_values(x), unumpy.nominal_values(z)
 
 def calc_periods_for_files(directory, filenames):
     '''Calculates the period for all filenames in directory.'''
