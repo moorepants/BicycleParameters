@@ -113,11 +113,14 @@ class Bicycle(object):
         # load the measured parameters
         self.parameters['Measured'] = load_parameter_text_file(pathToRawFile)
 
+        isForkSplit = is_fork_split(self.parameters['Measured'])
+
         # if the the user doesn't specifiy to force period calculation, then
         # see if enough data is actually available in the *Measured.txt file to
         # do the calculations
         if not forcePeriodCalc:
-            forcePeriodCalc, isForkSplit = check_for_period(self.parameters['Measured'])
+            forcePeriodCalc = check_for_period(self.parameters['Measured'],
+                                               isForkSplit)
 
         if forcePeriodCalc == True:
             # get the list of mat files associated with this bike
@@ -125,7 +128,7 @@ class Bicycle(object):
                         if x[:len(self.shortname)] == self.shortname
                         and x.endswith('.mat')]
             # calculate the period for each file for this bicycle
-            periods = calc_periods_for_files(rawDataDir, matFiles)
+            periods = calc_periods_for_files(rawDataDir, matFiles, isForkSplit)
 
             write_periods_to_file(pathToRawFile, periods)
 
@@ -216,7 +219,7 @@ def fundamental_geometry_plot_data(par):
 
     return unumpy.nominal_values(x), unumpy.nominal_values(z)
 
-def calc_periods_for_files(directory, filenames):
+def calc_periods_for_files(directory, filenames, isForkSplit):
     '''Calculates the period for all filenames in directory.'''
 
     periods = {}
@@ -264,15 +267,17 @@ def write_periods_to_file(pathToRawFile, mp):
     for line in f:
         if not line.startswith('T'):
             baseData += line
-    # add the periods to the base data
-    for k, v in mp.items():
-        if k.startswith('T'):
-            baseData += k + ' = ' + str(v) + '\n'
     f.close()
+    # add the periods to the base data
+    periodKeys = [x for x in mp.keys() if x.startswith('T')]
+    periodKeys.sort()
+    withPeriods = baseData
+    for k in periodKeys:
+        withPeriods += k + ' = ' + str(mp[k]) + '\n'
 
     # write it to the file
     f = open(pathToRawFile, 'w')
-    f.write(allButPeriods)
+    f.write(withPeriods)
     f.close()
 
 def calculate_benchmark_from_measured(mp):
@@ -330,8 +335,8 @@ def part_com_lines(mp, par, isForkSplit):
     # find the slope and intercept for pendulum axis
     if isForkSplit:
         l1, l2 = calculate_l1_l2(mp['h6'], mp['h7'], mp['d5'], mp['d6'], mp['l'])
-        slopes = {'B':[], 'H':[], 'S':[]}
-        intercepts = {'B':[], 'H':[], 'S':[]}
+        slopes = {'B':[], 'G':[], 'S':[]}
+        intercepts = {'B':[], 'G':[], 'S':[]}
     else:
         l1, l2 = 0., 0.
         slopes = {'B':[], 'H':[]}
@@ -341,7 +346,7 @@ def part_com_lines(mp, par, isForkSplit):
         if key.startswith('alpha'):
             a = mp['a' + key[5:]]
             part = key[5]
-            m, b = com_line(val, a, par, part, isForkSplit, l1, l2)
+            m, b = com_line(val, a, par, part, l1, l2)
             slopes[key[5]].append(m)
             intercepts[key[5]].append(b)
 
@@ -426,7 +431,7 @@ def calculate_l1_l2(h6, h7, d5, d6, l):
     l2 = l0 * umath.cos(gamma)
     return l1, l2
 
-def com_line(alpha, a, par, part, isForkSplit, l1, l2):
+def com_line(alpha, a, par, part, l1, l2):
     '''Returns the slope and intercept for the line that passes through the
     part's center of mass with reference to the benchmark bicycle coordinate
     system.
@@ -448,9 +453,6 @@ def com_line(alpha, a, par, part, isForkSplit, l1, l2):
         Benchmark parameters. Must include lam, rR, rF, w
     part : string
         The subscript denoting which part this refers to.
-    isForkSplit : boolean
-        True if the fork is broken into a handlebar and fork and false if the
-        fork and handlebar was measured together.
     l1, l2 : floats
         The location of the handlebar reference point relative to the front
         wheel center when the fork is split. This is measured perpendicular to
@@ -464,6 +466,7 @@ def com_line(alpha, a, par, part, isForkSplit, l1, l2):
         The z intercept in the benchmark coordinate system.
 
     '''
+
     # beta is the angle between the x bike frame and the x pendulum frame, rotation
     # about positive y
     beta = par['lam'] - alpha * pi / 180
@@ -476,10 +479,10 @@ def com_line(alpha, a, par, part, isForkSplit, l1, l2):
     if part == 'B':
         b = -a / umath.cos(beta) - par['rR']
     # this is the fork (without handlebar) or the fork and handlebar combined
-    elif part == 'S' or (not isForkSplit and part == 'H'):
+    elif part == 'S' or part == 'H':
         b = -a / umath.cos(beta) - par['rF'] + par['w'] * umath.tan(beta)
     # this is the handlebar (without fork)
-    elif isForkSplit and part == 'H':
+    elif part == 'G':
         u1 = l2 * umath.sin(par['lam']) - l1 * umath.cos(par['lam'])
         u2 = u1 / umath.tan(par['lam']) + l1 / umath.sin(par['lam'])
         b = -a / umath.cos(beta) - (par['rF'] + u2) + (par['w'] - u1) * umath.tan(beta)
@@ -539,7 +542,6 @@ def cartesian(arrays, out=None):
             out[j*m:(j+1)*m,1:] = out[0:m,1:]
     return out
 
-
 def calculate_benchmark_geometry(mp, par):
     '''Returns the wheelbase, steer axis tilt and the trail.
 
@@ -563,7 +565,7 @@ def calculate_benchmark_geometry(mp, par):
     # calculate the frame/fork fundamental geometry
     if ['w'] in mp.keys(): # if there is a wheelbase
         # steer axis tilt in radians
-        par['lam'] = pi/180.*(90. - mp['headTubeAngle'])
+        par['lam'] = pi / 180. * (90. - mp['headTubeAngle'])
         # wheelbase
         par['w'] = mp['w']
         # fork offset
@@ -644,10 +646,9 @@ def get_period_key(matData, isForkSplit):
     subscripts = {'Fwheel': 'F',
                   'Rwheel': 'R',
                   'Frame': 'B'}
-    print "isForkSplit", isForkSplit
     if isForkSplit:
         subscripts['Fork'] = 'S'
-        subscripts['Handlebar'] = 'H'
+        subscripts['Handlebar'] = 'G'
     else:
         subscripts['Fork'] = 'H'
     # used to convert word ordinals to numbers
@@ -666,7 +667,7 @@ def get_period_key(matData, isForkSplit):
     orienNum = ordinal[orienWord]
     return 'T' + pend + part + orienNum
 
-def check_for_period(mp):
+def check_for_period(mp, isForkSplit):
     '''Returns whether the fork is split into two pieces and whether the period
     calculations need to happen again.
 
@@ -689,19 +690,12 @@ def check_for_period(mp):
     # recalculation
     ncTSum = 0
     ntTSum = 0
-    isForkSplit = False
     for key in mp.keys():
         # check for any periods in the keys
         if key[:2] == 'Tc':
             ncTSum += 1
         elif key[:2] == 'Tt':
             ntTSum += 1
-        # if there is an 'S' then the fork is split in two parts
-        if key[:1] == 'S' or key[1:2] == 'S':
-            isForkSplit = True
-
-    print "ncTSum:", ncTSum
-    print "ntTSum:", ntTSum
 
     # if there isn't enough data then force the period cals again
     if isForkSplit:
@@ -711,10 +705,7 @@ def check_for_period(mp):
         if ncTSum < 4 or ntTSum < 8:
             forcePeriodCalc = True
 
-    print "isForkSplit:", isForkSplit
-    print "forcePeriodCalc", forcePeriodCalc
-
-    return forcePeriodCalc, isForkSplit
+    return forcePeriodCalc
 
 def is_fork_split(mp):
     '''Returns true if the fork was split into two parts and false if not.
@@ -736,7 +727,6 @@ def is_fork_split(mp):
             isForkSplit = True
 
     return isForkSplit
-
 
 def trail(rF, lam, fo):
     '''Caluculate the trail and mechanical trail
@@ -981,7 +971,6 @@ def make_guess(data, sampleRate):
 
     return p
 
-
 def jac_fitfunc(p, t):
     '''
     Calculate the Jacobian of a decaying oscillation function.
@@ -1132,4 +1121,3 @@ def load_pendulum_mat_file(pathToFile):
             else:
                 pendDat[k] = v.reshape((len(v),))
     return pendDat
-
