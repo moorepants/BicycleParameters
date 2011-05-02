@@ -176,6 +176,8 @@ class Bicycle(object):
         plt.ylim((0, 1))
         plt.title(self.shortname)
 
+        fig.show()
+
         return fig
 
 def get_bike_geometry(par):
@@ -462,7 +464,7 @@ def com_line(alpha, a, par, part, isForkSplit, l1, l2):
     elif isForkSplit and part == 'H':
         u1 = l2 * umath.sin(par['lam']) - l1 * umath.cos(par['lam'])
         u2 = u1 / umath.tan(par['lam']) + l1 / umath.sin(par['lam'])
-        b = -a / umath.cos(beta) - (par['rF'] + u2) + (par['w'] - u1) * umath.tan(par['lam'])
+        b = -a / umath.cos(beta) - (par['rF'] + u2) + (par['w'] - u1) * umath.tan(beta)
         print "u1 and u2", u1, u2
     else:
         raise
