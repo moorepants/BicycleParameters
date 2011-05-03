@@ -155,8 +155,7 @@ class Bicycle(object):
         if forcePeriodCalc == True:
             # get the list of mat files associated with this bike
             matFiles = [x for x in os.listdir(rawDataDir)
-                        if x[:len(self.shortname)] == self.shortname
-                        and x.endswith('.mat')]
+                        if x.endswith('.mat')]
             # calculate the period for each file for this bicycle
             periods = calc_periods_for_files(rawDataDir, matFiles, forkIsSplit)
             # add the periods to the measured parameters
