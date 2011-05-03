@@ -27,8 +27,8 @@ likely work with older versions with minor adjustsments.
 
 Example Code
 ------------
-'''python
+```python
 import BicycleParameters as bp
 rigid = bp.Bicycle('Rigid')
 rigid.parameters['Benchmark']
-'''
+```
