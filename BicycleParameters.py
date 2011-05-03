@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import re
 from math import pi
@@ -703,7 +704,6 @@ def com_line(alpha, a, par, part, l1, l2):
         u1 = l2 * umath.sin(par['lam']) - l1 * umath.cos(par['lam'])
         u2 = u1 / umath.tan(par['lam']) + l1 / umath.sin(par['lam'])
         b = -a / umath.cos(beta) - (par['rF'] + u2) + (par['w'] - u1) * umath.tan(beta)
-        print "u1 and u2", u1, u2
     else:
         raise
 
@@ -1106,50 +1106,49 @@ def get_period(data, sampleRate):
     y = data
     x = np.linspace(0., (len(y) - 1)/sampleRate, num=len(y))
     # decaying oscillating exponential function
-    fitfunc = lambda p, t: p[0] + np.exp(-p[3]*p[4]*t)*(p[1]*np.sin(p[4]*np.sqrt(1-p[3]**2)*t) + p[2]*np.cos(p[4]*np.sqrt(1-p[3]**2)*t))
-    #def fitfunc(p, t):
-        #'''Decaying oscillation function.'''
-        #a = p[0]
-        #b = np.exp(-p[3] * p[4] * t)
-        #c = p[1] * np.sin(p[4] * np.sqrt(1 - p[3]**2) * t)
-        #d = p[2] * np.cos(p[4] * np.sqrt(1 - p[3]**2) * t)
-        #return a + b * (c + d)
+    #fitfunc = lambda p, t: p[0] + np.exp(-p[3]*p[4]*t)*(p[1]*np.sin(p[4]*np.sqrt(1-p[3]**2)*t) + p[2]*np.cos(p[4]*np.sqrt(1-p[3]**2)*t))
+    def fitfunc(p, t):
+        '''Decaying oscillation function.'''
+        a = p[0]
+        b = np.exp(-p[3] * p[4] * t)
+        c = p[1] * np.sin(p[4] * np.sqrt(1 - p[3]**2) * t)
+        d = p[2] * np.cos(p[4] * np.sqrt(1 - p[3]**2) * t)
+        return a + b * (c + d)
+
     # initial guesses
     #p0 = np.array([1.35, -.5, -.75, 0.01, 3.93])
     p0 = np.array([2.5, -.75, -.75, 0.001, 4.3])
     #p0 = make_guess(data, sampleRate)
-    #print "guess:", p0
+
     # create the error function
     errfunc = lambda p, t, y: fitfunc(p, t) - y
+
     # minimize the error function
     p1, success = leastsq(errfunc, p0[:], args=(x, y))
-    print p1, success
+
+    # find the uncertainty in the fit parameters
     lscurve = fitfunc(p1, x)
-    #plt.plot(x, y, '.')
-    #plt.plot(x, lscurve, '-')
-    #plt.show()
     rsq, SSE, SST, SSR = fit_goodness(y, lscurve)
-    #print rsq, SSE, SST, SSR
     sigma = np.sqrt(SSE / (len(y) - len(p0)))
-    #print 'sigma', sigma
+
     # calculate the jacobian
     L = jac_fitfunc(p1, x)
-    #print "L", L
+
     # the Hessian
     H = np.dot(L.T, L)
-    #print "H", H
-    #print "inv(H)", inv(H)
+
     # the covariance matrix
     U = sigma**2. * np.linalg.inv(H)
-    #print "U", U
+
     # the standard deviations
     sigp = np.sqrt(U.diagonal())
-    #print sigp
+
     # frequency and period
     wo = ufloat((p1[4], sigp[4]))
     zeta = ufloat((p1[3], sigp[3]))
     wd = (1. - zeta ** 2.) ** (1. / 2.) * wo
     f = wd / 2. / pi
+
     # return the period
     return 1. / f
 

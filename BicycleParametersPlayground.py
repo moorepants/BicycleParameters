@@ -1,8 +1,10 @@
-import BicycleParameters as BP
+import BicycleParameters as bp 
 
 # see what happens when you don't have a directory with data
 booger = BP.Bicycle('booger')
 
-Browser = BP.Bicycle('Browser')
+rigid = bp.Bicycle('Rigid')
 
-Browser.calculate_from_measured()
+benchmark = bp.Bicycle('Benchmark')
+
+browser = BP.Bicycle('Browser')
