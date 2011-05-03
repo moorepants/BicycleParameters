@@ -16,8 +16,11 @@ Features
 
 Dependencies
 ------------
-- Python
-- Scipy
-- Numpy
-- Matplotlib
+These are the versions that I tested the code with, but the code will most
+likely work with older versions with minor adjustsments.
+
+- [Python 2.6.6](http://www.python.org/)
+- [Scipy 0.9.0](http://www.scipy.org/)
+- [Numpy 1.5.1](http://numpy.scipy.org/)
+- [Matplotlib 0.99.3](http://matplotlib.sourceforge.net/)
 - [Uncertainties 1.7.2](http://packages.python.org/uncertainties/)
