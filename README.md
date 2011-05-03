@@ -24,3 +24,11 @@ likely work with older versions with minor adjustsments.
 - [Numpy 1.5.1](http://numpy.scipy.org/)
 - [Matplotlib 0.99.3](http://matplotlib.sourceforge.net/)
 - [Uncertainties 1.7.2](http://packages.python.org/uncertainties/)
+
+Example Code
+------------
+'''python
+import BicycleParameters as bp
+rigid = bp.Bicycle('Rigid')
+rigid.parameters['Benchmark']
+'''
