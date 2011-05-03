@@ -17,7 +17,7 @@ class Bicycle(object):
     '''
 
     def __new__(cls, shortname, forceRawCalc=False):
-        '''Returns a NoneType object if there is no directory'''
+        '''Returns a NoneType object if there is no directory for the bicycle.'''
         # is there a data directory for this bicycle? if not, tell the user to
         # put some data in the folder so we have something to work with!
         try:
@@ -28,25 +28,27 @@ class Bicycle(object):
                 raise ValueError
         except:
             a = "Are you nuts?! Make a directory with basic data for your "
-            b = "bicycle in bicycles/shortname, where 'shortname' is the "
-            c = "capitalized one word name of your bicycle. Then I can "
-            d = "actually created a bicycle object."
-            print a + b + c + d
+            b = "bicycle in bicycles/%s. " % shortname
+            c = "Then I can actually created a bicycle object."
+            print a + b + c
             return None
 
     def __init__(self, shortname, forceRawCalc=False):
-        '''
-        Sets the parameters if there any that are already saved.
+        '''Creates a bicycle object and sets the parameters based on the
+        available data.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         shortname : string
-            shortname of your bicicleta, one word, first letter is capped and
-            should match a directory under bicycles/
+            The short name of your bicicleta. It should be one word with the
+            first letter capitilized and all other letters lower case. You
+            should have a matching directory under "bicycles/". For example:
+            "bicycles/Shortname".
 
         forceRawCalc : boolean
-            Force a recalculation of the parameters from the raw data, else it
-            will only do this calculation if there are no parameter files.
+            Forces a recalculation of the benchmark parameters from the measured
+            parameter. Otherwise it will only run the calculation if there is
+            no benchmark parameter file.
 
         '''
 
@@ -54,18 +56,8 @@ class Bicycle(object):
         self.directory = os.path.join('bicycles', shortname)
         self.parameters = {}
 
-        # if you want to force a recalculation and there is a RawData directory
-        if forceRawCalc and 'RawData' in os.listdir(self.directory):
-            par, slopes, intercepts= self.calculate_from_measured()
-            self.parameters['Benchmark'] = par
-            self.slopes = slopes
-            self.intercepts = intercepts
-        elif not forceRawCalc and 'Parameters' not in os.listdir(self.directory):
-            par, slopes, intercepts= self.calculate_from_measured()
-            self.parameters['Benchmark'] = par
-            self.slopes = slopes
-            self.intercepts = intercepts
-        elif not forceRawCalc and 'Parameters' in os.listdir(self.directory):
+        # if there are some parameter files, then load them
+        if 'Parameters' in os.listdir(self.directory):
             parDir = os.path.join(self.directory, 'Parameters')
             parFiles = os.listdir(parDir)
             for parFile in parFiles:
@@ -76,6 +68,29 @@ class Bicycle(object):
                 # load the parameters
                 pathToFile = os.path.join(parDir, parFile)
                 self.parameters[ptype] = load_parameter_text_file(pathToFile)
+
+        rawDataDir = os.path.join(self.directory, 'RawData')
+
+        # it would be more robust to see if there are enough files in the
+        # RawData directory
+        isRawDataDir = 'RawData' in os.listdir(self.directory)
+        isMeasuredFile = shortname + 'Measured.txt' in os.listdir(rawDataDir)
+        isBenchmark = 'Benchmark' in self.parameters.keys()
+
+        # the user wants to force a recalc and the data is there
+        conOne = forceRawCalc and isRawDataDir and isMeasuredFile
+        # the user doesn't want to force a recalc and there are no benchmark
+        # parameters
+        conTwo = not forceRawCalc and not isBenchmark
+
+        if conOne or conTwo:
+            par, slopes, intercepts = self.calculate_from_measured()
+            self.parameters['Benchmark'] = par
+            self.slopes = slopes
+            self.intercepts = intercepts
+        elif not forceRawCalc and isBenchmark:
+            # we already have what we need
+            pass
         else:
             print "Where's the data?"
 
