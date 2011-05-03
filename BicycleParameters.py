@@ -74,7 +74,10 @@ class Bicycle(object):
         # it would be more robust to see if there are enough files in the
         # RawData directory
         isRawDataDir = 'RawData' in os.listdir(self.directory)
-        isMeasuredFile = shortname + 'Measured.txt' in os.listdir(rawDataDir)
+        if isRawDataDir:
+            isMeasuredFile = shortname + 'Measured.txt' in os.listdir(rawDataDir)
+        else:
+            isMeasuredFile = False
         isBenchmark = 'Benchmark' in self.parameters.keys()
 
         # the user wants to force a recalc and the data is there
@@ -92,7 +95,10 @@ class Bicycle(object):
             # we already have what we need
             pass
         else:
-            print "Where's the data?"
+            print '''There is no data available. Create
+            bicycles/{sn}/Parameters/{sn}Benchmark.txt and/or fill
+            bicycle/{sn}/RawData/ with pendulum data mat files and the
+            {sn}Measured.txt file'''.format(sn=shortname)
 
     def save(self, filetype='text'):
         '''
@@ -118,10 +124,19 @@ class Bicycle(object):
         elif filetype == 'text':
             print "Doesn't work yet"
 
-    def calculate_from_measured(self, forcePeriodCalc=False):
-        '''Calculates the parameters from measured data.
+    def show_pendulum_photos(self):
+        '''Opens up the pendulum photos in eye of gnome for inspection.
+
+        This only works in Linux and if eog is installed. Maybe check pythons
+        xdg-mime model for having this work cross platform.
 
         '''
+        photoDir = os.path.join(self.directory, 'Photos', '*.*')
+        os.system('eog ' + photoDir)
+
+    def calculate_from_measured(self, forcePeriodCalc=False):
+        '''Calculates the parameters from measured data.'''
+
         rawDataDir = os.path.join(self.directory, 'RawData')
         pathToRawFile = os.path.join(rawDataDir, self.shortname + 'Measured.txt')
 
