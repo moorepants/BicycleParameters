@@ -128,6 +128,8 @@ class Bicycle(object):
                         and x.endswith('.mat')]
             # calculate the period for each file for this bicycle
             periods = calc_periods_for_files(rawDataDir, matFiles, forkIsSplit)
+            # add the periods to the measured parameters
+            self.parameters['Measured'].update(periods)
 
             write_periods_to_file(pathToRawFile, periods)
 
@@ -332,7 +334,176 @@ def calculate_benchmark_from_measured(mp):
         par['xH'] = cH[0]
         par['zH'] = cH[2]
 
+    #### calculate the stiffness of the torsional pendulum
+    ###iRod = tube_inertia(mp['lP'], mp['mP'], mp['dP'] / 2., 0.)[1]
+    ###k = tor_stiffness(iRod, mp['TtP1'])
+###
+    #### calculate the wheel y inertias
+    ###par['g'] = mp['g']
+    ###par['IFyy'] = com_inertia(par['mF'], par['g'], ddU['lF'], com[2, :])
+    ###par['IRyy'] = com_inertia(par['mR'], par['g'], ddU['lR'], com[3, :])
+###
+    #### calculate the wheel x/z inertias
+    ###par['IFxx'] = tor_inertia(k, tor[6, :])
+    ###par['IRxx'] = tor_inertia(k, tor[9, :])
+###
+    #### calculate the y inertias for the frame and fork
+    #### the coms may be switched here
+    ###framePendLength = (frameCoM[0, :]**2 + (frameCoM[1, :] + par['rR'])**2)**(0.5)
+    ###par['IByy'] = com_inertia(par['mB'], par['g'], framePendLength, com[0, :])
+###
+    ###forkPendLength = ((forkCoM[0, :] - par['w'])**2 + (forkCoM[1, ] + par['rF'])**2)**(0.5)
+    ###par['IHyy'] = com_inertia(par['mH'], par['g'], forkPendLength, com[1, :])
+###
+    #### calculate the fork in-plane moments of inertia
+    ###Ipend = tor_inertia(k, tor)
+    ###par['IHxx'] = []
+    ###par['IHxz'] = []
+    ###par['IHzz'] = []
+    ###for i, row in enumerate(Ipend[3:6, :].T):
+        ###Imat = inertia_components_uncert(row, betaFork[:, i])
+        ###par['IHxx'].append(Imat[0, 0])
+        ###par['IHxz'].append(Imat[0, 1])
+        ###par['IHzz'].append(Imat[1, 1])
+    ###par['IHxx'] = np.array(par['IHxx'])
+    ###par['IHxz'] = np.array(par['IHxz'])
+    ###par['IHzz'] = np.array(par['IHzz'])
+###
+    #### calculate the frame in-plane moments of inertia
+    ###par['IBxx'] = []
+    ###par['IBxz'] = []
+    ###par['IBzz'] = []
+    ###for i, row in enumerate(Ipend[:3, :].T):
+        ###Imat = inertia_components_uncert(row, betaFrame[:, i])
+        ###par['IBxx'].append(Imat[0, 0])
+        ###par['IBxz'].append(Imat[0, 1])
+        ###par['IBzz'].append(Imat[1, 1])
+    ###par['IBxx'] = np.array(par['IBxx'])
+    ###par['IBxz'] = np.array(par['IBxz'])
+    ###par['IBzz'] = np.array(par['IBzz'])
+    ###par['v'] = np.ones_like(par['g'])
+
     return par, slopes, intercepts
+
+def inertia_components_uncert(I, alpha):
+    '''Calculate the 2D orthongonal inertia tensor
+
+    When at least three moments of inertia and their axes orientations are
+    known relative to a common inertial frame, the moments of inertia relative
+    the frame are computed.
+
+    Parameters
+    ----------
+
+    I : A vector of at least three moments of inertia
+
+    alpha : A vector of orientation angles corresponding to the moments of
+            inertia
+
+    Returns
+    -------
+
+    Inew : An inertia tensor
+
+    '''
+    sa = unumpy.sin(alpha)
+    ca = unumpy.cos(alpha)
+    A = unumpy.matrix(np.vstack((ca**2, -2*sa*ca, sa**2)).T)
+    Iorth = np.dot(A.I, I)
+    Iorth = np.array([Iorth[0, 0], Iorth[0, 1], Iorth[0, 2]], dtype='object')
+    Inew = np.array([[Iorth[0], Iorth[1]], [Iorth[1], Iorth[2]]])
+    return Inew
+
+def parallel_axis(Ic, m, d):
+    '''Parallel axis thereom. Takes the moment of inertia about the rigid
+    body's center of mass and translates it to a new reference frame that is
+    the distance, d, from the center of mass.'''
+    a = d[0]
+    b = d[1]
+    c = d[2]
+    dMat = np.zeros((3, 3))
+    dMat[0] = np.array([b**2 + c**2, -a*b, -a*c])
+    dMat[1] = np.array([-a*b, c**2 + a**2, -b*c])
+    dMat[2] = np.array([-a*c, -b*c, a**2 + b**2])
+    return Ic + m*dMat
+
+def tor_inertia(k, T):
+    '''Calculate the moment of interia for an ideal torsional pendulm
+
+    Parameters:
+    -----------
+    k: torsional stiffness
+    T: period
+
+    Returns:
+    --------
+    I: moment of inertia
+
+    '''
+
+    I = k*T**2./4./pi**2.
+
+    return I
+
+def com_inertia(m, g, l, T):
+    '''Calculate the moment of inertia for an object hung as a compound
+    pendulum
+
+    Parameters:
+    -----------
+    m: mass
+    g: gravity
+    l: length
+    T: period
+
+    Returns:
+    --------
+    I: moment of interia
+
+    '''
+
+    I = (T/2./pi)**2.*m*g*l - m*l**2.
+
+    return I
+
+def tor_stiffness(I, T):
+    '''Calculate the stiffness of a torsional pendulum with a known moment of
+    inertia.
+
+    Parameters
+    ----------
+    I : moment of inertia
+    T : period
+
+    Returns
+    -------
+    k : stiffness
+
+    '''
+    k = 4. * I * pi**2 / T**2
+    return k
+
+def tube_inertia(l, m, ro, ri):
+    '''Calculate the moment of inertia for a tube (or rod) where the x axis is
+    aligned with the tube's axis
+
+    Parameters
+    ----------
+    l: length
+    m: mass
+    ro: outer radius
+    ri: inner radius
+
+    Returns
+    -------
+    Ix: moment of inertia about tube axis
+    Iy, Iz: moment of inertia about normal axis
+
+    '''
+    Ix = m / 2. * (ro**2 + ri**2)
+    Iy = m / 12. * (3 * ro**2 + 3 * ri**2 + l**2)
+    Iz = Iy
+    return np.array([Ix, Iy, Iz])
 
 def total_com(coordinates, masses):
     '''Returns the center of mass of a group of objects if the indivdual
@@ -697,6 +868,11 @@ def get_period_key(matData, forkIsSplit):
         subscripts['Handlebar'] = 'G'
     else:
         subscripts['Fork'] = 'H'
+    try:
+        subscripts[matData['rod']] = 'P'
+    except KeyError:
+        subscripts['Rod'] = 'P'
+
     # used to convert word ordinals to numbers
     ordinal = {'First' : '1',
                'Second' : '2',
@@ -964,7 +1140,7 @@ def get_period(data, sampleRate):
     #print "H", H
     #print "inv(H)", inv(H)
     # the covariance matrix
-    U = sigma**2. * numpy.linalg.inv(H)
+    U = sigma**2. * np.linalg.inv(H)
     #print "U", U
     # the standard deviations
     sigp = np.sqrt(U.diagonal())
