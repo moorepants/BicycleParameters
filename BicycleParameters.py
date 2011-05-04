@@ -235,18 +235,16 @@ class Bicycle(object):
             # which row in C is the y vector
             uy = np.array([0., 1., 0.])
             for i, row in enumerate(C):
-                if np.abs(np.sum(row - uy)) < 1E-8: # this may be a bad comparison
+                if np.abs(np.sum(row - uy)) < 1E-10:
                     yrow = i
+            # the 3 is just random scaling factor
             Ip2D = np.delete(Ip, yrow, 0) / 3.
-            print "Ip2D", Ip2D
             # remove the column and row associated with the y
             C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
-            print "C2D", C2D
+            # make an ellipse
             height = Ip2D[0]
             width = Ip2D[1]
-            print "Width =", width, "Height =", height
             angle = 360. - np.degrees(np.arccos(C2D[0, 0]))
-            print "angle", angle
             ellipse = Ellipse((center[0], center[1]), width, height,
                     angle=angle, fill=False)
             ax.add_patch(ellipse)
