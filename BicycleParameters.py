@@ -203,6 +203,7 @@ class Bicycle(object):
                 y = -m * x - intercepts[part][i].nominal_value
                 plt.plot(x, y, color=cmap(1. * j / numColors))
                 plt.text(x[0], y[0], str(i + 1))
+        plt.plot(par['xH'].nominal_value, -par['zH'].nominal_value, 'k+', markersize=12)
         # plot the ground line
         x = np.array([-par['rR'].nominal_value,
                       par['w'].nominal_value + par['rF'].nominal_value])
