@@ -186,6 +186,7 @@ class Bicycle(object):
                        radius=par['rF'].nominal_value,
                        fill=False)
         ax.add_patch(c)
+        # plot the pendulum axes for the measured parts
         comLineLength = par['w'].nominal_value / 4.
         numColors = len(slopes.keys())
         cmap = plt.get_cmap('gist_rainbow')
@@ -364,19 +365,20 @@ def calculate_benchmark_from_measured(mp):
         par['xH'] = cH[0]
         par['zH'] = cH[2]
 
-    #### calculate the stiffness of the torsional pendulum
-    ###iRod = tube_inertia(mp['lP'], mp['mP'], mp['dP'] / 2., 0.)[1]
-    ###k = tor_stiffness(iRod, mp['TtP1'])
-###
-    #### calculate the wheel y inertias
-    ###par['g'] = mp['g']
-    ###par['IFyy'] = com_inertia(par['mF'], par['g'], ddU['lF'], com[2, :])
-    ###par['IRyy'] = com_inertia(par['mR'], par['g'], ddU['lR'], com[3, :])
-###
-    #### calculate the wheel x/z inertias
-    ###par['IFxx'] = tor_inertia(k, tor[6, :])
-    ###par['IRxx'] = tor_inertia(k, tor[9, :])
-###
+    # calculate the stiffness of the torsional pendulum
+    iRod = tube_inertia(mp['lP'], mp['mP'], mp['dP'] / 2., 0.)[1]
+    k = tor_stiffness(iRod, mp['TtP1'])
+
+    par['g'] = mp['g']
+
+    # calculate the wheel y inertias
+    par['IFyy'] = com_inertia(par['mF'], par['g'], mp['qF'], mp['TcF1'])
+    par['IRyy'] = com_inertia(par['mR'], par['g'], mp['qR'], mp['TcR1'])
+
+    # calculate the wheel x/z inertias
+    par['IFxx'] = tor_inertia(k, mp['TtF1'])
+    par['IRxx'] = tor_inertia(k, mp['TtR1'])
+
     #### calculate the y inertias for the frame and fork
     #### the coms may be switched here
     ###framePendLength = (frameCoM[0, :]**2 + (frameCoM[1, :] + par['rR'])**2)**(0.5)
