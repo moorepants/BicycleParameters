@@ -8,6 +8,7 @@ from numpy import ma
 from scipy.optimize import leastsq, newton
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
 from uncertainties import ufloat, unumpy, umath
 
 class Bicycle(object):
@@ -215,10 +216,79 @@ class Bicycle(object):
         plt.ylim((0, 1))
         plt.title(self.shortname)
 
+        # plot the principal moments of inertia
+        tensors = {}
+        for part in slopes.keys():
+            I = unumpy.nominal_values(inertia_tensor(par, part))
+            tensors['I' + part] = principal_axes(I)
+
+        if 'H' not in slopes.keys():
+            I = unumpy.nominal_values(inertia_tensor(par, 'H'))
+            tensors['IH'] = principal_axes(I)
+
+        for tensor in tensors:
+            print "Part", tensor
+            Ip, C = tensors[tensor]
+            part = tensor[1]
+            center = unumpy.nominal_values(np.array([par['x' + part],
+                                                     -par['z' + part]]))
+            # which row in C is the y vector
+            uy = np.array([0., 1., 0.])
+            for i, row in enumerate(C):
+                if np.abs(np.sum(row - uy)) < 1E-8: # this may be a bad comparison
+                    yrow = i
+            Ip2D = np.delete(Ip, yrow, 0) / 3.
+            print "Ip2D", Ip2D
+            # remove the column and row associated with the y
+            C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
+            print "C2D", C2D
+            height = Ip2D[0]
+            width = Ip2D[1]
+            print "Width =", width, "Height =", height
+            angle = 360. - np.degrees(np.arccos(C2D[0, 0]))
+            print "angle", angle
+            ellipse = Ellipse((center[0], center[1]), width, height,
+                    angle=angle, fill=False)
+            ax.add_patch(ellipse)
+
         if show:
             fig.show()
 
         return fig
+
+def inertia_tensor(par, part):
+    '''Returns an inertia tensor for a particular part for the benchmark
+    parameter set.
+
+    Parameters
+    ----------
+    par : dictionary
+        Complete Benchmark parameter set.
+    part : string
+        Either 'B', 'H', 'F', 'R', 'G', 'S'
+
+    Returns
+    -------
+    I : ndarray, shape(3,3)
+        Inertia tensor for the part.
+
+    '''
+    I = np.zeros((3, 3), dtype=object)
+    # front or rear wheel
+    if part == 'F' or part == 'R':
+        axes = np.array([['xx', None, None],
+                         [None, 'yy', None],
+                         [None, None, 'xx']])
+    # all other parts
+    else:
+        axes = np.array([['xx', None, 'xz'],
+                         [None, 'yy', None],
+                         ['xz', None, 'zz']])
+    for i, row in enumerate(axes):
+        for j, col in enumerate(row):
+            if col != None:
+                I[i, j] = par['I' + part + col]
+    return I
 
 def fundamental_geometry_plot_data(par):
     '''Returns the coordinates for line end points of the bicycle fundamental
@@ -239,8 +309,8 @@ def fundamental_geometry_plot_data(par):
                 par['rR'] * umath.tan(par['lam']))
     d3 = -umath.cos(par['lam']) * (par['c'] - par['rF'] *
                 umath.tan(par['lam']))
-    x = np.zeros(4, dtype="object")
-    z = np.zeros(4, dtype="object")
+    x = np.zeros(4, dtype=object)
+    z = np.zeros(4, dtype=object)
     x[0] = 0.
     x[1] = d1 * umath.cos(par['lam'])
     x[2] = par['w'] - d3 * umath.cos(par['lam'])
@@ -414,13 +484,13 @@ def calculate_benchmark_from_measured(mp):
         # combine the moments of inertia to find the total handlebar/fork MoI
         IG = np.array([[par['IGxx'], 0., par['IGxz']],
                        [0., par['IGyy'], 0.],
-                       [par['IGxz'], 0., par['IGzz']]], dtype=object)
+                       [par['IGxz'], 0., par['IGzz']]])
         IS = np.array([[par['ISxx'], 0., par['ISxz']],
                        [0., par['ISyy'], 0.],
-                       [par['ISxz'], 0., par['ISzz']]], dtype=object)
+                       [par['ISxz'], 0., par['ISzz']]])
         coordinates = np.array([[par['xG'], par['xS']],
                                 [0., 0.],
-                                [par['zG'], par['xS']]])
+                                [par['zG'], par['zS']]])
         masses = np.array([par['mG'], par['mS']])
         par['mH'], cH = total_com(coordinates, masses)
         par['xH'] = cH[0]
@@ -436,6 +506,28 @@ def calculate_benchmark_from_measured(mp):
         par['IHzz'] = IH[2, 2]
 
     return par, slopes, intercepts
+
+def principal_axes(I):
+    '''Returns the principal moments of inertia and the orientation.
+
+    Parameters
+    ----------
+    I : ndarray, shape(3,3)
+        An inertia tensor.
+
+    Returns
+    -------
+    Ip : ndarray, shape(3,)
+        The principal moments of inertia.
+    C : ndarray, shape(3,3)
+        The rotation matrix.
+
+    '''
+    Ip, C = np.linalg.eig(I)
+    indices = np.argsort(Ip)
+    Ip = Ip[indices]
+    C = C.T[indices]
+    return Ip, C
 
 def parallel_axis(Ic, m, d):
     '''Returns the moment of inertia of a body about a different point.
