@@ -379,77 +379,71 @@ def calculate_benchmark_from_measured(mp):
     par['IFxx'] = tor_inertia(k, mp['TtF1'])
     par['IRxx'] = tor_inertia(k, mp['TtR1'])
 
-    #### calculate the y inertias for the frame and fork
-    #### the coms may be switched here
-    ###framePendLength = (frameCoM[0, :]**2 + (frameCoM[1, :] + par['rR'])**2)**(0.5)
-    ###par['IByy'] = com_inertia(par['mB'], par['g'], framePendLength, com[0, :])
-###
-    ###forkPendLength = ((forkCoM[0, :] - par['w'])**2 + (forkCoM[1, ] + par['rF'])**2)**(0.5)
-    ###par['IHyy'] = com_inertia(par['mH'], par['g'], forkPendLength, com[1, :])
-###
-    #### calculate the fork in-plane moments of inertia
-    ###Ipend = tor_inertia(k, tor)
-    ###par['IHxx'] = []
-    ###par['IHxz'] = []
-    ###par['IHzz'] = []
-    ###for i, row in enumerate(Ipend[3:6, :].T):
-        ###Imat = inertia_components_uncert(row, betaFork[:, i])
-        ###par['IHxx'].append(Imat[0, 0])
-        ###par['IHxz'].append(Imat[0, 1])
-        ###par['IHzz'].append(Imat[1, 1])
-    ###par['IHxx'] = np.array(par['IHxx'])
-    ###par['IHxz'] = np.array(par['IHxz'])
-    ###par['IHzz'] = np.array(par['IHzz'])
-###
-    #### calculate the frame in-plane moments of inertia
-    ###par['IBxx'] = []
-    ###par['IBxz'] = []
-    ###par['IBzz'] = []
-    ###for i, row in enumerate(Ipend[:3, :].T):
-        ###Imat = inertia_components_uncert(row, betaFrame[:, i])
-        ###par['IBxx'].append(Imat[0, 0])
-        ###par['IBxz'].append(Imat[0, 1])
-        ###par['IBzz'].append(Imat[1, 1])
-    ###par['IBxx'] = np.array(par['IBxx'])
-    ###par['IBxz'] = np.array(par['IBxz'])
-    ###par['IBzz'] = np.array(par['IBzz'])
-    ###par['v'] = np.ones_like(par['g'])
+    # calculate the y inertias for the frame and fork
+    # the coms may be switched here
+    framePendLength = (par['xB']**2 + (par['zB'] + par['rR'])**2)**(0.5)
+    par['IByy'] = com_inertia(par['mB'], par['g'], framePendLength, mp['TcB1'])
+
+    if forkIsSplit:
+        forkPendLength = ((par['xS'] - par['w'])**2 +
+                          (par['zS'] + par['rF'])**2)**(0.5)
+        par['ISyy'] = com_inertia(par['mS'], par['g'], forkPendLength, mp['TcS1'])
+
+        l1, l2 = calculate_l1_l2(mp['h6'], mp['h7'], mp['d5'], mp['d6'], mp['l'])
+        u1, u2 = fwheel_to_handlebar_ref(par['lam'], l1, l2)
+        handlePendLength = ((par['xG'] - par['w'] + u1)**2 +
+                            (par['zG'] + par['rF'] + u2)**2)**(.5)
+        par['IGyy'] = com_inertia(par['mG'], par['g'], forkPendLength, mp['TcG1'])
+    else:
+        forkPendLength = ((par['xH'] - par['w'])**2 +
+                          (par['zH'] + par['rF'])**2)**(0.5)
+        par['IHyy'] = com_inertia(par['mH'], par['g'], forkPendLength, mp['TcH1'])
+
+    for part, slopes in slope.items():
+        eye, alpha = [], []
+        for i in range(len(slopes)):
+            eye.append(tor_inertia(k, mp['Tt' + part + str(i + 1)]))
+            alpha.append(mp['alpha' + part + str(i + 1)])
+        xx, xz, zz = inertia_components_uncert(eye, alpha)
+        par['I' + part + 'xx'] = xx
+        par['I' + part + 'xz'] = xz
+        par['I' + part + 'zz'] = zz
+
+    if forkIsSplit:
+        # combine the moments of inertia to find the total handlebar/fork MoI
+        IG = np.array([[par['IGxx'], 0., par['IGxz']],
+                       [0., par['IGyy'], 0.],
+                       [par['IGxz'], 0., par['IGzz']]], dtype=object)
+        IS = np.array([[par['ISxx'], 0., par['ISxz']],
+                       [0., par['ISyy'], 0.],
+                       [par['ISxz'], 0., par['ISzz']]], dtype=object)
+        par['mH'], cH = total_com(coordinates, masses)
+        par['xH'] = cH[0]
+        par['zH'] = cH[2]
+        IH = parallel_axis(IG, par['mG'], ) + parrallel_axis(IS, par['mS'], )
 
     return par, slopes, intercepts
 
-def inertia_components_uncert(I, alpha):
-    '''Calculate the 2D orthongonal inertia tensor
-
-    When at least three moments of inertia and their axes orientations are
-    known relative to a common inertial frame, the moments of inertia relative
-    the frame are computed.
+def parallel_axis(Ic, m, d):
+    '''Returns the moment of inertia of a body about a different point.
 
     Parameters
     ----------
-
-    I : A vector of at least three moments of inertia
-
-    alpha : A vector of orientation angles corresponding to the moments of
-            inertia
+    Ic : ndarray, shape(3,3)
+        The moment of inertia about the center of mass of the body with respect
+        to an orthogonal coordinate system.
+    m : float
+        The mass of the body.
+    d : ndarray, shape(3,)
+        The distances along the three ordinates that located the new point
+        relative to the center of mass of the body.
 
     Returns
     -------
-
-    Inew : An inertia tensor
+    I : ndarray, shape(3,3)
+        The moment of inertia about of the body about a point located by d.
 
     '''
-    sa = unumpy.sin(alpha)
-    ca = unumpy.cos(alpha)
-    A = unumpy.matrix(np.vstack((ca**2, -2*sa*ca, sa**2)).T)
-    Iorth = np.dot(A.I, I)
-    Iorth = np.array([Iorth[0, 0], Iorth[0, 1], Iorth[0, 2]], dtype='object')
-    Inew = np.array([[Iorth[0], Iorth[1]], [Iorth[1], Iorth[2]]])
-    return Inew
-
-def parallel_axis(Ic, m, d):
-    '''Parallel axis thereom. Takes the moment of inertia about the rigid
-    body's center of mass and translates it to a new reference frame that is
-    the distance, d, from the center of mass.'''
     a = d[0]
     b = d[1]
     c = d[2]
@@ -458,6 +452,34 @@ def parallel_axis(Ic, m, d):
     dMat[1] = np.array([-a*b, c**2 + a**2, -b*c])
     dMat[2] = np.array([-a*c, -b*c, a**2 + b**2])
     return Ic + m*dMat
+
+def inertia_components_uncert(jay, alpha):
+    '''Returns the 2D orthogonal inertia tensor.
+
+    When at least three moments of inertia and their axes orientations are
+    known relative to a common inertial frame of a planar object, the orthoganl
+    moments of inertia relative the frame are computed.
+
+    Parameters
+    ----------
+    jay : ndarray, shape(n,)
+        An array of at least three moments of inertia.
+    alpha : ndarray, shape(n,)
+        An array of orientation angles corresponding to the moments of inertia
+        in jay.
+
+    Returns
+    -------
+    eye : ndarray, shape(3,)
+        Ixx, Ixz, Izz
+
+    '''
+    sa = unumpy.sin(alpha)
+    ca = unumpy.cos(alpha)
+    a = unumpy.matrix(np.vstack((ca**2, -2 * sa * ca, sa**2)).T)
+    eye = np.dot(a.I, j)
+
+    return eye
 
 def tor_inertia(k, T):
     '''Calculate the moment of interia for an ideal torsional pendulm
@@ -732,13 +754,34 @@ def com_line(alpha, a, par, part, l1, l2):
         b = -a / umath.cos(beta) - par['rF'] + par['w'] * umath.tan(beta)
     # this is the handlebar (without fork)
     elif part == 'G':
-        u1 = l2 * umath.sin(par['lam']) - l1 * umath.cos(par['lam'])
-        u2 = u1 / umath.tan(par['lam']) + l1 / umath.sin(par['lam'])
+        u1, u2 = fwheel_to_handlebar_ref(par['lam'], l1, l2)
         b = -a / umath.cos(beta) - (par['rF'] + u2) + (par['w'] - u1) * umath.tan(beta)
     else:
         raise
 
     return m, b
+
+def fwheel_to_handlebar_ref(lam, l1, l2):
+    '''Returns the distance along the benchmark coordinates from the front
+    wheel center to the handlebar reference center.
+
+    Parameters
+    ----------
+    lam : float
+        Steer axis tilt.
+    l1, l2 : float
+        The distance from the front wheel center to the handlebar refernce
+        center perpendicular to and along the steer axis.
+
+    Returns
+    -------
+    u1, u2 : float
+
+    '''
+
+    u1 = l2 * umath.sin(lam) - l1 * umath.cos(lam)
+    u2 = u1 / umath.tan(lam) + l1 / umath.sin(lam)
+    return u1, u2
 
 def cartesian(arrays, out=None):
     """
