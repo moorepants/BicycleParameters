@@ -399,15 +399,15 @@ def calculate_benchmark_from_measured(mp):
                           (par['zH'] + par['rF'])**2)**(0.5)
         par['IHyy'] = com_inertia(par['mH'], par['g'], forkPendLength, mp['TcH1'])
 
-    for part, slopes in slope.items():
-        eye, alpha = [], []
-        for i in range(len(slopes)):
-            eye.append(tor_inertia(k, mp['Tt' + part + str(i + 1)]))
-            alpha.append(mp['alpha' + part + str(i + 1)])
-        xx, xz, zz = inertia_components_uncert(eye, alpha)
-        par['I' + part + 'xx'] = xx
-        par['I' + part + 'xz'] = xz
-        par['I' + part + 'zz'] = zz
+    for part, slopeSet in slopes.items():
+        eye = np.zeros(len(slopeSet), dtype=object)
+        alpha = np.zeros_like(eye)
+        for i in range(len(slopeSet)):
+            eye[i] = tor_inertia(k, mp['Tt' + part + str(i + 1)])
+            alpha[i] = mp['alpha' + part + str(i + 1)]
+        inertia = inertia_components(eye, alpha)
+        for i, axis in enumerate(['xx', 'xz', 'zz']):
+            par['I' + part + axis] = inertia[i]
 
     if forkIsSplit:
         # combine the moments of inertia to find the total handlebar/fork MoI
@@ -417,10 +417,22 @@ def calculate_benchmark_from_measured(mp):
         IS = np.array([[par['ISxx'], 0., par['ISxz']],
                        [0., par['ISyy'], 0.],
                        [par['ISxz'], 0., par['ISzz']]], dtype=object)
+        coordinates = np.array([[par['xG'], par['xS']],
+                                [0., 0.],
+                                [par['zG'], par['xS']]])
+        masses = np.array([par['mG'], par['mS']])
         par['mH'], cH = total_com(coordinates, masses)
         par['xH'] = cH[0]
         par['zH'] = cH[2]
-        IH = parallel_axis(IG, par['mG'], ) + parrallel_axis(IS, par['mS'], )
+        dG = np.array([par['xG'] - par['xH'], 0., par['zG'] - par['zH']])
+        dS = np.array([par['xS'] - par['xH'], 0., par['zS'] - par['zH']])
+        IH = (parallel_axis(IG, par['mG'], dG) +
+              parallel_axis(IS, par['mS'], dS))
+        print type(IH), IH.shape
+        par['IHxx'] = IH[0, 0]
+        par['IHxz'] = IH[0, 2]
+        par['IHyy'] = IH[1, 1]
+        par['IHzz'] = IH[2, 2]
 
     return par, slopes, intercepts
 
@@ -447,13 +459,13 @@ def parallel_axis(Ic, m, d):
     a = d[0]
     b = d[1]
     c = d[2]
-    dMat = np.zeros((3, 3))
-    dMat[0] = np.array([b**2 + c**2, -a*b, -a*c])
-    dMat[1] = np.array([-a*b, c**2 + a**2, -b*c])
-    dMat[2] = np.array([-a*c, -b*c, a**2 + b**2])
-    return Ic + m*dMat
+    dMat = np.zeros((3, 3), dtype=object)
+    dMat[0] = np.array([b**2 + c**2, -a * b, -a * c])
+    dMat[1] = np.array([-a * b, c**2 + a**2, -b * c])
+    dMat[2] = np.array([-a * c, -b * c, a**2 + b**2])
+    return Ic + m * dMat
 
-def inertia_components_uncert(jay, alpha):
+def inertia_components(jay, alpha):
     '''Returns the 2D orthogonal inertia tensor.
 
     When at least three moments of inertia and their axes orientations are
@@ -463,7 +475,7 @@ def inertia_components_uncert(jay, alpha):
     Parameters
     ----------
     jay : ndarray, shape(n,)
-        An array of at least three moments of inertia.
+        An array of at least three moments of inertia. (n >= 3)
     alpha : ndarray, shape(n,)
         An array of orientation angles corresponding to the moments of inertia
         in jay.
@@ -477,8 +489,7 @@ def inertia_components_uncert(jay, alpha):
     sa = unumpy.sin(alpha)
     ca = unumpy.cos(alpha)
     a = unumpy.matrix(np.vstack((ca**2, -2 * sa * ca, sa**2)).T)
-    eye = np.dot(a.I, j)
-
+    eye = np.squeeze(np.asarray(np.dot(a.I, jay)))
     return eye
 
 def tor_inertia(k, T):
@@ -495,7 +506,7 @@ def tor_inertia(k, T):
 
     '''
 
-    I = k*T**2./4./pi**2.
+    I = k * T**2 / 4. / pi**2
 
     return I
 
