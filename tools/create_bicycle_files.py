@@ -1,9 +1,11 @@
+'''Creates indivdual *Measured.txt files for all of the bicycles measured at TU
+Delft for use in the new program.'''
 import pickle
 import os
 from uncertainties import unumpy
 from numpy import ones
 
-f = open('bicycles/udata.p', 'r')
+f = open('../../data/udata.p', 'r')
 udata = pickle.load(f)
 f.close()
 
@@ -15,55 +17,72 @@ shortnames = ['Browser',
               'Stratos',
               'Yellow',
               'Yellowrev']
-f = []
+
+measuredFiles = []
+bicyclesFolder = os.path.join('..', 'bicycles')
 # open the files for writing
 for i, bike in enumerate(shortnames):
-    if not os.path.isdir('bicycles/' + bike):
-        os.system('mkdir bicycles/' + bike)
-    f.append(open('bicycles/' + bike + '/' + bike +
-            'Measured.txt', 'w'))
-    f[i].write('shortname=' + bike + '\n')
+    # create the directory if it doesn't exist
+    bikeFolder = os.path.join(bicyclesFolder, bike)
+    if not os.path.isdir(bikeFolder):
+        os.system('mkdir ' + bikeFolder)
+    pathToMeasuredFile = os.path.join(bikeFolder, 'RawData',
+                                      bike + 'Measured.txt')
+    # store the file handle
+    measuredFiles.append(open(pathToMeasuredFile, 'w'))
 
+badKeys = ['frontWheelPressure',
+           'names',
+           'shortnames',
+           'totalMass',
+           'rearWheelPressure']
+
+# go through the dictionary of raw data and write it to the individual files
 for k, v in udata.items():
-    try:
-        if v.shape[0] == 3:
-            # v is a (3, 8) array
-            vn = v.T
-        else:
-            # v is a (8,) array
-            vn = v
-    except AttributeError:
-        # v isn't an array
-        vn = v
-    if k == 'lRod' or k == 'mRod' or k == 'rRod':
-        # these are not arrays, so make them one
-        vn = ones(8, dtype='object')*v
-    for i, val in enumerate(vn):
-        if k == 'bikes':
-            k = 'name'
+    print k, v
+    isPeriod = k.startswith('T')
+    isBad = k in badKeys
+    # don't add the periods
+    if (not isPeriod) and (not isBad):
         try:
-            nom = val.nominal_value
-            std = val.std_dev()
-            line = k + '=' + str(nom) + ',' + str(std) + '\n'
+            if v.shape[0] == 3:
+                # v is a (3, 8) array
+                vn = v.T
+                print k, "is a 3x8 array"
+            else:
+                # v is a (8,) array
+                vn = v
+                print k, "is a 8x array"
         except AttributeError:
+            # v isn't an array
+            vn = v
+            print k, "is not an array"
+        if k == 'lC' or k == 'mC' or k == 'dC':
+            # these are not arrays, so make them one
+            vn = ones(8, dtype='object') * v
+            print "Made", k, "into and array"
+            # rename k
+            k = k[0] + 'P'
+        for i, val in enumerate(vn):
+            if k == 'bikes':
+                k = 'name'
             try:
-                nom = unumpy.nominal_values(val)
-                std = unumpy.std_devs(val)
-                line = k + '=[' + ','.join(str(nom)[1:-1].split()) + '],[' + ','.join(str(std)[1:-1].split()) + ']\n'
-            except:
-                line = k + '=' + str(val) + '\n'
-        print shortnames[i], line
-        f[i].write(line)
+                nom = val.nominal_value
+                std = val.std_dev()
+                line = k + ' = ' + str(nom) + '+/-' + str(std) + '\n'
+            except AttributeError:
+                try:
+                    nom = unumpy.nominal_values(val)
+                    line = ''
+                    for j, number in enumerate(nom):
+                        line += k + str(j + 1) + ' = ' + str(val[j]) + '\n'
+                except ValueError:
+                    line = k + ' = ' + str(val) + '\n'
+            #print shortnames[i], line
+            measuredFiles[i].write(line)
+    else:
+        print "Did not add:", k
+    print '\n'
 
-lines = ('FrameTorsionalT=\n' +
-        'FrameCompoundT=\n' +
-        'ForkTorsionalT=\n' +
-        'ForkCompoundT=\n' +
-        'RwheelTorsionalT=\n' +
-        'RwheelCompoundT=\n' +
-        'FwheelTorsionalT=\n' +
-        'FwheelCompoundT=\n')
-
-for openfile in f:
-    openfile.write(lines)
+for openfile in measuredFiles:
     openfile.close()

@@ -441,8 +441,8 @@ def calculate_benchmark_from_measured(mp):
     par['g'] = mp['g']
 
     # calculate the wheel y inertias
-    par['IFyy'] = com_inertia(par['mF'], par['g'], mp['qF'], mp['TcF1'])
-    par['IRyy'] = com_inertia(par['mR'], par['g'], mp['qR'], mp['TcR1'])
+    par['IFyy'] = com_inertia(par['mF'], par['g'], mp['lF'], mp['TcF1'])
+    par['IRyy'] = com_inertia(par['mR'], par['g'], mp['lR'], mp['TcR1'])
 
     # calculate the wheel x/z inertias
     par['IFxx'] = tor_inertia(k, mp['TtF1'])
