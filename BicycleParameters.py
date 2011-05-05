@@ -17,7 +17,7 @@ class Bicycle(object):
 
     '''
 
-    def __new__(cls, shortname, forceRawCalc=False):
+    def __new__(cls, shortname, forceRawCalc=False, forcePeriodCalc=False):
         '''Returns a NoneType object if there is no directory for the bicycle.'''
         # is there a data directory for this bicycle? if not, tell the user to
         # put some data in the folder so we have something to work with!
@@ -34,7 +34,7 @@ class Bicycle(object):
             print a + b + c
             return None
 
-    def __init__(self, shortname, forceRawCalc=False):
+    def __init__(self, shortname, forceRawCalc=False, forcePeriodCalc=False):
         '''Creates a bicycle object and sets the parameters based on the
         available data.
 
@@ -88,7 +88,8 @@ class Bicycle(object):
         conTwo = not forceRawCalc and not isBenchmark
 
         if conOne or conTwo:
-            par, slopes, intercepts = self.calculate_from_measured()
+            calc = self.calculate_from_measured(forcePeriodCalc=forcePeriodCalc)
+            par, slopes, intercepts = calc
             self.parameters['Benchmark'] = par
             self.slopes = slopes
             self.intercepts = intercepts
@@ -326,9 +327,45 @@ def fundamental_geometry_plot_data(par):
     return unumpy.nominal_values(x), unumpy.nominal_values(z)
 
 def calc_periods_for_files(directory, filenames, forkIsSplit):
-    '''Calculates the period for all filenames in directory.'''
+    '''Calculates the period for all filenames in directory.
+
+    Parameters
+    ----------
+    directory : string
+        This is the path to the RawData directory.
+    filenames : list
+        List of all the mat file names in the RawData directory.
+    forkIsSplit : boolean
+        True if the fork is broken into a handlebar and fork and false if the
+        fork and handlebar was measured together.
+
+    Returns
+    -------
+    periods : dictionary
+        Contains all the periods for the mat files in the RawData directory.
+
+    '''
 
     periods = {}
+
+    def pathParts(path):
+        '''Splits a path into a list of its parts.'''
+        components = []
+        while True:
+            (path,tail) = os.path.split(path)
+            if tail == "":
+                components.reverse()
+                return components
+            components.append(tail)
+
+    pathToRawDataParts = pathParts(directory)
+    pathToRawDataParts.pop()
+    pathToBicycleDir = os.path.join(pathToRawDataParts[0], pathToRawDataParts[1])
+    pathToPlotDir = os.path.join(pathToBicycleDir, 'Plots', 'PendulumFit')
+
+    # make sure there is a place to save the plots
+    if not os.path.exists(pathToPlotDir):
+        os.makedirs(pathToPlotDir)
 
     for f in filenames:
         print "Calculating the period for:", f
@@ -339,7 +376,12 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
         periodKey = get_period_key(matData, forkIsSplit)
         # calculate the period
         sampleRate = get_sample_rate(matData)
-        period = get_period_from_truncated(matData['data'], sampleRate)
+        pathToPlotFile = os.path.join(pathToPlotDir,
+                                      os.path.splitext(f)[0] + '.png')
+        period = get_period_from_truncated(matData['data'],
+                                           sampleRate,
+                                           pathToPlotFile)
+        print "The period is:", period, "\n"
         # either append the the period or if it isn't there yet, then
         # make a new list
         try:
@@ -441,56 +483,68 @@ def calculate_benchmark_from_measured(mp):
 
     # calculate the stiffness of the torsional pendulum
     iRod = tube_inertia(mp['lP'], mp['mP'], mp['dP'] / 2., 0.)[1]
-    k = tor_stiffness(iRod, mp['TtP1'])
+    torStiff = tor_stiffness(iRod, mp['TtP1'])
+    print "Torsional stiffness of the rod:", torStiff
 
+    # local accelation due to gravity
     par['g'] = mp['g']
 
     # calculate the wheel y inertias
-    par['IFyy'] = com_inertia(par['mF'], par['g'], mp['lF'], mp['TcF1'])
-    par['IRyy'] = com_inertia(par['mR'], par['g'], mp['lR'], mp['TcR1'])
+    par['IFyy'] = compound_pendulum_inertia(mp['mF'], mp['g'],
+                                            mp['lF'], mp['TcF1'])
+    par['IRyy'] = compound_pendulum_inertia(mp['mR'], mp['g'],
+                                            mp['lR'], mp['TcR1'])
 
     # calculate the wheel x/z inertias
-    par['IFxx'] = tor_inertia(k, mp['TtF1'])
-    par['IRxx'] = tor_inertia(k, mp['TtR1'])
+    par['IFxx'] = tor_inertia(torStiff, mp['TtF1'])
+    par['IRxx'] = tor_inertia(torStiff, mp['TtR1'])
 
     # calculate the y inertias for the frame and fork
-    # the coms may be switched here
-    framePendLength = (par['xB']**2 + (par['zB'] + par['rR'])**2)**(0.5)
-    par['IByy'] = com_inertia(par['mB'], par['g'], framePendLength, mp['TcB1'])
+    lB = (par['xB']**2 + (par['zB'] + par['rR'])**2)**(0.5)
+    par['IByy'] = compound_pendulum_inertia(mp['mB'], mp['g'], lB, mp['TcB1'])
 
     if forkIsSplit:
-        forkPendLength = ((par['xS'] - par['w'])**2 +
-                          (par['zS'] + par['rF'])**2)**(0.5)
-        par['ISyy'] = com_inertia(par['mS'], par['g'], forkPendLength, mp['TcS1'])
-
-        l1, l2 = calculate_l1_l2(mp['h6'], mp['h7'], mp['d5'], mp['d6'], mp['l'])
+        # fork
+        lS = ((par['xS'] - par['w'])**2 +
+              (par['zS'] + par['rF'])**2)**(0.5)
+        par['ISyy'] = compound_pendulum_inertia(mp['mS'], mp['g'],
+                                                lS, mp['TcS1'])
+        # handlebar
+        l1, l2 = calculate_l1_l2(mp['h6'], mp['h7'],
+                                 mp['d5'], mp['d6'], mp['l'])
         u1, u2 = fwheel_to_handlebar_ref(par['lam'], l1, l2)
-        handlePendLength = ((par['xG'] - par['w'] + u1)**2 +
-                            (par['zG'] + par['rF'] + u2)**2)**(.5)
-        par['IGyy'] = com_inertia(par['mG'], par['g'], forkPendLength, mp['TcG1'])
+        lG = ((par['xG'] - par['w'] + u1)**2 +
+              (par['zG'] + par['rF'] + u2)**2)**(.5)
+        par['IGyy'] = compound_pendulum_inertia(mp['mG'], mp['g'],
+                                                lG, mp['TcG1'])
     else:
-        forkPendLength = ((par['xH'] - par['w'])**2 +
-                          (par['zH'] + par['rF'])**2)**(0.5)
-        par['IHyy'] = com_inertia(par['mH'], par['g'], forkPendLength, mp['TcH1'])
+        lH = ((par['xH'] - par['w'])**2 +
+              (par['zH'] + par['rF'])**2)**(0.5)
+        par['IHyy'] = compound_pendulum_inertia(mp['mH'], mp['g'],
+                                                lH, mp['TcH1'])
 
+    # calculate the in plane moments of inertia
     for part, slopeSet in slopes.items():
-        eye = np.zeros(len(slopeSet), dtype=object)
+        print "The part is:", part
+        # the number of orientations for this part
+        numOrien = len(slopeSet)
+        # intialize arrays to store the inertia values and orientation angles
+        eye = np.zeros(numOrien, dtype=object)
         alpha = np.zeros_like(eye)
-        for i in range(len(slopeSet)):
-            eye[i] = tor_inertia(k, mp['Tt' + part + str(i + 1)])
+        # fill arrays of the inertias and orientation angles
+        for i in range(numOrien):
+            eye[i] = tor_inertia(torStiff, mp['Tt' + part + str(i + 1)])
             alpha[i] = mp['alpha' + part + str(i + 1)]
+        print "The pendulum inertias:\n", eye
+        print "The orienations:\n", alpha
         inertia = inertia_components(eye, alpha)
         for i, axis in enumerate(['xx', 'xz', 'zz']):
             par['I' + part + axis] = inertia[i]
 
     if forkIsSplit:
         # combine the moments of inertia to find the total handlebar/fork MoI
-        IG = np.array([[par['IGxx'], 0., par['IGxz']],
-                       [0., par['IGyy'], 0.],
-                       [par['IGxz'], 0., par['IGzz']]])
-        IS = np.array([[par['ISxx'], 0., par['ISxz']],
-                       [0., par['ISyy'], 0.],
-                       [par['ISxz'], 0., par['ISzz']]])
+        IG = inertia_tensor(par, 'G')
+        IS = inertia_tensor(par, 'S')
         coordinates = np.array([[par['xG'], par['xS']],
                                 [0., 0.],
                                 [par['zG'], par['zS']]])
@@ -502,7 +556,6 @@ def calculate_benchmark_from_measured(mp):
         dS = np.array([par['xS'] - par['xH'], 0., par['zS'] - par['zH']])
         IH = (parallel_axis(IG, par['mG'], dG) +
               parallel_axis(IS, par['mS'], dS))
-        print type(IH), IH.shape
         par['IHxx'] = IH[0, 0]
         par['IHxz'] = IH[0, 2]
         par['IHyy'] = IH[1, 1]
@@ -606,24 +659,29 @@ def tor_inertia(k, T):
 
     return I
 
-def com_inertia(m, g, l, T):
-    '''Calculate the moment of inertia for an object hung as a compound
-    pendulum
+def compound_pendulum_inertia(m, g, l, T):
+    '''Returns the moment of inertia for an object hung as a compound
+    pendulum.
 
-    Parameters:
-    -----------
-    m: mass
-    g: gravity
-    l: length
-    T: period
+    Parameters
+    ----------
+    m : float
+        Mass of the pendulum.
+    g : float
+        Acceration due to gravity.
+    l : float
+        Length of the pendulum.
+    T : float
+        The period of oscillation.
 
-    Returns:
-    --------
-    I: moment of interia
+    Returns
+    -------
+    I : float
+        Moment of interia of the pendulum.
 
     '''
 
-    I = (T/2./pi)**2.*m*g*l - m*l**2.
+    I = (T / 2. / pi)**2. * m * g * l - m * l**2.
 
     return I
 
@@ -1186,16 +1244,15 @@ def lambda_from_abc(rF, rR, a, b, c):
     lam = newton(lam_equality, guess.nominal_value, args=args)
     return ufloat((lam, guess.std_dev()))
 
-def get_period_from_truncated(data, sampleFrequency):
+def get_period_from_truncated(data, sampleRate, pathToPlotFile):
     #dataRec = average_rectified_sections(data)
     dataRec = data
-    #dataGood = select_good_data(dataRec, 0.1)
-    dataGood = dataRec
-    return get_period(dataGood, sampleFrequency)
+    dataGood = select_good_data(dataRec, 0.1)
+    return get_period(dataGood, sampleRate, pathToPlotFile)
 
 def select_good_data(data, percent):
-    '''Returns a slice of the data from the maximum value to a percent of the
-    max.
+    '''Returns a slice of the data from the index at maximum value to the index
+    at a percent of the maximum value.
 
     Parameters
     ----------
@@ -1205,13 +1262,14 @@ def select_good_data(data, percent):
         The percent of the maximum to clip.
 
     This basically snips of the beginning and end of the data so that the super
-    damped tails are gone and any weirdness at the beginning.
+    damped tails are gone and also any weirdness at the beginning.
 
     '''
-    maxVal = np.max(np.abs(data))
-    maxInd = np.argmax(np.abs(data))
-    for i, v in reversed(list(enumerate(data))):
-        if v > percent*maxVal:
+    meanSub = data - np.mean(data)
+    maxVal = np.max(np.abs(meanSub))
+    maxInd = np.argmax(np.abs(meanSub))
+    for i, v in reversed(list(enumerate(meanSub))):
+        if v > percent * maxVal:
             minInd = i
             break
 
@@ -1266,7 +1324,7 @@ def average_rectified_sections(data):
 
     return data[maxInd:minInd]
 
-def get_period(data, sampleRate):
+def get_period(data, sampleRate, pathToPlotFile):
     '''Returns the period and uncertainty for data resembling a decaying
     oscillation.
 
@@ -1276,6 +1334,8 @@ def get_period(data, sampleRate):
         A time series that resembles a decaying oscillation.
     sampleRate : int
         The frequency that data was sampled at.
+    pathToPlotFile : string
+        A path to the directory for the plots.
 
     Returns
     -------
@@ -1285,9 +1345,8 @@ def get_period(data, sampleRate):
     '''
 
     y = data
-    x = np.linspace(0., (len(y) - 1)/sampleRate, num=len(y))
-    # decaying oscillating exponential function
-    #fitfunc = lambda p, t: p[0] + np.exp(-p[3]*p[4]*t)*(p[1]*np.sin(p[4]*np.sqrt(1-p[3]**2)*t) + p[2]*np.cos(p[4]*np.sqrt(1-p[3]**2)*t))
+    x = np.linspace(0., (len(y) - 1) / float(sampleRate), num=len(y))
+
     def fitfunc(p, t):
         '''Decaying oscillation function.'''
         a = p[0]
@@ -1297,9 +1356,9 @@ def get_period(data, sampleRate):
         return a + b * (c + d)
 
     # initial guesses
-    #p0 = np.array([1.35, -.5, -.75, 0.01, 3.93])
-    p0 = np.array([2.5, -.75, -.75, 0.001, 4.3])
-    #p0 = make_guess(data, sampleRate)
+    #p0 = np.array([1.35, -.5, -.75, 0.01, 3.93]) # guess from delft
+    #p0 = np.array([2.5, -.75, -.75, 0.001, 4.3]) # guess from ucd
+    p0 = make_guess(data, sampleRate) # tries to make a good guess
 
     # create the error function
     errfunc = lambda p, t, y: fitfunc(p, t) - y
@@ -1307,8 +1366,9 @@ def get_period(data, sampleRate):
     # minimize the error function
     p1, success = leastsq(errfunc, p0[:], args=(x, y))
 
-    # find the uncertainty in the fit parameters
     lscurve = fitfunc(p1, x)
+
+    # find the uncertainty in the fit parameters
     rsq, SSE, SST, SSR = fit_goodness(y, lscurve)
     sigma = np.sqrt(SSE / (len(y) - len(p0)))
 
@@ -1327,11 +1387,82 @@ def get_period(data, sampleRate):
     # frequency and period
     wo = ufloat((p1[4], sigp[4]))
     zeta = ufloat((p1[3], sigp[3]))
-    wd = (1. - zeta ** 2.) ** (1. / 2.) * wo
+    wd = (1. - zeta**2.)**(1. / 2.) * wo
     f = wd / 2. / pi
+    T = 1. / f
+
+    # plot the data
+    fig = plt.figure()
+    plot_osfit(x, y, lscurve, p1, rsq, T, m=np.max(x), fig=fig)
+    plt.savefig(pathToPlotFile)
+    plt.close()
 
     # return the period
     return 1. / f
+
+def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
+    '''Plot fitted data over the measured
+
+    Parameters:
+    -----------
+    t : ndarray (n,)
+        Measurement time in seconds
+    ym : ndarray (n,)
+        The measured voltage
+    yf : ndarray (n,)
+    p : ndarray (5,)
+        The fit parameters for the decaying osicallation fucntion
+    rsq : float
+        The r squared value of y (the fit)
+    T : float
+        The period
+    m : float
+        The maximum value to plot
+
+    Returns:
+    --------
+    fig : the figure
+
+    '''
+    # figure properties
+    figwidth = 8. # in inches
+    goldenMean = (np.sqrt(5)-1.0)/2.0
+    figsize = [figwidth, figwidth*goldenMean]
+    params = {#'backend': 'ps',
+        'axes.labelsize': 8,
+        'axes.titlesize': 8,
+        'text.fontsize': 8,
+        'legend.fontsize': 8,
+        'xtick.labelsize': 6,
+        'ytick.labelsize': 6,
+        #'text.usetex': True,
+        #'figure.figsize': figsize
+        }
+    if fig:
+        fig = fig
+    else:
+        fig = plt.figure(2)
+    fig.set_size_inches(figsize)
+    plt.rcParams.update(params)
+    ax1 = plt.axes([0.125, 0.125, 0.9-0.125, 0.65])
+    #if m == None:
+        #end = len(t)
+    #else:
+        #end = t[round(m/t[-1]*len(t))]
+    ax1.plot(t, ym, '.', markersize=2)
+    plt.plot(t, yf, 'k-')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Amplitude [V]')
+    equation = r'$f(t)={0:1.2f}+e^{{-({3:1.3f})({4:1.1f})t}}\left[{1:1.2f}\sin{{\sqrt{{1-{3:1.3f}^2}}{4:1.1f}t}}+{2:1.2f}\cos{{\sqrt{{1-{3:1.3f}^2}}{4:1.1f}t}}\right]$'.format(p[0], p[1], p[2], p[3], p[4])
+    rsquare = '$r^2={0:1.3f}$'.format(rsq)
+    period = '$T={0} s$'.format(T)
+    plt.title(equation + '\n' + rsquare + ', ' + period)
+    plt.legend(['Measured', 'Fit'])
+    if m:
+        plt.xlim((0, m))
+    else:
+        pass
+    return fig
 
 def make_guess(data, sampleRate):
     '''Returns a decent starting point for fitting the decaying oscillation
@@ -1374,7 +1505,9 @@ def make_guess(data, sampleRate):
     # get the samples per period
     samplesPerPeriod = 2*np.mean(np.diff(zero))
     # now the frequency
-    p[4] = (samplesPerPeriod/sampleRate/2./pi)**-1
+    p[4] = (samplesPerPeriod / float(sampleRate) /2. / pi)**-1
+    if np.isnan(p[4]):
+        p[4] = 4.
 
     return p
 
