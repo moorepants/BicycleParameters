@@ -85,4 +85,5 @@ for k, v in udata.items():
     print '\n'
 
 for openfile in measuredFiles:
+    openfile.write('g = 9.81 +/- 0.01\n')
     openfile.close()

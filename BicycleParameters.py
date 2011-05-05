@@ -92,8 +92,13 @@ class Bicycle(object):
             self.parameters['Benchmark'] = par
             self.slopes = slopes
             self.intercepts = intercepts
+            print("The glory of the %s parameters are upon you!"
+                  % self.shortname)
         elif not forceRawCalc and isBenchmark:
             # we already have what we need
+            stmt1 = "Looks like you've already got some parameters for %s, "
+            stmt2 = "use forceRawCalc to recalculate."
+            print (stmt1 + stmt2) % self.shortname
             pass
         else:
             print '''There is no data available. Create
@@ -101,14 +106,14 @@ class Bicycle(object):
             bicycle/{sn}/RawData/ with pendulum data mat files and the
             {sn}Measured.txt file'''.format(sn=shortname)
 
-    def save(self, filetype='text'):
+    def save_parameters(self, filetype='text', uncert=True):
         '''
         Saves all the parameters to file.
 
-        filetype : string
+        filetype : string, optional
             'pickle' : python pickled dictionary
             'matlab' : matlab .mat file
-            'text' : comma delimited text file
+            'text' : 
 
         '''
 
@@ -956,13 +961,13 @@ def calculate_benchmark_geometry(mp, par):
     par['rR'] = mp['dR'] / 2./ pi / mp['nR']
 
     # calculate the frame/fork fundamental geometry
-    if ['w'] in mp.keys(): # if there is a wheelbase
+    if 'w' in mp.keys(): # if there is a wheelbase
         # steer axis tilt in radians
-        par['lam'] = pi / 180. * (90. - mp['headTubeAngle'])
+        par['lam'] = pi / 180. * (90. - mp['gamma'])
         # wheelbase
         par['w'] = mp['w']
         # fork offset
-        forkOffset = mp['forkOffset']
+        forkOffset = mp['f']
     else:
         h = (mp['h1'], mp['h2'], mp['h3'], mp['h4'], mp['h5'])
         d = (mp['d1'], mp['d2'], mp['d3'], mp['d4'], mp['d'])
