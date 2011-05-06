@@ -251,17 +251,21 @@ class Bicycle(object):
                 ax.add_patch(c)
                 return ax
 
-            comSymRad = 0.03
-            ax = com_symbol(ax, (0., par['rR']), comSymRad)
-            ax = com_symbol(ax, (par['w'], par['rF']), comSymRad)
+            sRad = 0.03
+            ax = com_symbol(ax, (0., par['rR']), sRad)
+            plt.text(0. + sRad, par['rR'] + sRad, 'R')
+            ax = com_symbol(ax, (par['w'], par['rF']), sRad)
+            plt.text(par['w'] + sRad, par['rF'] + sRad, 'F')
             for j, pair in enumerate(slopes.items()):
                 part, slopeSet = pair
                 xcom = par['x' + part]
                 zcom = par['z' + part]
-                ax = com_symbol(ax, (xcom, -zcom), comSymRad,
+                ax = com_symbol(ax, (xcom, -zcom), sRad,
                                 color=cmap(1. * j / numColors))
+                plt.text(xcom + sRad, -zcom + sRad, part)
             if 'H' not in slopes.keys():
-                ax = com_symbol(ax, (par['xH'], -par['zH']), comSymRad)
+                ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
+                plt.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
 
 
         if inertiaEllipse:
