@@ -216,6 +216,10 @@ class Bicycle(object):
         deex, deez = fundamental_geometry_plot_data(par)
         plt.plot(deex, -deez, 'k')
 
+        # plot the steer axis
+        dx3 = deex[2] + deez[2] * (deex[2] - deex[1]) / (deez[1] - deez[2])
+        plt.plot([deex[2], dx3],  [-deez[2], 0.], 'k--')
+
         if pendulum:
             # plot the pendulum axes for the measured parts
             numColors = len(slopes.keys())
@@ -248,15 +252,16 @@ class Bicycle(object):
                 return ax
 
             comSymRad = 0.03
+            ax = com_symbol(ax, (0., par['rR']), comSymRad)
+            ax = com_symbol(ax, (par['w'], par['rF']), comSymRad)
             for j, pair in enumerate(slopes.items()):
                 part, slopeSet = pair
                 xcom = par['x' + part]
                 zcom = par['z' + part]
                 ax = com_symbol(ax, (xcom, -zcom), comSymRad,
                                 color=cmap(1. * j / numColors))
-            ax = com_symbol(ax, (par['xH'], -par['zH']), comSymRad)
-            ax = com_symbol(ax, (0., par['rR']), comSymRad)
-            ax = com_symbol(ax, (par['w'], par['rF']), comSymRad)
+            if 'H' not in slopes.keys():
+                ax = com_symbol(ax, (par['xH'], -par['zH']), comSymRad)
 
 
         if inertiaEllipse:
