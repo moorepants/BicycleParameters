@@ -276,6 +276,156 @@ class Bicycle(object):
 
         return fig
 
+    def eig(self, v):
+        '''Returns eigenvalues and eigenvectors of the benchmark bicycle.
+
+        Parameters
+        ----------
+        v : ndarray, shape (n,)
+            The speed at which to calculate the eigenvalues.
+
+        Returns
+        -------
+        evals : ndarray, shape (4,)
+            Eigenvalues
+        evecs : ndarray, shape (4, 4)
+            Eigenvectors. The columns correspond to the rows in evals.
+
+        '''
+        par = self.parameters['Benchmark']
+        # use the canonical matrices if they already exist
+        try:
+            M = self.canonical['M']
+            C1 = self.canonical['C1']
+            K0 = self.canonical['K0']
+            K2 = self.canonical['K2']
+        except AttributeError:
+            M, C1, K0, K2 = benchmark_par_to_canonical(par)
+            self.canonical = {'M' : M, 'C1' : C1, 'K0' : K0, 'K2' : K2}
+        A, B = abMatrix(M, C1, K0, K2, v, par['g'])
+        evals, evecs = np.linalg.eig(unumpy.nominal_values(A))
+        return evals, evecs
+
+def benchmark_par_to_canonical(p):
+    '''Returns the canonical matrices of the Whipple bicycle model linearized
+    about the upright constant velocity configuration. It uses the parameter
+    definitions from Meijaard et al. 2007.
+
+    Parameters
+    ----------
+    p : dictionary
+        A dictionary of the benchmark bicycle parameters. Make sure your units
+        are correct, best to ue the benchmark paper's units!
+
+    Returns
+    -------
+    M : ndarray, shape(2,2)
+        The mass matrix.
+    C1 : ndarray, shape(2,2)
+        The damping like matrix that is proportional to the speed, v.
+    K0 : ndarray, shape(2,2)
+        The stiffness matrix proportional to gravity, g.
+    K2 : ndarray, shape(2,2)
+        The stiffness matrix proportional to the speed squared, v**2.
+
+    This function handles parameters with uncertanties.
+
+    '''
+    mT = p['mR'] + p['mB'] + p['mH'] + p['mF']
+    xT = (p['xB']*p['mB'] + p['xH']*p['mH'] + p['w']*p['mF'])/mT
+    zT = (-p['rR']*p['mR'] + p['zB']*p['mB'] + p['zH']*p['mH'] - p['rF']*p['mF'])/mT
+    ITxx = p['IRxx'] + p['IBxx'] + p['IHxx'] + p['IFxx'] +p['mR']*p['rR']**2 + p['mB']*p['zB']**2 + p['mH']*p['zH']**2 + p['mF']*p['rF']**2
+    ITxz = p['IBxz'] + p['IHxz'] - p['mB']*p['xB']*p['zB'] - p['mH']*p['xH']*p['zH'] + p['mF']*p['w']*p['rF']
+    p['IRzz'] = p['IRxx']
+    p['IFzz'] = p['IFxx']
+    ITzz = p['IRzz'] + p['IBzz'] + p['IHzz'] + p['IFzz'] + p['mB']*p['xB']**2 + p['mH']*p['xH']**2 + p['mF']*p['w']**2
+    mA = p['mH'] + p['mF']
+    xA = (p['xH']*p['mH'] + p['w']*p['mF'])/mA
+    zA = (p['zH']*p['mH'] - p['rF']*p['mF'])/mA
+    IAxx = p['IHxx'] + p['IFxx'] + p['mH']*(p['zH'] - zA)**2 + p['mF']*(p['rF'] + zA)**2
+    IAxz = p['IHxz'] - p['mH']*(p['xH'] - xA)*(p['zH'] - zA) + p['mF']*(p['w'] - xA)*(p['rF'] + zA)
+    IAzz = p['IHzz'] + p['IFzz'] + p['mH']*(p['xH'] - xA)**2 + p['mF']*(p['w'] - xA)**2
+    uA = (xA - p['w'] - p['c'])*umath.cos(p['lam']) - zA*umath.sin(p['lam'])
+    IAll = mA*uA**2 + IAxx*umath.sin(p['lam'])**2 + 2*IAxz*umath.sin(p['lam'])*umath.cos(p['lam']) + IAzz*umath.cos(p['lam'])**2
+    IAlx = -mA*uA*zA + IAxx*umath.sin(p['lam']) + IAxz*umath.cos(p['lam'])
+    IAlz = mA*uA*xA + IAxz*umath.sin(p['lam']) + IAzz*umath.cos(p['lam'])
+    mu = p['c']/p['w']*umath.cos(p['lam'])
+    SR = p['IRyy']/p['rR']
+    SF = p['IFyy']/p['rF']
+    ST = SR + SF
+    SA = mA*uA + mu*mT*xT
+
+    Mpp = ITxx
+    Mpd = IAlx + mu*ITxz
+    Mdp = Mpd
+    Mdd = IAll + 2*mu*IAlz + mu**2*ITzz
+    M = np.array([[Mpp, Mpd], [Mdp, Mdd]])
+
+    K0pp = mT*zT # this value only reports to 13 digit precision it seems?
+    K0pd = -SA
+    K0dp = K0pd
+    K0dd = -SA*umath.sin(p['lam'])
+    K0 = np.array([[K0pp, K0pd], [K0dp, K0dd]])
+
+    K2pp = 0.
+    K2pd = (ST - mT*zT)/p['w']*umath.cos(p['lam'])
+    K2dp = 0.
+    K2dd = (SA + SF*umath.sin(p['lam']))/p['w']*umath.cos(p['lam'])
+    K2 = np.array([[K2pp, K2pd], [K2dp, K2dd]])
+
+    C1pp = 0.
+    C1pd = mu*ST + SF*umath.cos(p['lam']) + ITxz/p['w']*umath.cos(p['lam']) - mu*mT*zT
+    C1dp = -(mu*ST + SF*umath.cos(p['lam']))
+    C1dd = IAlz/p['w']*umath.cos(p['lam']) + mu*(SA + ITzz/p['w']*umath.cos(p['lam']))
+    C1 = np.array([[C1pp, C1pd], [C1dp, C1dd]])
+
+    return M, C1, K0, K2
+
+def abMatrix(M, C1, K0, K2, v, g):
+    '''Calculate the A and B matrices for the Whipple bicycle model linearized
+    about the upright configuration.
+
+    Parameters
+    ----------
+    M : ndarray, shape(2,2)
+        The mass matrix.
+    C1 : ndarray, shape(2,2)
+        The damping like matrix that is proportional to the speed, v.
+    K0 : ndarray, shape(2,2)
+        The stiffness matrix proportional to gravity, g.
+    K2 : ndarray, shape(2,2)
+        The stiffness matrix proportional to the speed squared, v**2.
+    v : float
+        Forward speed.
+    g : float
+        Acceleration due to gravity.
+
+    Returns
+    -------
+    A : ndarray, shape(4,4)
+        System dynamic matrix.
+    B : ndarray, shape(4,2)
+        Input matrix.
+
+    The states are [roll rate,
+                    steer rate,
+                    roll angle,
+                    steer angle]
+    The inputs are [roll torque,
+                    steer torque]
+
+    '''
+
+    a11 = -v * C1
+    a12 = -(g * K0 + v**2 * K2)
+    a21 = np.eye(2)
+    a22 = np.zeros((2, 2))
+    A = np.vstack((np.dot(unumpy.ulinalg.inv(M), np.hstack((a11, a12))),
+                   np.hstack((a21, a22))))
+    B = np.vstack((unumpy.ulinalg.inv(M), np.zeros((2, 2))))
+
+    return A, B
+
 def part_inertia_tensor(par, part):
     '''Returns an inertia tensor for a particular part for the benchmark
     parameter set.
