@@ -461,8 +461,8 @@ def calculate_benchmark_from_measured(mp):
     else:
         par['mH'] = mp['mH']
 
-    # get the slopes and intercepts for each part
-    slopes, intercepts = part_com_lines(mp, par, forkIsSplit)
+    # get the slopes, intercepts and betas for each part
+    slopes, intercepts, betas = part_com_lines(mp, par, forkIsSplit)
 
     # calculate the centers of mass
     for part in slopes.keys():
@@ -530,14 +530,13 @@ def calculate_benchmark_from_measured(mp):
         numOrien = len(slopeSet)
         # intialize arrays to store the inertia values and orientation angles
         eye = np.zeros(numOrien, dtype=object)
-        alpha = np.zeros_like(eye)
+        beta = np.array(betas[part])
         # fill arrays of the inertias and orientation angles
         for i in range(numOrien):
             eye[i] = tor_inertia(torStiff, mp['Tt' + part + str(i + 1)])
-            alpha[i] = mp['alpha' + part + str(i + 1)]
         print "The pendulum inertias:\n", eye
-        print "The orienations:\n", alpha
-        inertia = inertia_components(eye, alpha)
+        print "The orientations:\n", beta
+        inertia = inertia_components(eye, beta)
         for i, axis in enumerate(['xx', 'xz', 'zz']):
             par['I' + part + axis] = inertia[i]
 
@@ -773,20 +772,23 @@ def part_com_lines(mp, par, forkIsSplit):
         l1, l2 = calculate_l1_l2(mp['h6'], mp['h7'], mp['d5'], mp['d6'], mp['l'])
         slopes = {'B':[], 'G':[], 'S':[]}
         intercepts = {'B':[], 'G':[], 'S':[]}
+        betas = {'B':[], 'G':[], 'S':[]}
     else:
         l1, l2 = 0., 0.
         slopes = {'B':[], 'H':[]}
         intercepts = {'B':[], 'H':[]}
+        betas = {'B':[], 'H':[]}
 
     for key, val in mp.items():
         if key.startswith('alpha'):
             a = mp['a' + key[5:]]
             part = key[5]
-            m, b = com_line(val, a, par, part, l1, l2)
+            m, b, beta = com_line(val, a, par, part, l1, l2)
             slopes[key[5]].append(m)
             intercepts[key[5]].append(b)
+            betas[key[5]].append(beta)
 
-    return slopes, intercepts
+    return slopes, intercepts, betas
 
 def center_of_mass(slopes, intercepts):
     '''Returns the center of mass relative to the slopes and intercepts
@@ -924,7 +926,7 @@ def com_line(alpha, a, par, part, l1, l2):
     else:
         raise
 
-    return m, b
+    return m, b, beta
 
 def fwheel_to_handlebar_ref(lam, l1, l2):
     '''Returns the distance along the benchmark coordinates from the front
@@ -1384,21 +1386,25 @@ def get_period(data, sampleRate, pathToPlotFile):
     # the standard deviations
     sigp = np.sqrt(U.diagonal())
 
-    # frequency and period
+    # natural frequency
     wo = ufloat((p1[4], sigp[4]))
+    # damping ratio
     zeta = ufloat((p1[3], sigp[3]))
+    # damped natural frequency
     wd = (1. - zeta**2.)**(1. / 2.) * wo
-    f = wd / 2. / pi
-    T = 1. / f
+    # damped natural frequency (hz)
+    fd = wd / 2. / pi
+    # period
+    T = 1. / fd
 
-    # plot the data
+    # plot the data and save it to file
     fig = plt.figure()
     plot_osfit(x, y, lscurve, p1, rsq, T, m=np.max(x), fig=fig)
     plt.savefig(pathToPlotFile)
     plt.close()
 
     # return the period
-    return 1. / f
+    return T
 
 def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
     '''Plot fitted data over the measured
