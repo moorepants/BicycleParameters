@@ -58,8 +58,8 @@ class Bicycle(object):
 
         self.shortname = shortname
         self.directory = os.path.join('bicycles', shortname)
-        self.parameters = {}
 
+        self.parameters = {}
         # if there are some parameter files, then load them
         if 'Parameters' in os.listdir(self.directory):
             parDir = os.path.join(self.directory, 'Parameters')
@@ -97,13 +97,10 @@ class Bicycle(object):
         conTwo = not forceRawCalc and not isBenchmark
 
         if conOne or conTwo:
-            calc = self.calculate_from_measured(forcePeriodCalc=forcePeriodCalc)
-            par, slopes, intercepts, betas, pendulumInertias = calc
+            par, extras = self.calculate_from_measured(
+                    forcePeriodCalc=forcePeriodCalc)
             self.parameters['Benchmark'] = par
-            self.slopes = slopes
-            self.intercepts = intercepts
-            self.betas = betas
-            self.pendulumInertias = pendulumInertias
+            self.extras = extras
             print("The glory of the %s parameters are upon you!"
                   % self.shortname)
         elif not forceRawCalc and isBenchmark:
@@ -125,7 +122,7 @@ class Bicycle(object):
         filetype : string, optional
             'pickle' : python pickled dictionary
             'matlab' : matlab .mat file
-            'text' : 
+            'text' :
 
         '''
 
@@ -177,6 +174,7 @@ class Bicycle(object):
             # get the list of mat files associated with this bike
             matFiles = [x for x in os.listdir(rawDataDir)
                         if x.endswith('.mat')]
+            matFiles.sort()
             # calculate the period for each file for this bicycle
             periods = calc_periods_for_files(rawDataDir, matFiles, forkIsSplit)
             # add the periods to the measured parameters
@@ -192,8 +190,8 @@ class Bicycle(object):
 
         '''
         par = self.parameters['Benchmark']
-        slopes = self.slopes
-        intercepts = self.intercepts
+        slopes = self.extras['slopes']
+        intercepts = self.extras['intercepts']
 
         fig = plt.figure()
         ax = plt.axes()
@@ -241,11 +239,11 @@ class Bicycle(object):
         # plot the principal moments of inertia
         tensors = {}
         for part in slopes.keys():
-            I = unumpy.nominal_values(inertia_tensor(par, part))
+            I = unumpy.nominal_values(part_inertia_tensor(par, part))
             tensors['I' + part] = principal_axes(I)
 
         if 'H' not in slopes.keys():
-            I = unumpy.nominal_values(inertia_tensor(par, 'H'))
+            I = unumpy.nominal_values(part_inertia_tensor(par, 'H'))
             tensors['IH'] = principal_axes(I)
 
         for tensor in tensors:
@@ -276,7 +274,7 @@ class Bicycle(object):
 
         return fig
 
-def inertia_tensor(par, part):
+def part_inertia_tensor(par, part):
     '''Returns an inertia tensor for a particular part for the benchmark
     parameter set.
 
@@ -532,8 +530,9 @@ def calculate_benchmark_from_measured(mp):
                                                 lH, mp['TcH1'])
 
     # calculate the stiffness of the torsional pendulum
-    IPxx, IPyy, IPzz = tube_inertia(mp['lP'], mp['mP'], mp['dP'] / 2., 0.)[1]
-    torStiff = torsional_pendulum_stiffness(np.array([IPxx, IPyy, IPzz)], mp['TtP1'])
+    IPxx, IPyy, IPzz = tube_inertia(mp['lP'], mp['mP'], mp['dP'] / 2., 0.)
+    torStiff = torsional_pendulum_stiffness(IPyy, mp['TtP1'])
+    print "Torsional pendulum stiffness:", torStiff
 
     # calculate the wheel x/z inertias
     par['IFxx'] = tor_inertia(torStiff, mp['TtF1'])
@@ -547,22 +546,24 @@ def calculate_benchmark_from_measured(mp):
         # the number of orientations for this part
         numOrien = len(slopeSet)
         # intialize arrays to store the inertia values and orientation angles
-        eye = np.zeros(numOrien, dtype=object)
+        penInertia = np.zeros(numOrien, dtype=object)
         beta = np.array(betas[part])
-        # fill arrays of the inertias and orientation angles
+        # fill arrays of the inertias
         for i in range(numOrien):
-            eye[i] = tor_inertia(torStiff, mp['Tt' + part + str(i + 1)])
-        pendulumInertias[part] = eye
-        print "The pendulum inertias:\n", eye
+            penInertia[i] = tor_inertia(torStiff, mp['Tt' + part + str(i + 1)])
+        # store these inertias
+        pendulumInertias[part] = list(penInertia)
+        print "The pendulum inertias:\n", penInertia
         print "The orientations:\n", beta
-        inertia = inertia_components(eye, beta)
+        inertia = inertia_components(penInertia, beta)
         for i, axis in enumerate(['xx', 'xz', 'zz']):
             par['I' + part + axis] = inertia[i]
 
     if forkIsSplit:
         # combine the moments of inertia to find the total handlebar/fork MoI
-        IG = inertia_tensor(par, 'G')
-        IS = inertia_tensor(par, 'S')
+        IG = part_inertia_tensor(par, 'G')
+        IS = part_inertia_tensor(par, 'S')
+        # columns are parts, rows = x, y, z
         coordinates = np.array([[par['xG'], par['xS']],
                                 [0., 0.],
                                 [par['zG'], par['zS']]])
@@ -579,7 +580,13 @@ def calculate_benchmark_from_measured(mp):
         par['IHyy'] = IH[1, 1]
         par['IHzz'] = IH[2, 2]
 
-    return par, slopes, intercepts, betas, pendulumInertias
+    # package the extra information that is useful outside this function
+    extras = {'slopes' : slopes,
+              'intercepts' : intercepts,
+              'betas' : betas,
+              'pendulumInertias' : pendulumInertias}
+
+    return par, extras
 
 def principal_axes(I):
     '''Returns the principal moments of inertia and the orientation.
@@ -632,7 +639,7 @@ def parallel_axis(Ic, m, d):
     dMat[2] = np.array([-a * c, -b * c, a**2 + b**2])
     return Ic + m * dMat
 
-def inertia_components(jay, alpha):
+def inertia_components(jay, beta):
     '''Returns the 2D orthogonal inertia tensor.
 
     When at least three moments of inertia and their axes orientations are
@@ -643,7 +650,7 @@ def inertia_components(jay, alpha):
     ----------
     jay : ndarray, shape(n,)
         An array of at least three moments of inertia. (n >= 3)
-    alpha : ndarray, shape(n,)
+    beta : ndarray, shape(n,)
         An array of orientation angles corresponding to the moments of inertia
         in jay.
 
@@ -653,10 +660,15 @@ def inertia_components(jay, alpha):
         Ixx, Ixz, Izz
 
     '''
-    sa = unumpy.sin(alpha)
-    ca = unumpy.cos(alpha)
-    a = unumpy.matrix(np.vstack((ca**2, -2 * sa * ca, sa**2)).T)
-    eye = np.squeeze(np.asarray(np.dot(a.I, jay)))
+    print "I", jay
+    print "Beta", beta
+    sb = unumpy.sin(beta)
+    cb = unumpy.cos(beta)
+    betaMat = unumpy.matrix(np.vstack((cb**2, -2 * sb * cb, sb**2)).T)
+    print "betaMat", betaMat
+    print "betaMat.I", betaMat.I
+    eye = np.squeeze(np.asarray(np.dot(betaMat.I, jay)))
+    print "eye", eye
     return eye
 
 def tor_inertia(k, T):
@@ -790,12 +802,14 @@ def part_com_lines(mp, par, forkIsSplit):
         Contains a list of intercepts for each part.
 
     The slopes and intercepts lists are in order with respect to each other and
-    the keyword is either 'B', 'H' or 'S'.
+    the keyword is either 'B', 'H', 'G' or 'S' for Frame, Handlebar/Fork,
+    Handlerbar, and Fork respectively.
 
     '''
     # find the slope and intercept for pendulum axis
     if forkIsSplit:
-        l1, l2 = calculate_l1_l2(mp['h6'], mp['h7'], mp['d5'], mp['d6'], mp['l'])
+        l1, l2 = calculate_l1_l2(mp['h6'], mp['h7'], mp['d5'],
+                                 mp['d6'], mp['l'])
         slopes = {'B':[], 'G':[], 'S':[]}
         intercepts = {'B':[], 'G':[], 'S':[]}
         betas = {'B':[], 'G':[], 'S':[]}
@@ -805,14 +819,17 @@ def part_com_lines(mp, par, forkIsSplit):
         intercepts = {'B':[], 'H':[]}
         betas = {'B':[], 'H':[]}
 
-    for key, val in mp.items():
-        if key.startswith('alpha'):
-            a = mp['a' + key[5:]]
-            part = key[5]
-            m, b, beta = com_line(val, a, par, part, l1, l2)
-            slopes[key[5]].append(m)
-            intercepts[key[5]].append(b)
-            betas[key[5]].append(beta)
+    listOfAlphaKeys = [x for x in mp.keys() if x.startswith('alpha')]
+    listOfAlphaKeys.sort()
+
+    for key in listOfAlphaKeys:
+        alpha = mp[key]
+        a = mp['a' + key[5:]]
+        part = key[5]
+        m, b, beta = com_line(alpha, a, par, part, l1, l2)
+        slopes[part].append(m)
+        intercepts[part].append(b)
+        betas[part].append(beta)
 
     return slopes, intercepts, betas
 
@@ -950,7 +967,8 @@ def com_line(alpha, a, par, part, l1, l2):
         u1, u2 = fwheel_to_handlebar_ref(par['lam'], l1, l2)
         b = -a / umath.cos(beta) - (par['rF'] + u2) + (par['w'] - u1) * umath.tan(beta)
     else:
-        raise
+        print part, "doesn't exist"
+        raise KeyError
 
     return m, b, beta
 
@@ -1259,7 +1277,7 @@ def lambda_from_abc(rF, rR, a, b, c):
         return umath.sin(lam) - (rF - rR + c * umath.cos(lam)) / (a + b)
     guess = umath.atan(c / (a + b)) # guess based on equal wheel radii
 
-    # The following assumes that the uncertainty caluclated for the guess is
+    # The following assumes that the uncertainty calculated for the guess is
     # the same as the uncertainty for the true solution. This is not true! and
     # will surely breakdown the further the guess is away from the true
     # solution. There may be a way to calculate the correct uncertainity, but
