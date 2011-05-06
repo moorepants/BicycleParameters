@@ -208,7 +208,7 @@ class Bicycle(object):
         # plot the pendulum axes for the measured parts
         numColors = len(slopes.keys())
         cmap = plt.get_cmap('gist_rainbow')
-        comLineLength = par['w'].nominal_value / .4
+        comLineLength = par['w'].nominal_value / 4
         for j, pair in enumerate(slopes.items()):
             part, slopeSet = pair
             xcom = par['x' + part].nominal_value
@@ -216,7 +216,7 @@ class Bicycle(object):
             plt.plot(xcom, -zcom, 'k+', markersize=12)
             for i, m in enumerate(slopeSet):
                 m = m.nominal_value
-                #comLineLength = self.pendulumInertias[part][i].nominal_value
+                #comLineLength = self.extras['pendulumInertias'][part][i].nominal_value
                 xPlus = comLineLength / 2. * np.cos(np.arctan(m))
                 x = np.array([xcom - xPlus,
                               xcom + xPlus])
@@ -232,9 +232,6 @@ class Bicycle(object):
         # plot the fundamental bike
         deex, deez = fundamental_geometry_plot_data(par)
         plt.plot(deex, -deez, 'k')
-        plt.axis('equal')
-        plt.ylim((0, 1))
-        plt.title(self.shortname)
 
         # plot the principal moments of inertia
         tensors = {}
@@ -264,10 +261,15 @@ class Bicycle(object):
             # make an ellipse
             height = Ip2D[0]
             width = Ip2D[1]
-            angle = np.degrees(np.arccos(C2D[0, 0]))
+            angle = 0.
+            #angle = -np.degrees(np.arccos(C2D[0, 0]))
             ellipse = Ellipse((center[0], center[1]), width, height,
                     angle=angle, fill=False)
             ax.add_patch(ellipse)
+
+        plt.axis('equal')
+        plt.ylim((0, 1))
+        plt.title(self.shortname)
 
         if show:
             fig.show()
@@ -542,7 +544,6 @@ def calculate_benchmark_from_measured(mp):
 
     # calculate the in plane moments of inertia
     for part, slopeSet in slopes.items():
-        print "The part is:", part
         # the number of orientations for this part
         numOrien = len(slopeSet)
         # intialize arrays to store the inertia values and orientation angles
@@ -553,8 +554,6 @@ def calculate_benchmark_from_measured(mp):
             penInertia[i] = tor_inertia(torStiff, mp['Tt' + part + str(i + 1)])
         # store these inertias
         pendulumInertias[part] = list(penInertia)
-        print "The pendulum inertias:\n", penInertia
-        print "The orientations:\n", beta
         inertia = inertia_components(penInertia, beta)
         for i, axis in enumerate(['xx', 'xz', 'zz']):
             par['I' + part + axis] = inertia[i]
@@ -660,15 +659,10 @@ def inertia_components(jay, beta):
         Ixx, Ixz, Izz
 
     '''
-    print "I", jay
-    print "Beta", beta
     sb = unumpy.sin(beta)
     cb = unumpy.cos(beta)
     betaMat = unumpy.matrix(np.vstack((cb**2, -2 * sb * cb, sb**2)).T)
-    print "betaMat", betaMat
-    print "betaMat.I", betaMat.I
     eye = np.squeeze(np.asarray(np.dot(betaMat.I, jay)))
-    print "eye", eye
     return eye
 
 def tor_inertia(k, T):
@@ -819,9 +813,11 @@ def part_com_lines(mp, par, forkIsSplit):
         intercepts = {'B':[], 'H':[]}
         betas = {'B':[], 'H':[]}
 
+    # get the alpha keys and put them in order
     listOfAlphaKeys = [x for x in mp.keys() if x.startswith('alpha')]
     listOfAlphaKeys.sort()
 
+    # caluclate m, b and beta for each orientation
     for key in listOfAlphaKeys:
         alpha = mp[key]
         a = mp['a' + key[5:]]
