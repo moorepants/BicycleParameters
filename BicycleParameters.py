@@ -51,6 +51,9 @@ class Bicycle(object):
             parameter. Otherwise it will only run the calculation if there is
             no benchmark parameter file.
 
+        forcePeriodCalc : boolean
+            Forces a recalculation of the periods from the oscillation data.
+
         '''
 
         self.shortname = shortname
@@ -70,15 +73,21 @@ class Bicycle(object):
                 pathToFile = os.path.join(parDir, parFile)
                 self.parameters[ptype] = load_parameter_text_file(pathToFile)
 
+        # this is where the raw data files from the pendulum oscillations are
+        # stored
         rawDataDir = os.path.join(self.directory, 'RawData')
 
         # it would be more robust to see if there are enough files in the
-        # RawData directory
+        # RawData directory, but that isn't implemented yet. For now you'll
+        # just get and error sometime down the road when a period for the
+        # missing files is needed.
         isRawDataDir = 'RawData' in os.listdir(self.directory)
+
         if isRawDataDir:
             isMeasuredFile = shortname + 'Measured.txt' in os.listdir(rawDataDir)
         else:
             isMeasuredFile = False
+
         isBenchmark = 'Benchmark' in self.parameters.keys()
 
         # the user wants to force a recalc and the data is there
@@ -141,7 +150,10 @@ class Bicycle(object):
 
         '''
         photoDir = os.path.join(self.directory, 'Photos', '*.*')
-        os.system('eog ' + photoDir)
+        if os.isdir(photoDir):
+            os.system('eog ' + photoDir)
+        else:
+            print "There are no photos of your bicycle."
 
     def calculate_from_measured(self, forcePeriodCalc=False):
         '''Calculates the parameters from measured data.'''
@@ -485,10 +497,6 @@ def calculate_benchmark_from_measured(mp):
         par['xH'] = cH[0]
         par['zH'] = cH[2]
 
-    # calculate the stiffness of the torsional pendulum
-    iRod = tube_inertia(mp['lP'], mp['mP'], mp['dP'] / 2., 0.)[1]
-    torStiff = tor_stiffness(iRod, mp['TtP1'])
-    print "Torsional stiffness of the rod:", torStiff
 
     # local accelation due to gravity
     par['g'] = mp['g']
@@ -498,10 +506,6 @@ def calculate_benchmark_from_measured(mp):
                                             mp['lF'], mp['TcF1'])
     par['IRyy'] = compound_pendulum_inertia(mp['mR'], mp['g'],
                                             mp['lR'], mp['TcR1'])
-
-    # calculate the wheel x/z inertias
-    par['IFxx'] = tor_inertia(torStiff, mp['TtF1'])
-    par['IRxx'] = tor_inertia(torStiff, mp['TtR1'])
 
     # calculate the y inertias for the frame and fork
     lB = (par['xB']**2 + (par['zB'] + par['rR'])**2)**(0.5)
@@ -526,6 +530,14 @@ def calculate_benchmark_from_measured(mp):
               (par['zH'] + par['rF'])**2)**(0.5)
         par['IHyy'] = compound_pendulum_inertia(mp['mH'], mp['g'],
                                                 lH, mp['TcH1'])
+
+    # calculate the stiffness of the torsional pendulum
+    IPxx, IPyy, IPzz = tube_inertia(mp['lP'], mp['mP'], mp['dP'] / 2., 0.)[1]
+    torStiff = torsional_pendulum_stiffness(np.array([IPxx, IPyy, IPzz)], mp['TtP1'])
+
+    # calculate the wheel x/z inertias
+    par['IFxx'] = tor_inertia(torStiff, mp['TtF1'])
+    par['IRxx'] = tor_inertia(torStiff, mp['TtR1'])
 
     pendulumInertias = {}
 
@@ -648,7 +660,7 @@ def inertia_components(jay, alpha):
     return eye
 
 def tor_inertia(k, T):
-    '''Calculate the moment of interia for an ideal torsional pendulm
+    '''Calculate the moment of inertia for an ideal torsional pendulm
 
     Parameters:
     -----------
@@ -691,7 +703,7 @@ def compound_pendulum_inertia(m, g, l, T):
 
     return I
 
-def tor_stiffness(I, T):
+def torsional_pendulum_stiffness(I, T):
     '''Calculate the stiffness of a torsional pendulum with a known moment of
     inertia.
 
@@ -710,25 +722,32 @@ def tor_stiffness(I, T):
 
 def tube_inertia(l, m, ro, ri):
     '''Calculate the moment of inertia for a tube (or rod) where the x axis is
-    aligned with the tube's axis
+    aligned with the tube's axis.
 
     Parameters
     ----------
-    l: length
-    m: mass
-    ro: outer radius
-    ri: inner radius
+    l : float
+        The length of the tube.
+    m : float
+        The mass of the tube.
+    ro : float
+        The outer radius of the tube.
+    ri : float
+        The inner radius of the tube. Set this to zero if it is a rod instead
+        of a tube.
 
     Returns
     -------
-    Ix: moment of inertia about tube axis
-    Iy, Iz: moment of inertia about normal axis
+    Ix : float
+        Moment of inertia about tube axis.
+    Iy, Iz : float
+        Moment of inertia about normal axis.
 
     '''
     Ix = m / 2. * (ro**2 + ri**2)
     Iy = m / 12. * (3 * ro**2 + 3 * ri**2 + l**2)
     Iz = Iy
-    return np.array([Ix, Iy, Iz])
+    return Ix, Iy, Iz
 
 def total_com(coordinates, masses):
     '''Returns the center of mass of a group of objects if the indivdual
