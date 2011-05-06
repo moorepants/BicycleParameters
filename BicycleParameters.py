@@ -89,12 +89,12 @@ class Bicycle(object):
 
         if conOne or conTwo:
             calc = self.calculate_from_measured(forcePeriodCalc=forcePeriodCalc)
-            par, slopes, intercepts, betas, pendulumIntercepts = calc
+            par, slopes, intercepts, betas, pendulumInertias = calc
             self.parameters['Benchmark'] = par
             self.slopes = slopes
             self.intercepts = intercepts
             self.betas = betas
-            self.pendulumIntercepts = pendulumIntercepts
+            self.pendulumInertias = pendulumInertias
             print("The glory of the %s parameters are upon you!"
                   % self.shortname)
         elif not forceRawCalc and isBenchmark:
@@ -196,9 +196,9 @@ class Bicycle(object):
                        fill=False)
         ax.add_patch(c)
         # plot the pendulum axes for the measured parts
-        #comLineLength = par['w'].nominal_value / 4.
         numColors = len(slopes.keys())
         cmap = plt.get_cmap('gist_rainbow')
+        comLineLength = par['w'].nominal_value / .4
         for j, pair in enumerate(slopes.items()):
             part, slopeSet = pair
             xcom = par['x' + part].nominal_value
@@ -206,14 +206,15 @@ class Bicycle(object):
             plt.plot(xcom, -zcom, 'k+', markersize=12)
             for i, m in enumerate(slopeSet):
                 m = m.nominal_value
-                comLineLength = self.pendulumIntercepts[part][i].nominal_value
+                #comLineLength = self.pendulumInertias[part][i].nominal_value
                 xPlus = comLineLength / 2. * np.cos(np.arctan(m))
                 x = np.array([xcom - xPlus,
                               xcom + xPlus])
                 y = -m * x - intercepts[part][i].nominal_value
                 plt.plot(x, y, color=cmap(1. * j / numColors))
                 plt.text(x[0], y[0], str(i + 1))
-        plt.plot(par['xH'].nominal_value, -par['zH'].nominal_value, 'k+', markersize=12)
+        plt.plot(par['xH'].nominal_value,
+                 -par['zH'].nominal_value, 'k+', markersize=12)
         # plot the ground line
         x = np.array([-par['rR'].nominal_value,
                       par['w'].nominal_value + par['rF'].nominal_value])
@@ -253,7 +254,7 @@ class Bicycle(object):
             # make an ellipse
             height = Ip2D[0]
             width = Ip2D[1]
-            angle = 360. - np.degrees(np.arccos(C2D[0, 0]))
+            angle = np.degrees(np.arccos(C2D[0, 0]))
             ellipse = Ellipse((center[0], center[1]), width, height,
                     angle=angle, fill=False)
             ax.add_patch(ellipse)
