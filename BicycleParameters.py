@@ -8,7 +8,7 @@ from numpy import ma
 from scipy.optimize import leastsq, newton
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
-from matplotlib.patches import Ellipse
+from matplotlib.patches import Ellipse, Wedge
 from uncertainties import ufloat, unumpy, umath
 
 class Bicycle(object):
@@ -84,6 +84,7 @@ class Bicycle(object):
         isRawDataDir = 'RawData' in os.listdir(self.directory)
 
         if isRawDataDir:
+            print "Found the RawData directory:", rawDataDir
             isMeasuredFile = shortname + 'Measured.txt' in os.listdir(rawDataDir)
         else:
             isMeasuredFile = False
@@ -97,6 +98,7 @@ class Bicycle(object):
         conTwo = not forceRawCalc and not isBenchmark
 
         if conOne or conTwo:
+            print "Recalcuting the parameters."
             par, extras = self.calculate_from_measured(
                     forcePeriodCalc=forcePeriodCalc)
             self.parameters['Benchmark'] = par
@@ -184,88 +186,112 @@ class Bicycle(object):
 
         return calculate_benchmark_from_measured(self.parameters['Measured'])
 
-    def plot_bicycle_geometry(self, show=True):
+    def plot_bicycle_geometry(self, show=True, pendulum=True,
+                              centerOfMass=True, inertiaEllipse=False):
         '''Returns a figure showing the basic bicycle geometry, the centers of
         mass and the moments of inertia.
 
         '''
-        par = self.parameters['Benchmark']
-        slopes = self.extras['slopes']
-        intercepts = self.extras['intercepts']
+        par = remove_uncertainties(self.parameters['Benchmark'])
+        slopes = remove_uncertainties(self.extras['slopes'])
+        intercepts = remove_uncertainties(self.extras['intercepts'])
 
         fig = plt.figure()
         ax = plt.axes()
-        # plot the rear wheel
-        c = plt.Circle((0., par['rR'].nominal_value),
-                       radius=par['rR'].nominal_value,
-                       fill=False)
-        ax.add_patch(c)
-        # plot the front wheel
-        c = plt.Circle((par['w'].nominal_value, par['rF'].nominal_value),
-                       radius=par['rF'].nominal_value,
-                       fill=False)
-        ax.add_patch(c)
-        # plot the pendulum axes for the measured parts
-        numColors = len(slopes.keys())
-        cmap = plt.get_cmap('gist_rainbow')
-        comLineLength = par['w'].nominal_value / 4
-        for j, pair in enumerate(slopes.items()):
-            part, slopeSet = pair
-            xcom = par['x' + part].nominal_value
-            zcom = par['z' + part].nominal_value
-            plt.plot(xcom, -zcom, 'k+', markersize=12)
-            for i, m in enumerate(slopeSet):
-                m = m.nominal_value
-                #comLineLength = self.extras['pendulumInertias'][part][i].nominal_value
-                xPlus = comLineLength / 2. * np.cos(np.arctan(m))
-                x = np.array([xcom - xPlus,
-                              xcom + xPlus])
-                y = -m * x - intercepts[part][i].nominal_value
-                plt.plot(x, y, color=cmap(1. * j / numColors))
-                plt.text(x[0], y[0], str(i + 1))
-        plt.plot(par['xH'].nominal_value,
-                 -par['zH'].nominal_value, 'k+', markersize=12)
+
         # plot the ground line
-        x = np.array([-par['rR'].nominal_value,
-                      par['w'].nominal_value + par['rF'].nominal_value])
+        x = np.array([-par['rR'],
+                      par['w'] + par['rF']])
         plt.plot(x, np.zeros_like(x), 'k')
+
+        # plot the rear wheel
+        c = plt.Circle((0., par['rR']), radius=par['rR'], fill=False)
+        ax.add_patch(c)
+
+        # plot the front wheel
+        c = plt.Circle((par['w'], par['rF']), radius=par['rF'], fill=False)
+        ax.add_patch(c)
+
         # plot the fundamental bike
         deex, deez = fundamental_geometry_plot_data(par)
         plt.plot(deex, -deez, 'k')
 
-        # plot the principal moments of inertia
-        tensors = {}
-        for part in slopes.keys():
-            I = unumpy.nominal_values(part_inertia_tensor(par, part))
-            tensors['I' + part] = principal_axes(I)
+        if pendulum:
+            # plot the pendulum axes for the measured parts
+            numColors = len(slopes.keys())
+            cmap = plt.get_cmap('gist_rainbow')
+            comLineLength = par['w'] / 4
+            for j, pair in enumerate(slopes.items()):
+                part, slopeSet = pair
+                xcom = par['x' + part]
+                zcom = par['z' + part]
+                for i, m in enumerate(slopeSet):
+                    #comLineLength = self.extras['pendulumInertias'][part][i]
+                    xPlus = comLineLength / 2. * np.cos(np.arctan(m))
+                    x = np.array([xcom - xPlus,
+                                  xcom + xPlus])
+                    y = -m * x - intercepts[part][i]
+                    plt.plot(x, y, color=cmap(1. * j / numColors))
+                    # label the pendulum lines with a number
+                    plt.text(x[0], y[0], str(i + 1))
 
-        if 'H' not in slopes.keys():
-            I = unumpy.nominal_values(part_inertia_tensor(par, 'H'))
-            tensors['IH'] = principal_axes(I)
+        if centerOfMass:
+            def com_symbol(ax, center, radius, color='b'):
+                c = plt.Circle(center, radius=radius, fill=False)
+                w1 = Wedge(center, radius, 0., 90.,
+                           color=color, ec=None, alpha=0.5)
+                w2 = Wedge(center, radius, 180., 270.,
+                           color=color, ec=None, alpha=0.5)
+                ax.add_patch(w1)
+                ax.add_patch(w2)
+                ax.add_patch(c)
+                return ax
 
-        for tensor in tensors:
-            print "Part", tensor
-            Ip, C = tensors[tensor]
-            part = tensor[1]
-            center = unumpy.nominal_values(np.array([par['x' + part],
-                                                     -par['z' + part]]))
-            # which row in C is the y vector
-            uy = np.array([0., 1., 0.])
-            for i, row in enumerate(C):
-                if np.abs(np.sum(row - uy)) < 1E-10:
-                    yrow = i
-            # the 3 is just random scaling factor
-            Ip2D = np.delete(Ip, yrow, 0)
-            # remove the column and row associated with the y
-            C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
-            # make an ellipse
-            height = Ip2D[0]
-            width = Ip2D[1]
-            angle = 0.
-            #angle = -np.degrees(np.arccos(C2D[0, 0]))
-            ellipse = Ellipse((center[0], center[1]), width, height,
-                    angle=angle, fill=False)
-            ax.add_patch(ellipse)
+            comSymRad = 0.03
+            for j, pair in enumerate(slopes.items()):
+                part, slopeSet = pair
+                xcom = par['x' + part]
+                zcom = par['z' + part]
+                ax = com_symbol(ax, (xcom, -zcom), comSymRad,
+                                color=cmap(1. * j / numColors))
+            ax = com_symbol(ax, (par['xH'], -par['zH']), comSymRad)
+            ax = com_symbol(ax, (0., par['rR']), comSymRad)
+            ax = com_symbol(ax, (par['w'], par['rF']), comSymRad)
+
+
+        if inertiaEllipse:
+            # plot the principal moments of inertia
+            tensors = {}
+            for part in slopes.keys():
+                I = part_inertia_tensor(par, part)
+                tensors['I' + part] = principal_axes(I)
+
+            if 'H' not in slopes.keys():
+                I = part_inertia_tensor(par, 'H')
+                tensors['IH'] = principal_axes(I)
+
+            for tensor in tensors:
+                print "Part", tensor
+                Ip, C = tensors[tensor]
+                part = tensor[1]
+                center = np.array([par['x' + part], -par['z' + part]])
+                # which row in C is the y vector
+                uy = np.array([0., 1., 0.])
+                for i, row in enumerate(C):
+                    if np.abs(np.sum(row - uy)) < 1E-10:
+                        yrow = i
+                # the 3 is just random scaling factor
+                Ip2D = np.delete(Ip, yrow, 0)
+                # remove the column and row associated with the y
+                C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
+                # make an ellipse
+                height = Ip2D[0]
+                width = Ip2D[1]
+                angle = 0.
+                #angle = -np.degrees(np.arccos(C2D[0, 0]))
+                ellipse = Ellipse((center[0], center[1]), width, height,
+                        angle=angle, fill=False)
+                ax.add_patch(ellipse)
 
         plt.axis('equal')
         plt.ylim((0, 1))
@@ -305,6 +331,16 @@ class Bicycle(object):
         A, B = abMatrix(M, C1, K0, K2, v, par['g'])
         evals, evecs = np.linalg.eig(unumpy.nominal_values(A))
         return evals, evecs
+
+def remove_uncertainties(dictionary):
+    '''Returns a dictionary with the uncertainties removed.'''
+    noUncert = {}
+    for k, v in dictionary.items():
+        try:
+            noUncert[k] = v.nominal_value
+        except AttributeError:
+            noUncert[k] = [x.nominal_value for x in v]
+    return noUncert
 
 def benchmark_par_to_canonical(p):
     '''Returns the canonical matrices of the Whipple bicycle model linearized
@@ -475,22 +511,22 @@ def fundamental_geometry_plot_data(par):
     z : ndarray
 
     '''
-    d1 = umath.cos(par['lam']) * (par['c'] + par['w'] -
-                par['rR'] * umath.tan(par['lam']))
-    d3 = -umath.cos(par['lam']) * (par['c'] - par['rF'] *
-                umath.tan(par['lam']))
+    d1 = np.cos(par['lam']) * (par['c'] + par['w'] -
+                par['rR'] * np.tan(par['lam']))
+    d3 = -np.cos(par['lam']) * (par['c'] - par['rF'] *
+                np.tan(par['lam']))
     x = np.zeros(4, dtype=object)
     z = np.zeros(4, dtype=object)
     x[0] = 0.
-    x[1] = d1 * umath.cos(par['lam'])
-    x[2] = par['w'] - d3 * umath.cos(par['lam'])
+    x[1] = d1 * np.cos(par['lam'])
+    x[2] = par['w'] - d3 * np.cos(par['lam'])
     x[3] = par['w']
     z[0] = -par['rR']
-    z[1] = -par['rR'] - d1 * umath.sin(par['lam'])
-    z[2] = -par['rF'] + d3 * umath.sin(par['lam'])
+    z[1] = -par['rR'] - d1 * np.sin(par['lam'])
+    z[2] = -par['rF'] + d3 * np.sin(par['lam'])
     z[3] = -par['rF']
 
-    return unumpy.nominal_values(x), unumpy.nominal_values(z)
+    return x, z
 
 def calc_periods_for_files(directory, filenames, forkIsSplit):
     '''Calculates the period for all filenames in directory.
@@ -684,7 +720,7 @@ def calculate_benchmark_from_measured(mp):
     # calculate the stiffness of the torsional pendulum
     IPxx, IPyy, IPzz = tube_inertia(mp['lP'], mp['mP'], mp['dP'] / 2., 0.)
     torStiff = torsional_pendulum_stiffness(IPyy, mp['TtP1'])
-    print "Torsional pendulum stiffness:", torStiff
+    #print "Torsional pendulum stiffness:", torStiff
 
     # calculate the wheel x/z inertias
     par['IFxx'] = tor_inertia(torStiff, mp['TtF1'])
@@ -753,6 +789,7 @@ def principal_axes(I):
         The rotation matrix.
 
     '''
+    print I
     Ip, C = np.linalg.eig(I)
     indices = np.argsort(Ip)
     Ip = Ip[indices]
