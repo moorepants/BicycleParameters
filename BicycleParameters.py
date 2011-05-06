@@ -89,10 +89,12 @@ class Bicycle(object):
 
         if conOne or conTwo:
             calc = self.calculate_from_measured(forcePeriodCalc=forcePeriodCalc)
-            par, slopes, intercepts = calc
+            par, slopes, intercepts, betas, pendulumIntercepts = calc
             self.parameters['Benchmark'] = par
             self.slopes = slopes
             self.intercepts = intercepts
+            self.betas = betas
+            self.pendulumIntercepts = pendulumIntercepts
             print("The glory of the %s parameters are upon you!"
                   % self.shortname)
         elif not forceRawCalc and isBenchmark:
@@ -194,7 +196,7 @@ class Bicycle(object):
                        fill=False)
         ax.add_patch(c)
         # plot the pendulum axes for the measured parts
-        comLineLength = par['w'].nominal_value / 4.
+        #comLineLength = par['w'].nominal_value / 4.
         numColors = len(slopes.keys())
         cmap = plt.get_cmap('gist_rainbow')
         for j, pair in enumerate(slopes.items()):
@@ -204,6 +206,7 @@ class Bicycle(object):
             plt.plot(xcom, -zcom, 'k+', markersize=12)
             for i, m in enumerate(slopeSet):
                 m = m.nominal_value
+                comLineLength = self.pendulumIntercepts[part][i].nominal_value
                 xPlus = comLineLength / 2. * np.cos(np.arctan(m))
                 x = np.array([xcom - xPlus,
                               xcom + xPlus])
@@ -244,7 +247,7 @@ class Bicycle(object):
                 if np.abs(np.sum(row - uy)) < 1E-10:
                     yrow = i
             # the 3 is just random scaling factor
-            Ip2D = np.delete(Ip, yrow, 0) / 3.
+            Ip2D = np.delete(Ip, yrow, 0)
             # remove the column and row associated with the y
             C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
             # make an ellipse
@@ -523,6 +526,8 @@ def calculate_benchmark_from_measured(mp):
         par['IHyy'] = compound_pendulum_inertia(mp['mH'], mp['g'],
                                                 lH, mp['TcH1'])
 
+    pendulumInertias = {}
+
     # calculate the in plane moments of inertia
     for part, slopeSet in slopes.items():
         print "The part is:", part
@@ -534,6 +539,7 @@ def calculate_benchmark_from_measured(mp):
         # fill arrays of the inertias and orientation angles
         for i in range(numOrien):
             eye[i] = tor_inertia(torStiff, mp['Tt' + part + str(i + 1)])
+        pendulumInertias[part] = eye
         print "The pendulum inertias:\n", eye
         print "The orientations:\n", beta
         inertia = inertia_components(eye, beta)
@@ -560,7 +566,7 @@ def calculate_benchmark_from_measured(mp):
         par['IHyy'] = IH[1, 1]
         par['IHzz'] = IH[2, 2]
 
-    return par, slopes, intercepts
+    return par, slopes, intercepts, betas, pendulumInertias
 
 def principal_axes(I):
     '''Returns the principal moments of inertia and the orientation.
