@@ -267,7 +267,6 @@ class Bicycle(object):
                 ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
                 plt.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
 
-
         if inertiaEllipse:
             # plot the principal moments of inertia
             tensors = {}
@@ -377,51 +376,70 @@ def benchmark_par_to_canonical(p):
 
     '''
     mT = p['mR'] + p['mB'] + p['mH'] + p['mF']
-    xT = (p['xB']*p['mB'] + p['xH']*p['mH'] + p['w']*p['mF'])/mT
-    zT = (-p['rR']*p['mR'] + p['zB']*p['mB'] + p['zH']*p['mH'] - p['rF']*p['mF'])/mT
-    ITxx = p['IRxx'] + p['IBxx'] + p['IHxx'] + p['IFxx'] +p['mR']*p['rR']**2 + p['mB']*p['zB']**2 + p['mH']*p['zH']**2 + p['mF']*p['rF']**2
-    ITxz = p['IBxz'] + p['IHxz'] - p['mB']*p['xB']*p['zB'] - p['mH']*p['xH']*p['zH'] + p['mF']*p['w']*p['rF']
+    xT = (p['xB'] * p['mB'] + p['xH'] * p['mH'] + p['w'] * p['mF']) / mT
+    zT = (-p['rR'] * p['mR'] + p['zB'] * p['mB'] +
+          p['zH'] * p['mH'] - p['rF'] * p['mF']) / mT
+
+    ITxx = (p['IRxx'] + p['IBxx'] + p['IHxx'] + p['IFxx'] + p['mR'] *
+            p['rR']**2 + p['mB'] * p['zB']**2 + p['mH'] * p['zH']**2 + p['mF']
+            * p['rF']**2)
+    ITxz = (p['IBxz'] + p['IHxz'] - p['mB'] * p['xB'] * p['zB'] -
+            p['mH'] * p['xH'] * p['zH'] + p['mF'] * p['w'] * p['rF'])
     p['IRzz'] = p['IRxx']
     p['IFzz'] = p['IFxx']
-    ITzz = p['IRzz'] + p['IBzz'] + p['IHzz'] + p['IFzz'] + p['mB']*p['xB']**2 + p['mH']*p['xH']**2 + p['mF']*p['w']**2
+    ITzz = (p['IRzz'] + p['IBzz'] + p['IHzz'] + p['IFzz'] +
+            p['mB'] * p['xB']**2 + p['mH'] * p['xH']**2 + p['mF'] * p['w']**2)
+
     mA = p['mH'] + p['mF']
-    xA = (p['xH']*p['mH'] + p['w']*p['mF'])/mA
-    zA = (p['zH']*p['mH'] - p['rF']*p['mF'])/mA
-    IAxx = p['IHxx'] + p['IFxx'] + p['mH']*(p['zH'] - zA)**2 + p['mF']*(p['rF'] + zA)**2
-    IAxz = p['IHxz'] - p['mH']*(p['xH'] - xA)*(p['zH'] - zA) + p['mF']*(p['w'] - xA)*(p['rF'] + zA)
-    IAzz = p['IHzz'] + p['IFzz'] + p['mH']*(p['xH'] - xA)**2 + p['mF']*(p['w'] - xA)**2
-    uA = (xA - p['w'] - p['c'])*umath.cos(p['lam']) - zA*umath.sin(p['lam'])
-    IAll = mA*uA**2 + IAxx*umath.sin(p['lam'])**2 + 2*IAxz*umath.sin(p['lam'])*umath.cos(p['lam']) + IAzz*umath.cos(p['lam'])**2
-    IAlx = -mA*uA*zA + IAxx*umath.sin(p['lam']) + IAxz*umath.cos(p['lam'])
-    IAlz = mA*uA*xA + IAxz*umath.sin(p['lam']) + IAzz*umath.cos(p['lam'])
-    mu = p['c']/p['w']*umath.cos(p['lam'])
-    SR = p['IRyy']/p['rR']
-    SF = p['IFyy']/p['rF']
+    xA = (p['xH'] * p['mH'] + p['w'] * p['mF']) / mA
+    zA = (p['zH'] * p['mH'] - p['rF']* p['mF']) / mA
+
+    IAxx = (p['IHxx'] + p['IFxx'] + p['mH'] * (p['zH'] - zA)**2 +
+            p['mF'] * (p['rF'] + zA)**2)
+    IAxz = (p['IHxz'] - p['mH'] * (p['xH'] - xA) * (p['zH'] - zA) + p['mF'] *
+            (p['w'] - xA) * (p['rF'] + zA))
+    IAzz = (p['IHzz'] + p['IFzz'] + p['mH'] * (p['xH'] - xA)**2 + p['mF'] *
+            (p['w'] - xA)**2)
+    uA = (xA - p['w'] - p['c']) * umath.cos(p['lam']) - zA * umath.sin(p['lam'])
+    IAll = (mA * uA**2 + IAxx * umath.sin(p['lam'])**2 +
+            2 * IAxz * umath.sin(p['lam']) * umath.cos(p['lam']) +
+            IAzz * umath.cos(p['lam'])**2)
+    IAlx = (-mA * uA * zA + IAxx * umath.sin(p['lam']) + IAxz *
+            umath.cos(p['lam']))
+    IAlz = (mA * uA * xA + IAxz * umath.sin(p['lam']) + IAzz *
+            umath.cos(p['lam']))
+
+    mu = p['c'] / p['w'] * umath.cos(p['lam'])
+
+    SR = p['IRyy'] / p['rR']
+    SF = p['IFyy'] / p['rF']
     ST = SR + SF
-    SA = mA*uA + mu*mT*xT
+    SA = mA * uA + mu * mT * xT
 
     Mpp = ITxx
-    Mpd = IAlx + mu*ITxz
+    Mpd = IAlx + mu * ITxz
     Mdp = Mpd
-    Mdd = IAll + 2*mu*IAlz + mu**2*ITzz
+    Mdd = IAll + 2 * mu * IAlz + mu**2 * ITzz
     M = np.array([[Mpp, Mpd], [Mdp, Mdd]])
 
-    K0pp = mT*zT # this value only reports to 13 digit precision it seems?
+    K0pp = mT * zT # this value only reports to 13 digit precision it seems?
     K0pd = -SA
     K0dp = K0pd
-    K0dd = -SA*umath.sin(p['lam'])
+    K0dd = -SA * umath.sin(p['lam'])
     K0 = np.array([[K0pp, K0pd], [K0dp, K0dd]])
 
     K2pp = 0.
-    K2pd = (ST - mT*zT)/p['w']*umath.cos(p['lam'])
+    K2pd = (ST - mT * zT) / p['w'] * umath.cos(p['lam'])
     K2dp = 0.
-    K2dd = (SA + SF*umath.sin(p['lam']))/p['w']*umath.cos(p['lam'])
+    K2dd = (SA + SF * umath.sin(p['lam'])) / p['w'] * umath.cos(p['lam'])
     K2 = np.array([[K2pp, K2pd], [K2dp, K2dd]])
 
     C1pp = 0.
-    C1pd = mu*ST + SF*umath.cos(p['lam']) + ITxz/p['w']*umath.cos(p['lam']) - mu*mT*zT
-    C1dp = -(mu*ST + SF*umath.cos(p['lam']))
-    C1dd = IAlz/p['w']*umath.cos(p['lam']) + mu*(SA + ITzz/p['w']*umath.cos(p['lam']))
+    C1pd = (mu*ST + SF*umath.cos(p['lam']) + ITxz / p['w'] *
+            umath.cos(p['lam']) - mu*mT*zT)
+    C1dp = -(mu * ST + SF * umath.cos(p['lam']))
+    C1dd = (IAlz / p['w'] * umath.cos(p['lam']) + mu * (SA +
+            ITzz / p['w'] * umath.cos(p['lam'])))
     C1 = np.array([[C1pp, C1pd], [C1dp, C1dd]])
 
     return M, C1, K0, K2
