@@ -129,11 +129,7 @@ class Bicycle(object):
         '''
 
         if filetype == 'pickle':
-            for k, v in self.params.items():
-                thefile = self.directory + self.shortname + k + '.p'
-                f = open(thefile, 'w')
-                pickle.dump(v, f)
-                f.close()
+            print "Doesn't work yet"
         elif filetype == 'matlab':
             # this should handle the uncertainties properly
             print "Doesn't work yet"
@@ -310,23 +306,30 @@ class Bicycle(object):
 
         return fig
 
-    def eig(self, v):
+    def eig(self, speeds):
         '''Returns eigenvalues and eigenvectors of the benchmark bicycle.
 
         Parameters
         ----------
-        v : ndarray, shape (n,)
+        speeds : ndarray, shape (n,) or float
             The speed at which to calculate the eigenvalues.
 
         Returns
         -------
-        evals : ndarray, shape (4,)
-            Eigenvalues
-        evecs : ndarray, shape (4, 4)
-            Eigenvectors. The columns correspond to the rows in evals.
+        evals : ndarray, shape (n, 4)
+            eigenvalues
+        evecs : ndarray, shape (n, 4, 4)
+            eigenvectors
 
         '''
+        # this allows you to enter a float
+        try:
+            speeds.shape
+        except AttributeError:
+            speeds = np.array([speeds])
+
         par = self.parameters['Benchmark']
+
         # use the canonical matrices if they already exist
         try:
             M = self.canonical['M']
@@ -336,9 +339,141 @@ class Bicycle(object):
         except AttributeError:
             M, C1, K0, K2 = benchmark_par_to_canonical(par)
             self.canonical = {'M' : M, 'C1' : C1, 'K0' : K0, 'K2' : K2}
-        A, B = abMatrix(M, C1, K0, K2, v, par['g'])
-        evals, evecs = np.linalg.eig(unumpy.nominal_values(A))
+
+        m, n = 2 * M.shape[0], speeds.shape[0]
+        evals = np.zeros((n, m), dtype='complex128')
+        evecs = np.zeros((n, m, m), dtype='complex128')
+        for i, speed in enumerate(speeds):
+            A, B = abMatrix(M, C1, K0, K2, speed, par['g'])
+            w, v = np.linalg.eig(unumpy.nominal_values(A))
+            evals[i] = w
+            evecs[i] = v
+
         return evals, evecs
+
+    def plot_eigenvalues_vs_speed(self, speeds):
+        '''Returns a plot of the eigenvalues versus speed for the current
+        benchmark parameters.
+
+        Parameters
+        ----------
+        speeds : ndarray, shape(n,)
+            An array of speeds to calculate the eigenvalues at.
+
+        '''
+
+        # figure properties
+        figwidth = 6. # in inches
+        goldenMean = (np.sqrt(5)-1.0)/2.0
+        figsize = [figwidth, figwidth * goldenMean]
+        params = {#'backend': 'ps',
+            'axes.labelsize': 8,
+            'text.fontsize': 10,
+            'legend.fontsize': 6,
+            'xtick.labelsize': 6,
+            'ytick.labelsize': 6,
+            'figure.figsize': figsize
+            }
+        plt.rcParams.update(params)
+
+        eigFig = plt.figure(figsize=figsize)
+
+        plt.axes([0.125,0.2,0.95-0.125,0.85-0.2])
+
+        evals, evecs = self.eig(speeds)
+        wea, cap, cas = sort_modes(evals, evecs)
+
+        # x axis line
+        plt.plot(speeds, np.zeros_like(speeds), 'k-',
+                 label='_nolegend_', linewidth=1.5)
+        # imaginary components
+        plt.plot(speeds, np.abs(np.imag(wea['evals'])), color='blue',
+                 label='Imaginary Weave', linestyle='--')
+        plt.plot(speeds, np.abs(np.imag(cap['evals'])), color='red',
+                 label='Imaginary Capsize', linestyle='--')
+        # plot the real parts of the eigenvalues
+        plt.plot(speeds, np.real(wea['evals']), color='blue', label='Real Weave')
+        plt.plot(speeds, np.real(cap['evals']), color='red', label='Real Capsize')
+        plt.plot(speeds, np.real(cas['evals']), color='green', label='Real Caster')
+
+        plt.ylim((-10, 10))
+        plt.xlim((0, 10))
+        plt.title('%s\nEigenvalues vs Speed' % self.shortname)
+        plt.xlabel('Speed [m/s]')
+        plt.ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
+
+        plt.show()
+
+        return eigFig
+
+def sort_modes(evals, evecs):
+    '''Sort eigenvalues and eigenvectors into weave, capsize, caster modes.
+
+    Parameters
+    ----------
+    evals : ndarray, shape (n, 4)
+        eigenvalues
+    evecs : ndarray, shape (n, 4, 4)
+        eigenvectors
+
+    Returns
+    -------
+    weave['evals'] : ndarray, shape (n, 2)
+        The eigen value pair associated with the weave mode.
+    weave['evecs'] : ndarray, shape (n, 4, 2)
+        The associated eigenvectors of the weave mode.
+    capsize['evals'] : ndarray, shape (n,)
+        The real eigenvalue associated with the capsize mode.
+    capsize['evecs'] : ndarray, shape(n, 4, 1)
+        The associated eigenvectors of the capsize mode.
+    caster['evals'] : ndarray, shape (n,)
+        The real eigenvalue associated with the caster mode.
+    caster['evecs'] : ndarray, shape(n, 4, 1)
+        The associated eigenvectors of the caster mode.
+
+    This only works on the standard bicycle eigenvalues, not necessarily on any
+    general eigenvalues for the bike model (e.g. there isn't always a distinct weave,
+    capsize and caster). Some type of check unsing the derivative of the curves
+    could make it more robust.
+    '''
+    evalsorg = np.zeros_like(evals)
+    evecsorg = np.zeros_like(evecs)
+    # set the first row to be the same
+    evalsorg[0] = evals[0]
+    evecsorg[0] = evecs[0]
+    # for each speed
+    for i, speed in enumerate(evals):
+        if i == evals.shape[0] - 1:
+            break
+        # for each current eigenvalue
+        used = []
+        for j, e in enumerate(speed):
+            try:
+                x, y = np.real(evalsorg[i, j].nominal_value), np.imag(evalsorg[i, j].nominal_value)
+            except:
+                x, y = np.real(evalsorg[i, j]), np.imag(evalsorg[i, j])
+            # for each eigenvalue at the next speed
+            dist = np.zeros(4)
+            for k, eignext in enumerate(evals[i + 1]):
+                try:
+                    xn, yn = np.real(eignext.nominal_value), np.imag(eignext.nominal_value)
+                except:
+                    xn, yn = np.real(eignext), np.imag(eignext)
+                # distance between points in the real/imag plane
+                dist[k] = np.abs(((xn - x)**2 + (yn - y)**2)**0.5)
+            if np.argmin(dist) in used:
+                # set the already used indice higher
+                dist[np.argmin(dist)] = np.max(dist) + 1.
+            else:
+                pass
+            evalsorg[i + 1, j] = evals[i + 1, np.argmin(dist)]
+            evecsorg[i + 1, :, j] = evecs[i + 1, :, np.argmin(dist)]
+            # keep track of the indices we've used
+            used.append(np.argmin(dist))
+    weave = {'evals' : evalsorg[:, 2:], 'evecs' : evecsorg[:, :, 2:]}
+    capsize = {'evals' : evalsorg[:, 1], 'evecs' : evecsorg[:, :, 1]}
+    caster = {'evals' : evalsorg[:, 0], 'evecs' : evecsorg[:, :, 0]}
+    return weave, capsize, caster
 
 def remove_uncertainties(dictionary):
     '''Returns a dictionary with the uncertainties removed.'''
