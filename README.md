@@ -23,7 +23,8 @@ Upcoming Features
 -----------------
 - Converts benchmark parameters to other parametrizations
 - Calculates the transfer functions to the system.
-- Plots Bode diagrams of the transfer functions
+- Plots Bode diagrams of the transfer functions.
+- Ability to add a rigid rider's physical properties.
 - Generates publication quality tables of parameters using LaTeX
 
 Dependencies
