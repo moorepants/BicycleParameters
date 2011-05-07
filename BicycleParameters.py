@@ -1796,8 +1796,10 @@ def jac_fitfunc(p, t):
     jac[0] = np.ones_like(t)
     jac[1] = e * s
     jac[2] = e * c
-    jac[3] = -p[4] * t * e * (p[1] * s + p[2] * c) + e * (-p[1] * p[3] * p[4] * t / dampsq * c + p[2] * p[3] * p[4] * t / dampsq * s)
-    jac[4] = -p[3] * t * e * (p[1] * s + p[2] * c) + e * dampsq * t * (p[1] * c - p[2] * s)
+    jac[3] = (-p[4] * t * e * (p[1] * s + p[2] * c) + e * (-p[1] * p[3] * p[4]
+              * t / dampsq * c + p[2] * p[3] * p[4] * t / dampsq * s))
+    jac[4] = (-p[3] * t * e * (p[1] * s + p[2] * c) + e * dampsq * t * (p[1] *
+              c - p[2] * s))
     return jac.T
 
 def fit_goodness(ym, yp):
