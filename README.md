@@ -38,6 +38,34 @@ likely work with older versions with minor adjustments.
 - [Matplotlib 0.99.3](http://matplotlib.sourceforge.net/)
 - [Uncertainties 1.7.2](http://packages.python.org/uncertainties/)
 
+Installation
+------------
+For now simpy clone the the source code with git or download the tarball from
+github. Make sure you have the dependencies installed.
+
+Then get the data from here: no link yet and set up your sudirectories as such:
+
+/root
+|
+-->/bicycles
+   |
+   -->/Shortname
+      |
+      -->/RawData
+      |
+      -->/Photos
+      |
+      -->/Parameters
+
+The root folder should contain BicycleParameters.py. Ther should be a folder
+with a Shortname for the bicycle for each bicycle that you have parameters for
+or raw data for. The RawData folder should contain the mat files with the rate
+gyro data from the torsional and compound pendulums plus the
+ShortnameMeasure.txt file that contains all of the raw data. The Photos folder
+should contain photos of the bicycle parts hung as the various pendulums. The
+Parameters folder should contatin parameter files named ShortnameType.txt where
+Type is the parameterization type such as "Benchmark".
+
 Example Code
 ------------
 ```python

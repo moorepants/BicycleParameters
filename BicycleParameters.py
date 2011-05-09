@@ -117,24 +117,30 @@ class Bicycle(object):
             bicycle/{sn}/RawData/ with pendulum data mat files and the
             {sn}Measured.txt file'''.format(sn=shortname)
 
-    def save_parameters(self, filetype='text', uncert=True):
-        '''
-        Saves all the parameters to file.
+    def save_parameters(self, filetype='text'):
+        '''Saves all the parameter sets to file.
 
+        Parameters
+        ----------
         filetype : string, optional
-            'pickle' : python pickled dictionary
+            'text' : a text file with parameters as "c = 0.10+/-0.01\n"
             'matlab' : matlab .mat file
-            'text' :
+            'pickle' : python pickled dictionary
 
         '''
 
-        if filetype == 'pickle':
-            print "Doesn't work yet"
+        if filetype == 'text':
+            psets = [x for x in self.parameters.keys() if x != 'Measured']
+            for pset in psets:
+                pathToTxtFile = os.path.join(self.directory,
+                                             'Parameters',
+                                             self.shortname + pset + '.txt')
+                write_text_file(pathToTxtFile, self.parameters[pset])
         elif filetype == 'matlab':
             # this should handle the uncertainties properly
             print "Doesn't work yet"
 
-        elif filetype == 'text':
+        elif filetype == 'pickle':
             print "Doesn't work yet"
 
     def show_pendulum_photos(self):
@@ -405,6 +411,23 @@ class Bicycle(object):
         plt.show()
 
         return eigFig
+
+def write_text_file(pathToTxtFile, parDict):
+    '''Writes parameter set to file.'''
+
+    # make the Parameters directory if it doesn't exist
+    if not isdir(os.path.split(pathToTxtFile)[0]):
+        os.mkdirs(os.path.split(pathToTxtFile[0]))
+
+    try:
+        f = open(pathToTxtFile)
+        f.close()
+        raw_input("%s exists already. Are you sure you want" \
+                  " to overwrite it? (y or n)" % pathToTxtFile)
+    except IOError
+        
+
+   
 
 def sort_modes(evals, evecs):
     '''Sort eigenvalues and eigenvectors into weave, capsize, caster modes.
