@@ -152,9 +152,9 @@ class Bicycle(object):
         xdg-mime model for having this work cross platform.
 
         '''
-        photoDir = os.path.join(self.directory, 'Photos', '*.*')
-        if os.isdir(photoDir):
-            os.system('eog ' + photoDir)
+        photoDir = os.path.join(self.directory, 'Photos')
+        if os.path.isdir(photoDir):
+            os.system('eog ' + os.path.join(photoDir, '*.*'))
         else:
             print "There are no photos of your bicycle."
 
