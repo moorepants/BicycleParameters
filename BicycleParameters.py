@@ -130,6 +130,7 @@ class Bicycle(object):
         '''
 
         if filetype == 'text':
+            # don't resave the measured parameters
             psets = [x for x in self.parameters.keys() if x != 'Measured']
             for pset in psets:
                 pathToTxtFile = os.path.join(self.directory,
@@ -413,21 +414,51 @@ class Bicycle(object):
         return eigFig
 
 def write_text_file(pathToTxtFile, parDict):
-    '''Writes parameter set to file.'''
+    '''Writes parameter set to file.
+
+    Parameters
+    ----------
+    pathToTxtFile : string
+        The path to the file to write the parameters.
+    pardict : dictionary
+        A dictionary of parameters for the bicycle.
+
+    Returns
+    -------
+    saved : boolean
+        True if the file was saved and false if not.
+
+    '''
 
     # make the Parameters directory if it doesn't exist
-    if not isdir(os.path.split(pathToTxtFile)[0]):
-        os.mkdirs(os.path.split(pathToTxtFile[0]))
+    head, tail = os.path.split(pathToTxtFile)
+    if not os.path.isdir(head):
+        print "Created direcotry %s" % head
+        os.makedirs(head)
 
     try:
         f = open(pathToTxtFile)
         f.close()
-        raw_input("%s exists already. Are you sure you want" \
-                  " to overwrite it? (y or n)" % pathToTxtFile)
-    except IOError
-        
+        del f
+        ans = None
+        while ans !=  'y' and ans != 'n':
+            ans = raw_input("%s exists already. Are you sure you want" \
+                            " to overwrite it? (y or n)\n" % pathToTxtFile)
+        if ans == 'y':
+            f = open(pathToTxtFile, 'w')
+    except IOError:
+        f = open(pathToTxtFile, 'w')
 
-   
+    try:
+        f
+        for key, val in parDict.items():
+            f.write(key + ' = ' + str(val) + '\n')
+        f.close()
+        print "Parameters saved to %s" % pathToTxtFile
+        return True
+    except UnboundLocalError:
+        print "%s was not saved." % pathToTxtFile
+        return False
 
 def sort_modes(evals, evecs):
     '''Sort eigenvalues and eigenvectors into weave, capsize, caster modes.
