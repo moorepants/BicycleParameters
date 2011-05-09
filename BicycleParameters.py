@@ -190,6 +190,34 @@ class Bicycle(object):
 
         return calculate_benchmark_from_measured(self.parameters['Measured'])
 
+    def add_rider(self, pathToRider):
+        '''Adds the parameters of a rider to the bicycle.'''
+
+        riderPar = load_parameter_text_file(pathToRider)
+        bicyclePar = self.parameters['Benchmark']
+        masses = np.array([riderPar['mB'], bicyclePar['mB']])
+        coordinates = np.array([[riderPar['xB'], bicyclePar['xB']],
+                                [0., 0.],
+                                [riderPar['zB'], bicyclePar['zB']]])
+        mT, cT = total_com(coordinates, masses)
+        dRider = np.array([riderPar['xB'] - cT[0],
+                           0.,
+                           riderPar['zB'] - cT[2]])
+        dBicycle = np.array([bicyclePar['xB'] - cT[0],
+                             0.,
+                             bicyclePar['zB'] - cT[2]])
+        IRider = part_inertia_tensor(riderPar, 'B')
+        IBicycle = part_inertia_tensor(bicyclePar, 'B')
+        I = (parallel_axis(IRider, riderPar['mB'], dRider) +
+             parallel_axis(IBicycle, bicyclePar['mB'], dBicycle))
+        self.parameters['Benchmark']['xB'] = cT[0]
+        self.parameters['Benchmark']['zB'] = cT[2]
+        self.parameters['Benchmark']['mB'] = mT
+        self.parameters['Benchmark']['IBxx'] = I[0, 0]
+        self.parameters['Benchmark']['IBxz'] = I[0, 2]
+        self.parameters['Benchmark']['IByy'] = I[1, 1]
+        self.parameters['Benchmark']['IBzz'] = I[2, 2]
+
     def plot_bicycle_geometry(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=False):
         '''Returns a figure showing the basic bicycle geometry, the centers of
