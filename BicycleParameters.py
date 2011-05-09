@@ -136,7 +136,8 @@ class Bicycle(object):
                 pathToTxtFile = os.path.join(self.directory,
                                              'Parameters',
                                              self.shortname + pset + '.txt')
-                write_text_file(pathToTxtFile, self.parameters[pset])
+                write_parameter_text_file(pathToTxtFile,
+                                          self.parameters[pset])
         elif filetype == 'matlab':
             # this should handle the uncertainties properly
             print "Doesn't work yet"
@@ -196,8 +197,12 @@ class Bicycle(object):
 
         '''
         par = remove_uncertainties(self.parameters['Benchmark'])
-        slopes = remove_uncertainties(self.extras['slopes'])
-        intercepts = remove_uncertainties(self.extras['intercepts'])
+        parts = get_parts_in_parameters(par)
+        try:
+            slopes = remove_uncertainties(self.extras['slopes'])
+            intercepts = remove_uncertainties(self.extras['intercepts'])
+        except AttributeError:
+            pendulum = False
 
         fig = plt.figure()
         ax = plt.axes()
@@ -223,10 +228,12 @@ class Bicycle(object):
         dx3 = deex[2] + deez[2] * (deex[2] - deex[1]) / (deez[1] - deez[2])
         plt.plot([deex[2], dx3],  [-deez[2], 0.], 'k--')
 
+        # define some colors for the parts
+        numColors = len(parts)
+        cmap = plt.get_cmap('gist_rainbow')
+
         if pendulum:
             # plot the pendulum axes for the measured parts
-            numColors = len(slopes.keys())
-            cmap = plt.get_cmap('gist_rainbow')
             comLineLength = par['w'] / 4
             for j, pair in enumerate(slopes.items()):
                 part, slopeSet = pair
@@ -243,7 +250,9 @@ class Bicycle(object):
                     plt.text(x[0], y[0], str(i + 1))
 
         if centerOfMass:
+            # plot the center of mass location
             def com_symbol(ax, center, radius, color='b'):
+                '''Returns axis with center of mass symbol.'''
                 c = plt.Circle(center, radius=radius, fill=False)
                 w1 = Wedge(center, radius, 0., 90.,
                            color=color, ec=None, alpha=0.5)
@@ -254,19 +263,22 @@ class Bicycle(object):
                 ax.add_patch(c)
                 return ax
 
+            # radius of the CoM symbol
             sRad = 0.03
-            ax = com_symbol(ax, (0., par['rR']), sRad)
-            plt.text(0. + sRad, par['rR'] + sRad, 'R')
+            # front wheel CoM
             ax = com_symbol(ax, (par['w'], par['rF']), sRad)
             plt.text(par['w'] + sRad, par['rF'] + sRad, 'F')
-            for j, pair in enumerate(slopes.items()):
-                part, slopeSet = pair
+            # rear wheel CoM
+            ax = com_symbol(ax, (0., par['rR']), sRad)
+            plt.text(0. + sRad, par['rR'] + sRad, 'R')
+            for j, part in enumerate([x for x in parts if x != 'R' and x !=
+                'F']):
                 xcom = par['x' + part]
                 zcom = par['z' + part]
                 ax = com_symbol(ax, (xcom, -zcom), sRad,
                                 color=cmap(1. * j / numColors))
                 plt.text(xcom + sRad, -zcom + sRad, part)
-            if 'H' not in slopes.keys():
+            if 'H' not in parts:
                 ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
                 plt.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
 
@@ -413,7 +425,25 @@ class Bicycle(object):
 
         return eigFig
 
-def write_text_file(pathToTxtFile, parDict):
+def get_parts_in_parameters(par):
+    '''Returns a list of parts in a parameter dictionary.
+
+    Parameters
+    ----------
+    par : dictionary
+        Benchmark bicycle parameters.
+
+    Returns
+    -------
+    parts : list
+        Unique list of parts that contain one or more of 'H', 'B', 'F', 'R',
+        'S', 'G'.
+
+    '''
+    parts = [x[1] for x in par.keys() if x.startswith('m')]
+    return parts
+
+def write_parameter_text_file(pathToTxtFile, parDict):
     '''Writes parameter set to file.
 
     Parameters
@@ -451,8 +481,9 @@ def write_text_file(pathToTxtFile, parDict):
 
     try:
         f
-        for key, val in parDict.items():
-            f.write(key + ' = ' + str(val) + '\n')
+        keys = sorted(parDict.keys())
+        for key in keys:
+            f.write(key + ' = ' + str(parDict[key]) + '\n')
         f.close()
         print "Parameters saved to %s" % pathToTxtFile
         return True
