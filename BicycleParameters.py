@@ -9,7 +9,7 @@ from scipy.optimize import leastsq, newton
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Wedge
-from uncertainties import ufloat, unumpy, umath
+from uncertainties import ufloat, unumpy, umath, UFloat
 
 class Bicycle(object):
     '''An object for a bicycle. A bicycle has parameters. That's about it for
@@ -219,7 +219,7 @@ class Bicycle(object):
         self.parameters['Benchmark']['IBzz'] = I[2, 2]
 
     def plot_bicycle_geometry(self, show=True, pendulum=True,
-                              centerOfMass=True, inertiaEllipse=False):
+                              centerOfMass=True, inertiaEllipse=True):
         '''Returns a figure showing the basic bicycle geometry, the centers of
         mass and the moments of inertia.
 
@@ -259,21 +259,24 @@ class Bicycle(object):
         # define some colors for the parts
         numColors = len(parts)
         cmap = plt.get_cmap('gist_rainbow')
+        partColors = {}
+        for i, part in enumerate(parts):
+            partColors[part] = cmap(1. * i / numColors)
 
         if pendulum:
             # plot the pendulum axes for the measured parts
-            comLineLength = par['w'] / 4
+            #comLineLength = par['w'] / 4.
             for j, pair in enumerate(slopes.items()):
                 part, slopeSet = pair
                 xcom = par['x' + part]
                 zcom = par['z' + part]
                 for i, m in enumerate(slopeSet):
-                    #comLineLength = self.extras['pendulumInertias'][part][i]
+                    comLineLength = self.extras['pendulumInertias'][part][i].nominal_value
                     xPlus = comLineLength / 2. * np.cos(np.arctan(m))
                     x = np.array([xcom - xPlus,
                                   xcom + xPlus])
                     y = -m * x - intercepts[part][i]
-                    plt.plot(x, y, color=cmap(1. * j / numColors))
+                    plt.plot(x, y, color=partColors[part])
                     # label the pendulum lines with a number
                     plt.text(x[0], y[0], str(i + 1))
 
@@ -294,17 +297,19 @@ class Bicycle(object):
             # radius of the CoM symbol
             sRad = 0.03
             # front wheel CoM
-            ax = com_symbol(ax, (par['w'], par['rF']), sRad)
+            ax = com_symbol(ax, (par['w'], par['rF']), sRad,
+                            color=partColors['F'])
             plt.text(par['w'] + sRad, par['rF'] + sRad, 'F')
             # rear wheel CoM
-            ax = com_symbol(ax, (0., par['rR']), sRad)
+            ax = com_symbol(ax, (0., par['rR']), sRad,
+                            color=partColors['R'])
             plt.text(0. + sRad, par['rR'] + sRad, 'R')
-            for j, part in enumerate([x for x in parts if x != 'R' and x !=
-                'F']):
+            for j, part in enumerate([x for x in parts
+                                      if x != 'R' and x != 'F']):
                 xcom = par['x' + part]
                 zcom = par['z' + part]
                 ax = com_symbol(ax, (xcom, -zcom), sRad,
-                                color=cmap(1. * j / numColors))
+                                color=partColors[part])
                 plt.text(xcom + sRad, -zcom + sRad, part)
             if 'H' not in parts:
                 ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
@@ -313,39 +318,41 @@ class Bicycle(object):
         if inertiaEllipse:
             # plot the principal moments of inertia
             tensors = {}
-            for part in slopes.keys():
+            for j, part in enumerate(parts):
+                print "Part", part
                 I = part_inertia_tensor(par, part)
-                tensors['I' + part] = principal_axes(I)
-
-            if 'H' not in slopes.keys():
-                I = part_inertia_tensor(par, 'H')
-                tensors['IH'] = principal_axes(I)
-
-            for tensor in tensors:
-                print "Part", tensor
-                Ip, C = tensors[tensor]
-                part = tensor[1]
-                center = np.array([par['x' + part], -par['z' + part]])
+                print "I\n", I
+                print I.shape
+                print type(I)
+                Ip, C = principal_axes(I)
+                print "Ip\n", Ip
+                print "C\n", C
+                if part == 'R':
+                    center = np.array([0., par['rR']])
+                elif part == 'F':
+                    center = np.array([par['w'], par['rF']])
+                else:
+                    center = np.array([par['x' + part], -par['z' + part]])
                 # which row in C is the y vector
                 uy = np.array([0., 1., 0.])
                 for i, row in enumerate(C):
                     if np.abs(np.sum(row - uy)) < 1E-10:
                         yrow = i
-                # the 3 is just random scaling factor
+                # remove the row for the y vector
                 Ip2D = np.delete(Ip, yrow, 0)
                 # remove the column and row associated with the y
                 C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
                 # make an ellipse
-                height = Ip2D[0]
-                width = Ip2D[1]
-                angle = 0.
-                #angle = -np.degrees(np.arccos(C2D[0, 0]))
+                width = Ip2D[0]
+                height = Ip2D[1]
+                angle = -np.degrees(np.arccos(C2D[0, 0]))
                 ellipse = Ellipse((center[0], center[1]), width, height,
-                        angle=angle, fill=False)
+                                  angle=angle, fill=False,
+                                  color=partColors[part])
                 ax.add_patch(ellipse)
 
         plt.axis('equal')
-        plt.ylim((0, 1))
+        plt.ylim((0., 1.))
         plt.title(self.shortname)
 
         if show:
@@ -754,7 +761,11 @@ def part_inertia_tensor(par, part):
         Inertia tensor for the part.
 
     '''
-    I = np.zeros((3, 3), dtype=object)
+    if isinstance(par['mB'], UFloat):
+        dtype=object
+    else:
+        dtype='float64'
+    I = np.zeros((3, 3), dtype=dtype)
     # front or rear wheel
     if part == 'F' or part == 'R':
         axes = np.array([['xx', None, None],
@@ -1064,7 +1075,6 @@ def principal_axes(I):
         The rotation matrix.
 
     '''
-    print I
     Ip, C = np.linalg.eig(I)
     indices = np.argsort(Ip)
     Ip = Ip[indices]
