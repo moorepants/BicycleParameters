@@ -229,6 +229,7 @@ class Bicycle(object):
         try:
             slopes = remove_uncertainties(self.extras['slopes'])
             intercepts = remove_uncertainties(self.extras['intercepts'])
+            penInertias = remove_uncertainties(self.extras['pendulumInertias'])
         except AttributeError:
             pendulum = False
 
@@ -265,20 +266,20 @@ class Bicycle(object):
 
         if pendulum:
             # plot the pendulum axes for the measured parts
-            #comLineLength = par['w'] / 4.
             for j, pair in enumerate(slopes.items()):
                 part, slopeSet = pair
-                xcom = par['x' + part]
-                zcom = par['z' + part]
+                xcom, zcom = par['x' + part], par['z' + part]
                 for i, m in enumerate(slopeSet):
-                    comLineLength = self.extras['pendulumInertias'][part][i].nominal_value
+                    b = intercepts[part][i]
+                    xPoint, zPoint = project_point_on_line((m, b), (xcom, zcom))
+                    comLineLength = penInertias[part][i]
                     xPlus = comLineLength / 2. * np.cos(np.arctan(m))
-                    x = np.array([xcom - xPlus,
-                                  xcom + xPlus])
-                    y = -m * x - intercepts[part][i]
-                    plt.plot(x, y, color=partColors[part])
+                    x = np.array([xPoint - xPlus,
+                                  xPoint + xPlus])
+                    z = -m * x - b
+                    plt.plot(x, z, color=partColors[part])
                     # label the pendulum lines with a number
-                    plt.text(x[0], y[0], str(i + 1))
+                    plt.text(x[0], z[0], str(i + 1))
 
         if centerOfMass:
             # plot the center of mass location
@@ -459,6 +460,28 @@ class Bicycle(object):
         plt.show()
 
         return eigFig
+
+def project_point_on_line(line, point):
+    '''Returns point of projection.
+
+    Parameters
+    ----------
+    line : tuple
+        Slope and intercept of the line.
+    point : tuple
+        Location of the point.
+
+    Returns
+    -------
+    newPoint : tuple
+        The location of the projected point.
+
+    '''
+    m, b = line
+    c , d = point
+    x = (m * d + c - m * b) / (m**2. + 1.)
+    y = (m**2. * d + m * c + b) / (m**2. + 1.)
+    return x, y
 
 def get_parts_in_parameters(par):
     '''Returns a list of parts in a parameter dictionary.
