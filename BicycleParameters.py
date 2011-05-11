@@ -344,8 +344,8 @@ class Bicycle(object):
                 # remove the column and row associated with the y
                 C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
                 # make an ellipse
-                width = Ip2D[0]
-                height = Ip2D[1]
+                width = 1. / np.sqrt(Ip2D[0])
+                height = 1. / np.sqrt(Ip2D[1])
                 angle = -np.degrees(np.arccos(C2D[0, 0]))
                 ellipse = Ellipse((center[0], center[1]), width, height,
                                   angle=angle, fill=False,
