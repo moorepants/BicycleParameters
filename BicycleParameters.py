@@ -236,6 +236,54 @@ class Bicycle(object):
         fig = plt.figure()
         ax = plt.axes()
 
+        # define some colors for the parts
+        numColors = len(parts)
+        cmap = plt.get_cmap('gist_rainbow')
+        partColors = {}
+        for i, part in enumerate(parts):
+            partColors[part] = cmap(1. * i / numColors)
+
+        if inertiaEllipse:
+            # plot the principal moments of inertia
+            tensors = {}
+            for j, part in enumerate(parts):
+                I = part_inertia_tensor(par, part)
+                Ip, C = principal_axes(I)
+                if part == 'R':
+                    center = np.array([0., par['rR']])
+                elif part == 'F':
+                    center = np.array([par['w'], par['rF']])
+                else:
+                    center = np.array([par['x' + part], -par['z' + part]])
+                # which row in C is the y vector
+                uy = np.array([0., 1., 0.])
+                for i, row in enumerate(C):
+                    if np.abs(np.sum(row - uy)) < 1E-10:
+                        yrow = i
+                # remove the row for the y vector
+                Ip2D = np.delete(Ip, yrow, 0)
+                # remove the column and row associated with the y
+                C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
+                # make an ellipse
+                Imin =  Ip2D[0]
+                print part
+                print "Imin", Imin
+                Imax = Ip2D[1]
+                print "Imax", Imax
+                # get width and height of a ellipse with the major axis equal
+                # to one
+                unitWidth = 1. / 2. / np.sqrt(Imin) * np.sqrt(Imin)
+                unitHeight = 1. / 2. / np.sqrt(Imax) * np.sqrt(Imin)
+                # now scaled the width and height relative to the maximum
+                # principal moment of inertia
+                width = Imax * unitWidth
+                height = Imax * unitHeight
+                angle = -np.degrees(np.arccos(C2D[0, 0]))
+                ellipse = Ellipse((center[0], center[1]), width, height,
+                                  angle=angle, fill=False,
+                                  color=partColors[part], alpha=0.25)
+                ax.add_patch(ellipse)
+
         # plot the ground line
         x = np.array([-par['rR'],
                       par['w'] + par['rF']])
@@ -256,13 +304,6 @@ class Bicycle(object):
         # plot the steer axis
         dx3 = deex[2] + deez[2] * (deex[2] - deex[1]) / (deez[1] - deez[2])
         plt.plot([deex[2], dx3],  [-deez[2], 0.], 'k--')
-
-        # define some colors for the parts
-        numColors = len(parts)
-        cmap = plt.get_cmap('gist_rainbow')
-        partColors = {}
-        for i, part in enumerate(parts):
-            partColors[part] = cmap(1. * i / numColors)
 
         if pendulum:
             # plot the pendulum axes for the measured parts
@@ -316,41 +357,6 @@ class Bicycle(object):
                 ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
                 plt.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
 
-        if inertiaEllipse:
-            # plot the principal moments of inertia
-            tensors = {}
-            for j, part in enumerate(parts):
-                print "Part", part
-                I = part_inertia_tensor(par, part)
-                print "I\n", I
-                print I.shape
-                print type(I)
-                Ip, C = principal_axes(I)
-                print "Ip\n", Ip
-                print "C\n", C
-                if part == 'R':
-                    center = np.array([0., par['rR']])
-                elif part == 'F':
-                    center = np.array([par['w'], par['rF']])
-                else:
-                    center = np.array([par['x' + part], -par['z' + part]])
-                # which row in C is the y vector
-                uy = np.array([0., 1., 0.])
-                for i, row in enumerate(C):
-                    if np.abs(np.sum(row - uy)) < 1E-10:
-                        yrow = i
-                # remove the row for the y vector
-                Ip2D = np.delete(Ip, yrow, 0)
-                # remove the column and row associated with the y
-                C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
-                # make an ellipse
-                width = 1. / np.sqrt(Ip2D[0])
-                height = 1. / np.sqrt(Ip2D[1])
-                angle = -np.degrees(np.arccos(C2D[0, 0]))
-                ellipse = Ellipse((center[0], center[1]), width, height,
-                                  angle=angle, fill=False,
-                                  color=partColors[part])
-                ax.add_patch(ellipse)
 
         plt.axis('equal')
         plt.ylim((0., 1.))
@@ -1103,7 +1109,7 @@ def principal_axes(I):
     Returns
     -------
     Ip : ndarray, shape(3,)
-        The principal moments of inertia.
+        The principal moments of inertia. This is sorted smallest to largest.
     C : ndarray, shape(3,3)
         The rotation matrix.
 
