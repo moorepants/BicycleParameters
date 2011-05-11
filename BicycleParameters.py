@@ -501,6 +501,16 @@ def get_parts_in_parameters(par):
     parts = [x[1] for x in par.keys() if x.startswith('m')]
     return parts
 
+def rotate_inertia_tensor(I, angle):
+    '''Returns inertia tensor rotated through angle. Only for 2D'''
+    ca = umath.cos(angle)
+    sa = umath.sin(angle)
+    C    =  np.array([[ca, 0., -sa],
+                      [0., 1., 0.],
+                      [sa, 0., ca]])
+    Irot =  np.dot(C, np.dot(I, C.T))
+    return Irot
+
 def write_parameter_text_file(pathToTxtFile, parDict):
     '''Writes parameter set to file.
 
