@@ -45,6 +45,7 @@ github. Make sure you have the dependencies installed.
 
 Then get the data from here: no link yet and set up your sudirectories as such:
 
+```
 /root
 |
 -->/bicycles
@@ -56,6 +57,7 @@ Then get the data from here: no link yet and set up your sudirectories as such:
       -->/Photos
       |
       -->/Parameters
+```
 
 The root folder should contain BicycleParameters.py. Ther should be a folder
 with a Shortname for the bicycle for each bicycle that you have parameters for
@@ -75,3 +77,14 @@ rigid.parameters['Benchmark']
 rigid.plot_bicycle_geometry()
 ridig.plot_eigenvalues_vs_speed()
 ```
+
+TODO
+----
+
+- Make the connections with the calibration rod data smarter. Now you simply
+  put the rod data in each bicycle folder, but one rod is typically used for
+  multiple bicycles and each bicycle mat file contains.
+- Add the root loci plots.
+- Add Bode plots.
+- Merge the table generation code.
+- Make a bike comparison function.
