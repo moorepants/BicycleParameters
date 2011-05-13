@@ -35,7 +35,7 @@ class Bicycle(object):
             print a + b + c
             return None
 
-    def __init__(self, shortname, pathToBicycles='bicycles', 
+    def __init__(self, shortname, pathToBicycles='bicycles',
                  forceRawCalc=False, forcePeriodCalc=False):
         '''Creates a bicycle object and sets the parameters based on the
         available data.
@@ -47,6 +47,11 @@ class Bicycle(object):
             first letter capitilized and all other letters lower case. You
             should have a matching directory under "bicycles/". For example:
             "bicycles/Shortname".
+
+        pathToBicycles : string
+            This is the path to the folder where the bicycle parameters and raw
+            data is stored. The default is a folder named bicycles in the
+            current directory.
 
         forceRawCalc : boolean
             Forces a recalculation of the benchmark parameters from the measured
