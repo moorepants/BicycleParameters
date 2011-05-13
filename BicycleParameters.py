@@ -17,12 +17,13 @@ class Bicycle(object):
 
     '''
 
-    def __new__(cls, shortname, forceRawCalc=False, forcePeriodCalc=False):
+    def __new__(cls, shortname, pathToBicycles='bicycles',
+                forceRawCalc=False, forcePeriodCalc=False):
         '''Returns a NoneType object if there is no directory for the bicycle.'''
         # is there a data directory for this bicycle? if not, tell the user to
         # put some data in the folder so we have something to work with!
         try:
-            if os.path.isdir(os.path.join('bicycles', shortname)) == True:
+            if os.path.isdir(os.path.join(pathToBicycles, shortname)) == True:
                 print "We have foundeth a directory named: bicycles/" + shortname
                 return super(Bicycle, cls).__new__(cls)
             else:
@@ -34,7 +35,8 @@ class Bicycle(object):
             print a + b + c
             return None
 
-    def __init__(self, shortname, forceRawCalc=False, forcePeriodCalc=False):
+    def __init__(self, shortname, pathToBicycles='bicycles', 
+                 forceRawCalc=False, forcePeriodCalc=False):
         '''Creates a bicycle object and sets the parameters based on the
         available data.
 
@@ -57,7 +59,7 @@ class Bicycle(object):
         '''
 
         self.shortname = shortname
-        self.directory = os.path.join('bicycles', shortname)
+        self.directory = os.path.join(pathToBicycles, shortname)
 
         self.parameters = {}
         # if there are some parameter files, then load them
