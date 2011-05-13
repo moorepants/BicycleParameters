@@ -2,7 +2,7 @@
 and front wheel.'''
 import BicycleParameters as bp
 
-rigid = bp.Bicycle('Rigid', pathToBicycles='../bicycles', forceRawCalc=True)
+rigid = bp.Bicycle('Browser', pathToBicycles='../bicycles', forceRawCalc=True)
 rigPar = rigid.parameters['Benchmark']
 
 masses = bp.np.array([rigid.parameters['Benchmark']['mH'],

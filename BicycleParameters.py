@@ -159,6 +159,47 @@ class Bicycle(object):
             os.system('eog ' + os.path.join(photoDir, '*.*'))
         else:
             print "There are no photos of your bicycle."
+    
+    def steer_assembly_moment_of_inertia(self, withWheel=False):
+        '''Returns the moment of inertia of the steer assembly about the steer
+        axis.
+
+        Parameters
+        ----------
+        withWheel : boolean
+            If true then the wheel will be included in the calculation.
+
+        Returns
+        -------
+        ISteer : float
+            Moment of inertia about the steer axis.
+
+        '''
+        par = self.parameters['Benchmark']
+
+        IH = part_inertia_tensor(par, 'H')
+
+        if withWheel:
+            masses = np.array([par['mH'], par['mF']])
+
+            coords = np.array([[par['xH'], par['w']],
+                               [0., 0.],
+                               [par['zH'], -par['rF']]])
+
+            mHF, cHF = total_com(coords, masses)
+
+            IF = part_inertia_tensor(par, 'F')
+
+            dH = np.array([par['xH'] - cHF[0], 0., par['zH'] - cHF[2]])
+            dF = np.array([par['w'] - cHF[0], 0., -par['rF'] - cHF[2]])
+
+            IHF = (parallel_axis(IH, par['mH'], dH) +
+                   parallel_axis(IF, par['mF'], dF))
+            I = rotate_inertia_tensor(IHF, par['lam'])
+        else:
+            I = rotate_inertia_tensor(IH, par['lam'])
+
+        return I[2, 2]
 
     def calculate_from_measured(self, forcePeriodCalc=False):
         '''Calculates the parameters from measured data.'''
