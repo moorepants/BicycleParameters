@@ -81,10 +81,8 @@ ridig.plot_eigenvalues_vs_speed()
 TODO
 ----
 
-- Make the connections with the calibration rod data smarter. Now you simply
-  put the rod data in each bicycle folder, but one rod is typically used for
-  multiple bicycles and each bicycle mat file contains.
 - Add the root loci plots.
 - Add Bode plots.
 - Merge the table generation code.
 - Make a bike comparison function.
+- Seperate the general dynamics functions to a seperate module
