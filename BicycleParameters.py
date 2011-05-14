@@ -164,7 +164,7 @@ class Bicycle(object):
             os.system('eog ' + os.path.join(photoDir, '*.*'))
         else:
             print "There are no photos of your bicycle."
-    
+
     def steer_assembly_moment_of_inertia(self, withWheel=False):
         '''Returns the moment of inertia of the steer assembly about the steer
         axis.
@@ -460,7 +460,8 @@ class Bicycle(object):
 
         return evals, evecs
 
-    def plot_eigenvalues_vs_speed(self, speeds):
+    def plot_eigenvalues_vs_speed(self, speeds, fig=None, sortModes=True,
+                                  color=None, show=False, largest=False):
         '''Returns a plot of the eigenvalues versus speed for the current
         benchmark parameters.
 
@@ -468,8 +469,19 @@ class Bicycle(object):
         ----------
         speeds : ndarray, shape(n,)
             An array of speeds to calculate the eigenvalues at.
+        fig : matplotlib figure, optional
+            A figure to plot to.
+        sortModes : boolean
+            If true this will attempt to sort the eigenvalues into modes.
+        color : matplotlib color
+            If sortModes isn't true this will be the color of the plot lines.
+        largest : boolean
+            If true, only the largest eigenvalue is plotted.
 
         '''
+
+        # sort the speeds in case they aren't
+        speeds = np.sort(speeds)
 
         # figure properties
         figwidth = 6. # in inches
@@ -485,35 +497,112 @@ class Bicycle(object):
             }
         plt.rcParams.update(params)
 
-        eigFig = plt.figure(figsize=figsize)
+        if not fig:
+            fig = plt.figure(figsize=figsize)
 
         plt.axes([0.125,0.2,0.95-0.125,0.85-0.2])
 
         evals, evecs = self.eig(speeds)
-        wea, cap, cas = sort_modes(evals, evecs)
 
-        # x axis line
-        plt.plot(speeds, np.zeros_like(speeds), 'k-',
-                 label='_nolegend_', linewidth=1.5)
-        # imaginary components
-        plt.plot(speeds, np.abs(np.imag(wea['evals'])), color='blue',
-                 label='Imaginary Weave', linestyle='--')
-        plt.plot(speeds, np.abs(np.imag(cap['evals'])), color='red',
-                 label='Imaginary Capsize', linestyle='--')
-        # plot the real parts of the eigenvalues
-        plt.plot(speeds, np.real(wea['evals']), color='blue', label='Real Weave')
-        plt.plot(speeds, np.real(cap['evals']), color='red', label='Real Capsize')
-        plt.plot(speeds, np.real(cas['evals']), color='green', label='Real Caster')
+        # if a color is specified make all lines the same color
+        if color:
+            weaveColor = color
+            capsizeColor = color
+            casterColor = color
+            legend = ['_nolegend_'] * 6
+            legend[5] = self.shortname
+            maxLabel = self.shortname
+        else:
+            weaveColor = 'blue'
+            capsizeColor = 'red'
+            casterColor = 'green'
+            legend = ['Imaginary Weave', 'Imaginary Capsize',
+                      'Imaginary Caster', 'Real Weave', 'Real Capsize',
+                      'Real Caster']
+            maxLabel = 'Max Eigenvalue'
 
-        plt.ylim((-10, 10))
-        plt.xlim((0, 10))
-        plt.title('%s\nEigenvalues vs Speed' % self.shortname)
+        if largest:
+            maxEval = np.max(np.real(evals), axis=1)
+            plt.plot(speeds, maxEval, color='k', label=maxLabel)
+        else:
+            wea, cap, cas = sort_modes(evals, evecs)
+
+            # imaginary components
+            plt.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
+                     label=legend[0], linestyle='--')
+            plt.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsizeColor,
+                     label=legend[1], linestyle='--')
+            plt.plot(speeds, np.abs(np.imag(cas['evals'])), color=casterColor,
+                     label=legend[2], linestyle='--')
+
+            # x axis line
+            plt.plot(speeds, np.zeros_like(speeds), 'k-',
+                     label='_nolegend_', linewidth=1.5)
+
+            # plot the real parts of the eigenvalues
+            plt.plot(speeds, np.real(wea['evals']),
+                     color=weaveColor, label=legend[3])
+            plt.plot(speeds, np.real(cap['evals']),
+                     color=capsizeColor, label=legend[4])
+            plt.plot(speeds, np.real(cas['evals']),
+                     color=casterColor, label=legend[5])
+
+        if largest:
+            # x axis line
+            plt.plot(speeds, np.zeros_like(speeds), 'k-',
+                     label='_nolegend_', linewidth=1.5)
+            plt.ylim((np.min(maxEval), np.max(maxEval)))
+            plt.ylabel('Real Part of the Largest Eigenvalue [1/s]')
+        else:
+            plt.ylim((np.min(np.real(evals)),
+                      np.max(np.imag(evals))))
+            plt.ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
+
+        plt.xlim((speeds[0], speeds[-1]))
         plt.xlabel('Speed [m/s]')
-        plt.ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
 
-        plt.show()
+        if color:
+            plt.title('Eigenvalues vs Speed')
+        else:
+            plt.title('%s\nEigenvalues vs Speed' % self.shortname)
+            plt.legend()
 
-        return eigFig
+        if show:
+            plt.show()
+
+        return fig
+
+def plot_eigenvalues(bikes, speeds, largest=False):
+    '''Returns a figure with the eigenvalues vs speed for multiple bicycles.
+
+    Parameters
+    ----------
+    bikes : list
+        A list of Bicycle objects.
+    speeds : ndarray, shape(n,)
+        An array of speeds.
+    largest : boolean
+        If true, only plots the largest eigenvalue.
+
+    Returns
+    -------
+    fig : matplotlib figure
+
+    '''
+    # define some colors for the parts
+    numColors = len(bikes)
+    cmap = plt.get_cmap('gist_rainbow')
+
+    fig = plt.figure()
+
+    for i, bike in enumerate(bikes):
+        color = cmap(1. * i / numColors)
+        fig = bike.plot_eigenvalues_vs_speed(speeds, fig=fig, color=color,
+                largest=largest)
+        plt.legend()
+        plt.axis('tight')
+
+    return fig
 
 def project_point_on_line(line, point):
     '''Returns point of projection.
