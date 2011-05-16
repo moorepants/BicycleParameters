@@ -5,7 +5,7 @@ bikeNames = ['Browserins', 'Browser', 'Pista',
 
 colors = ['k'] * 3 + ['gray'] * 3
 
-linestyles = ['-', ':', '--'] * 2 
+linestyles = ['-', '-.', '--'] * 2
 
 bikes = []
 

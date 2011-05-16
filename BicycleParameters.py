@@ -528,7 +528,7 @@ class Bicycle(object):
         if largest:
             maxEval = np.max(np.real(evals), axis=1)
             plt.plot(speeds, maxEval, color=color, label=maxLabel,
-                     linestyle=linestyle)
+                     linestyle=linestyle, linewidth=1.5)
             # x axis line
             plt.plot(speeds, np.zeros_like(speeds), 'k-',
                      label='_nolegend_', linewidth=1.5)
@@ -610,9 +610,9 @@ def plot_eigenvalues(bikes, speeds, colors=None, linestyles=None, largest=False)
         # define some linestyles
         pass
 
-    fig = plt.figure()
-
     for i, bike in enumerate(bikes):
+        if i == 0:
+            fig = None
         fig = bike.plot_eigenvalues_vs_speed(speeds, fig=fig, color=colors[i],
                                              largest=largest, generic=True,
                                              linestyle=linestyles[i])
