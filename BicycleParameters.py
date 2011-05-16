@@ -460,8 +460,9 @@ class Bicycle(object):
 
         return evals, evecs
 
-    def plot_eigenvalues_vs_speed(self, speeds, fig=None, sortModes=True,
-                                  color=None, show=False, largest=False):
+    def plot_eigenvalues_vs_speed(self, speeds, fig=None, generic=False,
+                                  color='black', show=False, largest=False,
+                                  linestyle='-'):
         '''Returns a plot of the eigenvalues versus speed for the current
         benchmark parameters.
 
@@ -471,10 +472,11 @@ class Bicycle(object):
             An array of speeds to calculate the eigenvalues at.
         fig : matplotlib figure, optional
             A figure to plot to.
-        sortModes : boolean
-            If true this will attempt to sort the eigenvalues into modes.
+        generic : boolean
+            If true the lines will all be the same color and the modes will not
+            be labeled.
         color : matplotlib color
-            If sortModes isn't true this will be the color of the plot lines.
+            If generic is true this will be the color of the plot lines.
         largest : boolean
             If true, only the largest eigenvalue is plotted.
 
@@ -485,12 +487,12 @@ class Bicycle(object):
 
         # figure properties
         figwidth = 6. # in inches
-        goldenMean = (np.sqrt(5)-1.0)/2.0
+        goldenMean = (np.sqrt(5.)-1.) / 2.
         figsize = [figwidth, figwidth * goldenMean]
         params = {#'backend': 'ps',
             'axes.labelsize': 8,
             'text.fontsize': 10,
-            'legend.fontsize': 6,
+            'legend.fontsize': 8,
             'xtick.labelsize': 6,
             'ytick.labelsize': 6,
             'figure.figsize': figsize
@@ -500,12 +502,14 @@ class Bicycle(object):
         if not fig:
             fig = plt.figure(figsize=figsize)
 
-        plt.axes([0.125,0.2,0.95-0.125,0.85-0.2])
+        plt.axes([0.125, 0.2, 0.95-0.125, 0.85-0.2])
 
         evals, evecs = self.eig(speeds)
 
-        # if a color is specified make all lines the same color
-        if color:
+        if largest:
+            generic = True
+
+        if generic:
             weaveColor = color
             capsizeColor = color
             casterColor = color
@@ -523,7 +527,13 @@ class Bicycle(object):
 
         if largest:
             maxEval = np.max(np.real(evals), axis=1)
-            plt.plot(speeds, maxEval, color='k', label=maxLabel)
+            plt.plot(speeds, maxEval, color=color, label=maxLabel,
+                     linestyle=linestyle)
+            # x axis line
+            plt.plot(speeds, np.zeros_like(speeds), 'k-',
+                     label='_nolegend_', linewidth=1.5)
+            plt.ylim((np.min(maxEval), np.max(maxEval)))
+            plt.ylabel('Real Part of the Largest Eigenvalue [1/s]')
         else:
             wea, cap, cas = sort_modes(evals, evecs)
 
@@ -547,13 +557,7 @@ class Bicycle(object):
             plt.plot(speeds, np.real(cas['evals']),
                      color=casterColor, label=legend[5])
 
-        if largest:
-            # x axis line
-            plt.plot(speeds, np.zeros_like(speeds), 'k-',
-                     label='_nolegend_', linewidth=1.5)
-            plt.ylim((np.min(maxEval), np.max(maxEval)))
-            plt.ylabel('Real Part of the Largest Eigenvalue [1/s]')
-        else:
+            # set labels and limits
             plt.ylim((np.min(np.real(evals)),
                       np.max(np.imag(evals))))
             plt.ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
@@ -561,7 +565,7 @@ class Bicycle(object):
         plt.xlim((speeds[0], speeds[-1]))
         plt.xlabel('Speed [m/s]')
 
-        if color:
+        if generic:
             plt.title('Eigenvalues vs Speed')
         else:
             plt.title('%s\nEigenvalues vs Speed' % self.shortname)
@@ -572,7 +576,7 @@ class Bicycle(object):
 
         return fig
 
-def plot_eigenvalues(bikes, speeds, largest=False):
+def plot_eigenvalues(bikes, speeds, colors=None, linestyles=None, largest=False):
     '''Returns a figure with the eigenvalues vs speed for multiple bicycles.
 
     Parameters
@@ -581,6 +585,10 @@ def plot_eigenvalues(bikes, speeds, largest=False):
         A list of Bicycle objects.
     speeds : ndarray, shape(n,)
         An array of speeds.
+    colors : list
+        A list of matplotlib colors for each bicycle.
+    linestyles : list
+        A list of matplotlib linestyles for each bicycle.
     largest : boolean
         If true, only plots the largest eigenvalue.
 
@@ -589,16 +597,25 @@ def plot_eigenvalues(bikes, speeds, largest=False):
     fig : matplotlib figure
 
     '''
-    # define some colors for the parts
-    numColors = len(bikes)
-    cmap = plt.get_cmap('gist_rainbow')
+
+    if not colors:
+        # define some colors for the parts
+        numColors = len(bikes)
+        cmap = plt.get_cmap('gist_rainbow')
+        colors = []
+        for i in range(len(numColors)):
+            colors.append(cmap(1. * i / numColors))
+
+    if not linestyles:
+        # define some linestyles
+        pass
 
     fig = plt.figure()
 
     for i, bike in enumerate(bikes):
-        color = cmap(1. * i / numColors)
-        fig = bike.plot_eigenvalues_vs_speed(speeds, fig=fig, color=color,
-                largest=largest)
+        fig = bike.plot_eigenvalues_vs_speed(speeds, fig=fig, color=colors[i],
+                                             largest=largest, generic=True,
+                                             linestyle=linestyles[i])
         plt.legend()
         plt.axis('tight')
 
