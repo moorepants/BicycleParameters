@@ -59,7 +59,7 @@ Then get the data from here: no link yet and set up your sudirectories as such:
       -->/Parameters
 ```
 
-The root folder should contain BicycleParameters.py. Ther should be a folder
+The root folder should contain BicycleParameters.py. There should be a folder
 with a Shortname for the bicycle for each bicycle that you have parameters for
 or raw data for. The RawData folder should contain the mat files with the rate
 gyro data from the torsional and compound pendulums plus the
@@ -75,7 +75,8 @@ import BicycleParameters as bp
 rigid = bp.Bicycle('Rigid')
 rigid.parameters['Benchmark']
 rigid.plot_bicycle_geometry()
-ridig.plot_eigenvalues_vs_speed()
+speeds = bp.np.linspace(0., 10., num=100)
+rigid.plot_eigenvalues_vs_speed(speeds)
 ```
 
 TODO
