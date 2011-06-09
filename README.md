@@ -50,7 +50,15 @@ Set up your subdirectories like this:
 |
 -->/bicycles
    |
-   -->/Shortname
+   -->/Bicyclea
+   |  |
+   |  -->/Parameters
+   |  |
+   |  -->/Photos
+   |  |
+   |  -->/RawData
+   |
+   -->/Bicycleb
       |
       -->/Parameters
       |
@@ -112,67 +120,133 @@ Required Parameters
 
 ### RawData directory
 If you have raw data it can come in two forms: either a file containing all the
-manual measurements (including the oscillation periods for each rigid body) or a file containing
-all the manual measurments and a set of data files containing oscillatory
-signals from which the periods can be estimated. The manual measurement data
-file should follow the naming convention `ShortnameMeasure.txt` and should have
-one variable on each line in the following format `mR = 1.38+/-0.02,
-1.37+/-0.02` which is the same as the previous parameter variable definition
-accept that multiple measurements can be included as comma separated values.
+manual measurements (including the oscillation periods for each rigid body) or
+a file containing all the manual measurments and a set of data files containing
+oscillatory signals from which the periods can be estimated. The manual
+measurement data file should follow the naming convention
+`ShortnameMeasure.txt` and should have one variable on each line in the
+following format `mR = 1.38+/-0.02, 1.37+/-0.02` which is the same as the
+previous parameter variable definition accept that multiple measurements can be
+included as comma separated values.
 
 Required Parameters
 
-- aB1 : perpendicular distance from the pendulum axis to the rear axle center, first orienation [m]
-- aB2 : perpendicular distance from the pendulum axis to the rear axle center, second orienation [m]
-- aB3 : perpendicular distance from the pendulum axis to the rear axle center, third orienation [m]
-- aH1 : perpendicular distance from the pendulum axis to the front axle center, first orienation [m]
-- aH2 : perpendicular distance from the pendulum axis to the front axle center, second orienation [m]
-- aH3 : perpendicular distance from the pendulum axis to the front axle center, third orienation [m]
-- alphaB1 : angle of the head tube with respect to horizontal, first orientation [deg]
-- alphaB2 : angle of the head tube with respect to horizontal, second orientation [deg]
-- alphaB3 : angle of the head tube with respect to horizontal, third orientation [deg]
-- alphaH1 : angle of the steer tube with respect to horizontal, first orientation [deg]
-- alphaH2 : angle of the steer tube with respect to horizontal, second orientation [deg]
-- alphaH3 : angle of the steer tube with respect to horizontal, third orientation [deg]
-- dF : distance the front wheel travels [m]
-- dP : diameter of the calibration rod [m]
-- dR : distance the rear wheel travels [m]
-- f : fork offset [m]
-- g : acceleration due to gravity [m/s**2]
-- gamma : head tube angle [deg]
-- lF : front wheel compound pendulum length [m]
-- lP : calibration rod length [m]
-- lR : rear wheel compound pendulum length [m]
-- mB : frame mass [kg]
-- mF : front wheel mass [kg]
-- mH : fork/handlebar mass [kg]
-- mP : calibration rod mass [kg]
-- mR : rear wheel mass [kg]
-- nF : number of rotations of the front wheel
-- nR : number of rotations of the rear wheel
-- TcB1 : frame compound pendulum oscillation period [s]
-- TcF1 : front wheel compound pendulum oscillation period [s]
-- TcH1 : fork/handlebar compound pendulum oscillation period [s]
-- TcR1 : rear wheel compound pendulum oscillation period [s]
-- TtB1 : frame torsional pendulum oscillation period, first orientation [s]
-- TtB2 : frame torsional pendulum oscillation period, second orientation [s]
-- TtB3 : frame torsional pendulum oscillation period, third orientation [s]
-- TtF1 : front wheel torsional pendulum oscillation period, first orientation [s]
-- TtH1 : handlebar/fork torsional pendulum oscillation period, first orientation [s]
-- TtH2 : handlebar/fork torsional pendulum oscillation period, second orientation [s]
-- TtH3 : handlebar/fork torsional pendulum oscillation period, third orientation [s]
-- TtP1 : calibration torsional pendulum oscillation period [s]
-- TtR1 : rear wheel torsional pendulum oscillation period [s]
-- w : wheelbase [m]
+- `aB1` : perpendicular distance from the pendulum axis to the rear axle
+  center, first orienation [m]
+- `aB2` : perpendicular distance from the pendulum axis to the rear axle
+  center, second orienation [m]
+- `aB3` : perpendicular distance from the pendulum axis to the rear axle
+  center, third orienation [m]
+- `aH1` : perpendicular distance from the pendulum axis to the front axle
+  center, first orienation [m]
+- `aH2` : perpendicular distance from the pendulum axis to the front axle
+  center, second orienation [m]
+- `aH3` : perpendicular distance from the pendulum axis to the front axle
+  center, third orienation [m]
+- `alphaB1` : angle of the head tube with respect to horizontal, first
+  orientation [deg]
+- `alphaB2` : angle of the head tube with respect to horizontal, second
+  orientation [deg]
+- `alphaB3` : angle of the head tube with respect to horizontal, third
+  orientation [deg]
+- `alphaH1` : angle of the steer tube with respect to horizontal, first
+  orientation [deg]
+- `alphaH2` : angle of the steer tube with respect to horizontal, second
+  orientation [deg]
+- `alphaH3` : angle of the steer tube with respect to horizontal, third
+  orientation [deg]
+- `dF` : distance the front wheel travels [m]
+- `dP` : diameter of the calibration rod [m]
+- `dR` : distance the rear wheel travels [m]
+- `f` : fork offset [m]
+- `g` : acceleration due to gravity [m/s**2]
+- `gamma` : head tube angle [deg]
+- `lF` : front wheel compound pendulum length [m]
+- `lP` : calibration rod length [m]
+- `lR` : rear wheel compound pendulum length [m]
+- `mB` : frame mass [kg]
+- `mF` : front wheel mass [kg]
+- `mH` : fork/handlebar mass [kg]
+- `mP` : calibration rod mass [kg]
+- `mR` : rear wheel mass [kg]
+- `nF` : number of rotations of the front wheel
+- `nR` : number of rotations of the rear wheel
+- `TcB1` : frame compound pendulum oscillation period [s]
+- `TcF1` : front wheel compound pendulum oscillation period [s]
+- `TcH1` : fork/handlebar compound pendulum oscillation period [s]
+- `TcR1` : rear wheel compound pendulum oscillation period [s]
+- `TtB1` : frame torsional pendulum oscillation period, first orientation [s]
+- `TtB2` : frame torsional pendulum oscillation period, second orientation [s]
+- `TtB3` : frame torsional pendulum oscillation period, third orientation [s]
+- `TtF1` : front wheel torsional pendulum oscillation period, first orientation
+  [s]
+- `TtH1` : handlebar/fork torsional pendulum oscillation period, first
+  orientation [s]
+- `TtH2` : handlebar/fork torsional pendulum oscillation period, second
+  orientation [s]
+- `TtH3` : handlebar/fork torsional pendulum oscillation period, third
+  orientation [s]
+- `TtP1` : calibration torsional pendulum oscillation period [s]
+- `TtR1` : rear wheel torsional pendulum oscillation period [s]
+- `w` : wheelbase [m]
+
+Geometry Option
+
+The default option is to provide the wheelbase, fork offset, head tube angle
+and the wheel radii, but there is a secondary option for the geometric
+variables using the perpendicular distances from the steer axis to the wheel
+centers and the distance between their respective intersection points. To use
+these, simply replace w, gamma, and f with:
+
+- `h1` : distance from the base of the height gage to the top of the the rear wheel axis [m]
+- `h2` : distance from the table surface to the base of the height gage [m]
+- `h3` : distance from the table surface to the top of the head tube [m]
+- `h4` : height of the top of the front wheel axle [m]
+- `h5` : height of the top of the steer tube [m]
+- `d1` : outer diameter of the head tube [m]
+- `d2` : diameter of the dummy rear axle [m]
+- `d3` : diameter of of the dummy front axle [m]
+- `d4` : outer diameter of the steer tube [m]
+- `d` : inside distance between the rear and the front axles with the fork reversed [m]
+
+The details of these measurements can be found in our [raw data
+sheet](http://bit.ly/jIeKKB) and on our
+[website](http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/frame-dimensions).
+
+Fork/Handlebar Separation
+
+The measurement of the fork and the handlebar as two rigid bodies is also
+supported. See the example bicycle called Rigid for more details.
 
 Notes
 
 - The periods (T) are not required if you provide oscillation signal data
   files.
+- You have to specify at least three orientations, and currently you can
+  specify up to 6 orientation for each rigid body.
+
+Pendulum Data Files
+
+If you have raw signal data that the periods can be estimated from, then these
+should be included in the `RawData` directory. There should be at least one
+file for every period in the `ShortnameMeasured.txt` file. Currently the only supported
+file is a Matlab mat file with these variables:
+
+- data : signal of a decaying oscillation
+- sampleRate : sample rate of data in hertz
+
+The files should be named in this manner
+[Shortname][Part][Pendulum][Orientation][Trial].mat where:
+
+- Shortname is the shortname of the bicycle
+- Part is either Fork, Frame, Rwheel, or Fwheel
+- Orientation is either First, Second, Third, Fourth, Fifth, or Sixth
+- Trial is an integer greater than or equal to 1
 
 ### Photos directory
 The Photos folder should contain photos of the bicycle parts hung as the
-various pendulums. The
+various pendulums in the various orientations. The filename should follow the
+conventions of the raw signal data files.
 
 Example Code
 ------------
@@ -193,3 +267,4 @@ ToDo
 - Merge the table generation code.
 - Make a bike comparison function.
 - Separate the general dynamics functions to another module
+- Start using some other covention other than camel case for the file names.
