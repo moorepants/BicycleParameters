@@ -71,20 +71,18 @@ with the first letter capitalized. Examples of Shortname include
 
 ### Parameters directory
 If you don't have any raw measurements for the bicycle, simply add a file
-titled ShortnameBenchmark.txt with the benchmark parameter set into the
-Parameters directory for the particular bicycle. Each line should have one of
-the 26 benchmark parameters in the following format:
-
-c = 0.080+/-0.001
-
-Where the first characters are a unique variable name, following with next an
-equal sign, the value of the parameter, a plus or minus symbol ('+/-'), and the
-standard deviation of the value. There can be spaces between the parts. Use 0.0
+titled `ShortnameBenchmark.txt` with the benchmark parameter set into the
+`Parameters` directory for the particular bicycle. Each line should have one of
+the 26 benchmark parameters in the following format: `c = 0.080+/-0.001`, where
+the first characters are a unique variable name, following with next an equal
+sign, the value of the parameter, a plus or minus symbol (`+/-`), and the
+standard deviation of the value. There can be spaces between the parts. Use `0.0`
 for the standard deviation if this is unknown or you don't need to know the
 uncertainties in other values. Use the same units as the benchmark bicycle
 paper for less headaches. These are the possible variables:
 
 Required Parameters
+
 - g : acceleration due to gravity
 - c : trail
 - w : wheelbase
