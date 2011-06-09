@@ -83,38 +83,92 @@ paper for less headaches. These are the possible variables:
 
 Required Parameters
 
-- g : acceleration due to gravity
-- c : trail
-- w : wheelbase
-- lam : steer axis tilt
-- rR : rear wheel radius
-- rF : front wheel radius
-- mB : frame/rider mass
-- mF : front wheel mass
-- mH : handlebar/fork assembly mass
-- mR : rear wheel mass
-- xB : x distance to the frame/rider center of mass
-- yB : y distance to the frame/rider center of mass
-- xH : x distance to the frame/rider center of mass
-- yH : y distance to the frame/rider center of mass
-- IBxx : x moment of inertia of the frame/rider
-- IByy : y moment of inertia of the frame/rider
-- IBzz : z moment of inertia of the frame/rider
-- IBxz : xz product of inertia of the frame/rider
-- IFxx : x moment of inertia of the front wheel
-- IFyy : y moment of inertia of the front wheel
-- IHxx : x moment of inertia of the handlebar/fork
-- IHyy : y moment of inertia of the handlebar/fork
-- IHzz : z moment of inertia of the handlebar/fork
-- IHxz : xz product of inertia of the handlebar/fork
-- IRxx : x moment of inertia of the rear wheel
-- IRyy : y moment of inertia of the rear wheel
+- `g` : acceleration due to gravity
+- `c` : trail
+- `w` : wheelbase
+- `lam` : steer axis tilt
+- `rR` : rear wheel radius
+- `rF` : front wheel radius
+- `mB` : frame/rider mass
+- `mF` : front wheel mass
+- `mH` : handlebar/fork assembly mass
+- `mR` : rear wheel mass
+- `xB` : x distance to the frame/rider center of mass
+- `yB` : y distance to the frame/rider center of mass
+- `xH` : x distance to the frame/rider center of mass
+- `yH` : y distance to the frame/rider center of mass
+- `IBxx` : x moment of inertia of the frame/rider
+- `IByy` : y moment of inertia of the frame/rider
+- `IBzz` : z moment of inertia of the frame/rider
+- `IBxz` : xz product of inertia of the frame/rider
+- `IFxx` : x moment of inertia of the front wheel
+- `IFyy` : y moment of inertia of the front wheel
+- `IHxx` : x moment of inertia of the handlebar/fork
+- `IHyy` : y moment of inertia of the handlebar/fork
+- `IHzz` : z moment of inertia of the handlebar/fork
+- `IHxz` : xz product of inertia of the handlebar/fork
+- `IRxx` : x moment of inertia of the rear wheel
+- `IRyy` : y moment of inertia of the rear wheel
 
 ### RawData directory
-If you have raw data, the RawData folder should contain a file named
-ShortnameMeasure.txt file that contains all of the manually obtained raw data
-and potentially the mat files with the rate gyro data from the torsional and
-compound pendulums measurements.
+If you have raw data it can come in two forms: either a file containing all the
+manual measurements (including the oscillation periods for each rigid body) or a file containing
+all the manual measurments and a set of data files containing oscillatory
+signals from which the periods can be estimated. The manual measurement data
+file should follow the naming convention `ShortnameMeasure.txt` and should have
+one variable on each line in the following format `mR = 1.38+/-0.02,
+1.37+/-0.02` which is the same as the previous parameter variable definition
+accept that multiple measurements can be included as comma separated values.
+
+Required Parameters
+
+- aB1 : perpendicular distance from the pendulum axis to the rear axle center, first orienation [m]
+- aB2 : perpendicular distance from the pendulum axis to the rear axle center, second orienation [m]
+- aB3 : perpendicular distance from the pendulum axis to the rear axle center, third orienation [m]
+- aH1 : perpendicular distance from the pendulum axis to the front axle center, first orienation [m]
+- aH2 : perpendicular distance from the pendulum axis to the front axle center, second orienation [m]
+- aH3 : perpendicular distance from the pendulum axis to the front axle center, third orienation [m]
+- alphaB1 : angle of the head tube with respect to horizontal, first orientation [deg]
+- alphaB2 : angle of the head tube with respect to horizontal, second orientation [deg]
+- alphaB3 : angle of the head tube with respect to horizontal, third orientation [deg]
+- alphaH1 : angle of the steer tube with respect to horizontal, first orientation [deg]
+- alphaH2 : angle of the steer tube with respect to horizontal, second orientation [deg]
+- alphaH3 : angle of the steer tube with respect to horizontal, third orientation [deg]
+- dF : distance the front wheel travels [m]
+- dP : diameter of the calibration rod [m]
+- dR : distance the rear wheel travels [m]
+- f : fork offset [m]
+- g : acceleration due to gravity [m/s**2]
+- gamma : head tube angle [deg]
+- lF : front wheel compound pendulum length [m]
+- lP : calibration rod length [m]
+- lR : rear wheel compound pendulum length [m]
+- mB : frame mass [kg]
+- mF : front wheel mass [kg]
+- mH : fork/handlebar mass [kg]
+- mP : calibration rod mass [kg]
+- mR : rear wheel mass [kg]
+- nF : number of rotations of the front wheel
+- nR : number of rotations of the rear wheel
+- TcB1 : frame compound pendulum oscillation period [s]
+- TcF1 : front wheel compound pendulum oscillation period [s]
+- TcH1 : fork/handlebar compound pendulum oscillation period [s]
+- TcR1 : rear wheel compound pendulum oscillation period [s]
+- TtB1 : frame torsional pendulum oscillation period, first orientation [s]
+- TtB2 : frame torsional pendulum oscillation period, second orientation [s]
+- TtB3 : frame torsional pendulum oscillation period, third orientation [s]
+- TtF1 : front wheel torsional pendulum oscillation period, first orientation [s]
+- TtH1 : handlebar/fork torsional pendulum oscillation period, first orientation [s]
+- TtH2 : handlebar/fork torsional pendulum oscillation period, second orientation [s]
+- TtH3 : handlebar/fork torsional pendulum oscillation period, third orientation [s]
+- TtP1 : calibration torsional pendulum oscillation period [s]
+- TtR1 : rear wheel torsional pendulum oscillation period [s]
+- w : wheelbase [m]
+
+Notes
+
+- The periods (T) are not required if you provide oscillation signal data
+  files.
 
 ### Photos directory
 The Photos folder should contain photos of the bicycle parts hung as the
