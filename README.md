@@ -12,7 +12,7 @@ one two many times.
 Features
 --------
 - Loads bicycle parameter sets from text files
-- Generates the benchmark parameter for a real bicycle from experimental data
+- Generates the benchmark parameters for a real bicycle from experimental data
 - Plots a descriptive drawing of the bicycle
 - Calculates the eigenvalues for the Whipple bicycle model linearized about the
   upright configuration.
@@ -22,8 +22,8 @@ Features
 Upcoming Features
 -----------------
 - Converts benchmark parameters to other parametrizations
-- Calculates the transfer functions to the system.
-- Plots Bode diagrams of the transfer functions.
+- Calculates the transfer functions of the open loop system.
+- Plots Bode diagrams of the open loop transfer functions.
 - Ability to add a rigid rider's physical properties.
 - Generates publication quality tables of parameters using LaTeX
 
@@ -43,7 +43,7 @@ Installation
 For now simpy clone the the source code with git or download the tarball from
 github. Make sure you have the dependencies installed.
 
-Then get the data from here: no link yet and set up your sudirectories as such:
+Set up your subdirectories like this:
 
 ```
 /root
@@ -52,21 +52,75 @@ Then get the data from here: no link yet and set up your sudirectories as such:
    |
    -->/Shortname
       |
-      -->/RawData
+      -->/Parameters
       |
       -->/Photos
       |
-      -->/Parameters
+      -->/RawData
 ```
+### root directory
+The root folder should contain BicycleParameters.py and the other top level
+files found in the source code.
 
-The root folder should contain BicycleParameters.py. There should be a folder
-with a Shortname for the bicycle for each bicycle that you have parameters for
-or raw data for. The RawData folder should contain the mat files with the rate
-gyro data from the torsional and compound pendulums plus the
-ShortnameMeasure.txt file that contains all of the raw data. The Photos folder
-should contain photos of the bicycle parts hung as the various pendulums. The
-Parameters folder should contatin parameter files named ShortnameType.txt where
-Type is the parameterization type such as "Benchmark".
+### bicycles directory
+This directory contains directories for the parameter sets, raw data, and
+experiment photos. There should be a folder with a short name for each bicycle
+that you have parameter sets and/or raw data for. The short name should be a word
+with the first letter capitilized. Examples of Shortname include
+"Bianchipista", "Bike", "Mybike", "Rigidrider", "Schwintandem", "Gyrobike", etc.
+
+### Parameters directory
+If you don't have any raw measurements for the bicycle, simply add a file
+titled ShortnameBenchmark.txt with the benchmark parameter set into the
+Parameters directory for the particular bicycle. Each line should have one of
+the 26 benchmark parameters in the following format:
+
+c = 0.080+/-0.001
+
+Where the first characters are a unique variable name, following with next an
+equal sign, the value of the parameter, a plus or minus symbol ('+/-'), and the
+standard deviation of the value. There can be spaces between the parts. Use 0.0
+for the standard deviation if this is unknown or you don't need to know the
+uncertainties in other values. Use the same units as the benchmark bicycle
+paper for less headaches. These are the possible variables:
+
+Required Parameters
+- g : acceleration due to gravity
+- c : trail
+- w : wheelbase
+- lam : steer axis tilt
+- rR : rear wheel radius
+- rF : front wheel radius
+- mB : frame/rider mass
+- mF : front wheel mass
+- mH : handlebar/fork assembly mass
+- mR : rear wheel mass
+- xB : x distance to the frame/rider center of mass
+- yB : y distance to the frame/rider center of mass
+- xH : x distance to the frame/rider center of mass
+- yH : y distance to the frame/rider center of mass
+- IBxx : x moment of inertia of the frame/rider
+- IByy : y moment of inertia of the frame/rider
+- IBzz : z moment of inertia of the frame/rider
+- IBxz : xz product of inertia of the frame/rider
+- IFxx : x moment of inertia of the front wheel
+- IFyy : y moment of inertia of the front wheel
+- IHxx : x moment of inertia of the handlebar/fork
+- IHyy : y moment of inertia of the handlebar/fork
+- IHzz : z moment of inertia of the handlebar/fork
+- IHxz : xz product of inertia of the handlebar/fork
+- IRxx : x moment of inertia of the rear wheel
+- IRyy : y moment of inertia of the rear wheel
+
+### RawData directory
+If you have raw data, the RawData folder should contain a file named
+ShortnameMeasure.txt file that contains all of the manually obtained raw data
+and potentially the mat files with the rate gyro data from the torsional and
+compound pendulums measurements.
+
+### Photos directory
+The Photos folder should contain photos of the bicycle parts hung as the
+various pendulums. The
 
 Example Code
 ------------
