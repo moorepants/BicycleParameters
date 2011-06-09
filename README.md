@@ -40,7 +40,7 @@ likely work with older versions with minor adjustments.
 
 Installation
 ------------
-For now simpy clone the the source code with git or download the tarball from
+For now simply clone the source code with git or download the tarball from
 github. Make sure you have the dependencies installed.
 
 Set up your subdirectories like this:
@@ -66,7 +66,7 @@ files found in the source code.
 This directory contains directories for the parameter sets, raw data, and
 experiment photos. There should be a folder with a short name for each bicycle
 that you have parameter sets and/or raw data for. The short name should be a word
-with the first letter capitilized. Examples of Shortname include
+with the first letter capitalized. Examples of Shortname include
 "Bianchipista", "Bike", "Mybike", "Rigidrider", "Schwintandem", "Gyrobike", etc.
 
 ### Parameters directory
@@ -133,11 +133,11 @@ speeds = bp.np.linspace(0., 10., num=100)
 rigid.plot_eigenvalues_vs_speed(speeds)
 ```
 
-TODO
+ToDo
 ----
 
 - Add the root loci plots.
 - Add Bode plots.
 - Merge the table generation code.
 - Make a bike comparison function.
-- Seperate the general dynamics functions to a seperate module
+- Separate the general dynamics functions to another module
