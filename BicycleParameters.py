@@ -147,10 +147,10 @@ class Bicycle(object):
                                           self.parameters[pset])
         elif filetype == 'matlab':
             # this should handle the uncertainties properly
-            print "Doesn't work yet"
+            raise NotImplementedError("Doesn't work yet.")
 
         elif filetype == 'pickle':
-            print "Doesn't work yet"
+            raise NotImplementedError("Doesn't work yet.")
 
     def show_pendulum_photos(self):
         '''Opens up the pendulum photos in eye of gnome for inspection.
@@ -439,15 +439,8 @@ class Bicycle(object):
 
         par = self.parameters['Benchmark']
 
-        # use the canonical matrices if they already exist
-        try:
-            M = self.canonical['M']
-            C1 = self.canonical['C1']
-            K0 = self.canonical['K0']
-            K2 = self.canonical['K2']
-        except AttributeError:
-            M, C1, K0, K2 = benchmark_par_to_canonical(par)
-            self.canonical = {'M' : M, 'C1' : C1, 'K0' : K0, 'K2' : K2}
+        M, C1, K0, K2 = benchmark_par_to_canonical(par)
+        self.canonical = {'M' : M, 'C1' : C1, 'K0' : K0, 'K2' : K2}
 
         m, n = 2 * M.shape[0], speeds.shape[0]
         evals = np.zeros((n, m), dtype='complex128')
