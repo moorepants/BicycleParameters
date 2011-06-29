@@ -1,3 +1,4 @@
+=========================
 Bicycle Parameters Module
 =========================
 
@@ -5,12 +6,12 @@ A python program designed to produce and manipulate the basic parameters needed 
 the Whipple bicycle model.
 
 History
--------
+=======
 This is the result of having to measure the physical properties of a bicycle
 one two many times.
 
 Features
---------
+========
 - Loads bicycle parameter sets from text files
 - Generates the benchmark parameters for a real bicycle from experimental data
 - Plots a descriptive drawing of the bicycle
@@ -20,7 +21,7 @@ Features
   plane and as eigenvalue vs speed.
 
 Upcoming Features
------------------
+=================
 - Converts benchmark parameters to other parametrizations
 - Calculates the transfer functions of the open loop system.
 - Plots Bode diagrams of the open loop transfer functions.
@@ -28,7 +29,7 @@ Upcoming Features
 - Generates publication quality tables of parameters using LaTeX
 
 Dependencies
-------------
+============
 These are the versions that I tested the code with, but the code will most
 likely work with older versions with minor adjustments.
 
@@ -39,45 +40,47 @@ likely work with older versions with minor adjustments.
 - [Uncertainties 1.7.2](http://packages.python.org/uncertainties/)
 
 Installation
-------------
+============
 For now simply clone the source code with git or download the tarball from
 github. Make sure you have the dependencies installed.
 
-Set up your subdirectories like this:
+Set up your subdirectories like this::
 
-```
-/root
-|
--->/bicycles
-   |
-   -->/Bicyclea
-   |  |
-   |  -->/Parameters
-   |  |
-   |  -->/Photos
-   |  |
-   |  -->/RawData
-   |
-   -->/Bicycleb
-      |
-      -->/Parameters
-      |
-      -->/Photos
-      |
-      -->/RawData
-```
-### root directory
+    /root
+    |
+    -->/bicycles
+       |
+       -->/Bicyclea
+       |  |
+       |  -->/Parameters
+       |  |
+       |  -->/Photos
+       |  |
+       |  -->/RawData
+       |
+       -->/Bicycleb
+          |
+          -->/Parameters
+          |
+          -->/Photos
+          |
+          -->/RawData
+
+Root Directory
+--------------
 The root folder should contain BicycleParameters.py and the other top level
 files found in the source code.
 
-### bicycles directory
+Bicycles Directory
+------------------
 This directory contains directories for the parameter sets, raw data, and
 experiment photos. There should be a folder with a short name for each bicycle
 that you have parameter sets and/or raw data for. The short name should be a word
 with the first letter capitalized. Examples of Shortname include
 "Bianchipista", "Bike", "Mybike", "Rigidrider", "Schwintandem", "Gyrobike", etc.
 
-### Parameters directory
+Parameters directory
+--------------------
 If you don't have any raw measurements for the bicycle, simply add a file
 titled `ShortnameBenchmark.txt` with the benchmark parameter set into the
 `Parameters` directory for the particular bicycle. Each line should have one of
@@ -118,7 +121,8 @@ Required Parameters
 - `IRxx` : x moment of inertia of the rear wheel
 - `IRyy` : y moment of inertia of the rear wheel
 
-### RawData directory
+RawData directory
+-----------------
 If you have raw data it can come in two forms: either a file containing all the
 manual measurements (including the oscillation periods for each rigid body) or
 a file containing all the manual measurments and a set of data files containing
@@ -249,7 +253,7 @@ various pendulums in the various orientations. The filename should follow the
 conventions of the raw signal data files.
 
 Example Code
-------------
+============
 ```python
 import BicycleParameters as bp
 rigid = bp.Bicycle('Rigid')
@@ -260,7 +264,7 @@ rigid.plot_eigenvalues_vs_speed(speeds)
 ```
 
 ToDo
-----
+====
 
 - Add the root loci plots.
 - Add Bode plots.
