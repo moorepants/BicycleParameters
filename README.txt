@@ -49,7 +49,7 @@ github. Make sure you have the dependencies installed.
 
 Set up your subdirectories like this::
 
-    /root
+    /data
     |
     -->/bicycles
        |
@@ -258,7 +258,7 @@ conventions of the raw signal data files.
 Example Code
 ============
 ```python
-import BicycleParameters as bp
+from bicycleparameters import bicycleparameters as bp
 rigid = bp.Bicycle('Rigid')
 rigid.parameters['Benchmark']
 rigid.plot_bicycle_geometry()

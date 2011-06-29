@@ -1,8 +1,11 @@
 #!/usr/bin/env python
+
+# builtin modules
 import os
 import re
 from math import pi
 
+# dependencies
 import numpy as np
 from numpy import ma
 from scipy.optimize import leastsq, newton
@@ -11,6 +14,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Wedge
 from uncertainties import ufloat, unumpy, umath, UFloat
 
+# local modules
 from inertia import *
 
 class Bicycle(object):
@@ -19,7 +23,7 @@ class Bicycle(object):
 
     '''
 
-    def __new__(cls, shortname, pathToBicycles='bicycles',
+    def __new__(cls, shortname, pathToBicycles='data/bicycles',
                 forceRawCalc=False, forcePeriodCalc=False):
         '''Returns a NoneType object if there is no directory for the bicycle.'''
         # is there a data directory for this bicycle? if not, tell the user to
@@ -37,7 +41,7 @@ class Bicycle(object):
             print a + b + c
             return None
 
-    def __init__(self, shortname, pathToBicycles='bicycles',
+    def __init__(self, shortname, pathToBicycles='data/bicycles',
                  forceRawCalc=False, forcePeriodCalc=False):
         '''Creates a bicycle object and sets the parameters based on the
         available data.
