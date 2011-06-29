@@ -10,5 +10,5 @@ setup(
     url='http://pypi.python.org/pypi/BicycleParameters/',
     license='LICENSE.txt',
     description='Generates and manipulates the physical parameters of a bicycle.',
-    long_description=open('README.txt').read(),
+    long_description=open('README.rst').read(),
 )
