@@ -460,7 +460,7 @@ class Bicycle(object):
         return evals, evecs
 
     def plot_eigenvalues_vs_speed(self, speeds, fig=None, generic=False,
-                                  color='black', show=False, largest=False,
+                                  color='black', show=True, largest=False,
                                   linestyle='-'):
         '''Returns a plot of the eigenvalues versus speed for the current
         benchmark parameters.
