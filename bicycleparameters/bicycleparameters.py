@@ -12,10 +12,10 @@ from scipy.optimize import leastsq, newton
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Wedge
-from uncertainties import ufloat, unumpy, umath, UFloat
+from uncertainties import ufloat, unumpy, umath, UFloat, wrap
 
 # local modules
-from dtk.inertia import *
+from inertia import *
 
 class Bicycle(object):
     '''An object for a bicycle. A bicycle has parameters. That's about it for
@@ -51,12 +51,12 @@ class Bicycle(object):
         shortname : string
             The short name of your bicicleta. It should be one word with the
             first letter capitilized and all other letters lower case. You
-            should have a matching directory under "bicycles/". For example:
-            "bicycles/Shortname".
+            should have a matching directory under "data/bicycles/". For example:
+            "data/bicycles/Shortname".
 
         pathToBicycles : string
             This is the path to the folder where the bicycle parameters and raw
-            data is stored. The default is a folder named bicycles in the
+            data is stored. The default is a folder named data/bicycles in the
             current directory.
 
         forceRawCalc : boolean
@@ -187,56 +187,99 @@ class Bicycle(object):
         Returns
         -------
         ISteer : float
-            Moment of inertia about the steer axis.
+            Moment of inertia of the specified steer assembly about the steer axis.
 
         '''
+        # load in the Benchmark parameter set
         par = self.parameters['Benchmark']
 
-        if fork and handlebar:
-            # handlebar/fork
-            I = part_inertia_tensor(par, 'H')
-            m = par['mH']
-            x = par['xH']
-            z = par['zH']
-        elif fork and not handlebar:
-            # fork alone
-            I = part_inertia_tensor(par, 'S')
-            m = par['mH']
-            x = par['xH']
-            z = par['zH']
-        elif not fork and handlebar:
-            # handlebar alone
-            I = part_inertia_tensor(par, 'G')
-            m = par['mH']
-            x = par['xH']
-            z = par['zH']
-        else:
-            I = np.zeros((3, 3))
-            m = 0.
-            x = 0.
-            z = 0.
+        # there should always be either an H and sometimes there is a G and S
+        # also if the fork and handlebar were measured separately
+        try:
+            if fork and handlebar:
+                # handlebar/fork
+                I = part_inertia_tensor(par, 'H')
+                m = par['mH']
+                x = par['xH']
+                z = par['zH']
+            elif fork and not handlebar:
+                # fork alone
+                I = part_inertia_tensor(par, 'S')
+                m = par['mS']
+                x = par['xS']
+                z = par['zS']
+            elif not fork and handlebar:
+                # handlebar alone
+                I = part_inertia_tensor(par, 'G')
+                m = par['mG']
+                x = par['xG']
+                z = par['zG']
+            else:
+                I = np.zeros((3, 3))
+                m = 0.
+                x = 0.
+                z = 0.
+        except KeyError:
+            raise ValueError("That part is not an option for this bicycle." +
+                             " Try again.")
 
-        if withWheel:
-            masses = np.array([par['mH'], par['mF']])
+        if wheel:
+            # list the mass and com of the handlebar/assembly and the front
+            # wheel
+            masses = np.array([m, par['mF']])
 
-            coords = np.array([[par['xH'], par['w']],
+            coords = np.array([[x, par['w']],
                                [0., 0.],
-                               [par['zH'], -par['rF']]])
+                               [z, -par['rF']]])
 
-            mHF, cHF = total_com(coords, masses)
+            # mass and com of the entire assembly
+            mAss, cAss = total_com(coords, masses)
 
+            # front wheel inertia in the benchmark reference frame about the
+            # com
             IF = part_inertia_tensor(par, 'F')
 
-            dH = np.array([par['xH'] - cHF[0], 0., par['zH'] - cHF[2]])
-            dF = np.array([par['w'] - cHF[0], 0., -par['rF'] - cHF[2]])
+            # distance from the fork/handlebar assembly (without wheel) to the
+            # new center of mass for the assembly with the wheel
+            d = np.array([x - cAss[0], 0., z - cAss[2]])
 
-            IHF = (parallel_axis(IH, par['mH'], dH) +
-                   parallel_axis(IF, par['mF'], dF))
-            I = rotate_inertia_tensor(IHF, par['lam'])
-        else:
-            I = rotate_inertia_tensor(IH, par['lam'])
+            # distance from the front wheel center to the new center of mass
+            # for the assembly with the wheel
+            dF = np.array([par['w'] - cAss[0],
+                           0.,
+                           -par['rF'] - cAss[2]])
 
-        return I[2, 2]
+            # this is the inertia of the assembly about the com with reference
+            # to the benchmark bicycle reference frame
+            iAss = (parallel_axis(I, m, d) +
+                    parallel_axis(IF, par['mF'], dF))
+
+            # this is the inertia of the assembly about a reference frame aligned with
+            # the steer axis and through the center of mass
+            iAssRot = rotate_inertia_tensor(iAss, par['lam'])
+
+        else: # don't add the wheel
+            mAss = m
+            cAss = np.array([x, 0., z])
+            iAssRot = rotate_inertia_tensor(I, par['lam'])
+
+        # now find the inertia about the steer axis
+        pointOnAxis1 = np.array([par['w'] + par['c'],
+                                 0.,
+                                 0.])
+        pointOnAxis2 = pointOnAxis1 +\
+                       np.array([-umath.sin(par['lam']),
+                                 0.,
+                                 -umath.cos(par['lam'])])
+        pointsOnLine = np.array([pointOnAxis1, pointOnAxis2]).T
+
+        # this is the distance from the assembly com to the steer axis
+        distance = point_to_line_distance(cAss, pointsOnLine)
+
+        # now calculate the inertia about the steer axis of the rotated frame
+        iAss = parallel_axis(iAssRot, mAss, np.array([distance, 0., 0.]))
+
+        return iAss[2, 2]
 
     def calculate_from_measured(self, forcePeriodCalc=False):
         '''Calculates the parameters from measured data.'''
@@ -600,6 +643,35 @@ class Bicycle(object):
             plt.show()
 
         return fig
+
+def point_to_line_distance(point, pointsOnLine):
+    '''Returns the minimal distance from a point to a line in three
+    dimensional space.
+
+    Parameters
+    ----------
+    point : ndarray, shape(3,)
+        The x, y, and z coordinates of a point.
+    pointsOnLine : ndarray, shape(3,2)
+        The x, y, and z coordinates of two points on a line. Rows are
+        coordinates and columns are points.
+
+    Returns
+    -------
+    distance : float
+        The minimal distance from the line to the point.
+
+    '''
+    x1 = pointsOnLine[:, 0]
+    x2 = pointsOnLine[:, 1]
+    x0 = point
+
+    def norm(v):
+        return unumpy.sqrt(np.dot(v, v))
+
+    distance = norm(np.cross((x0 - x1), (x0 - x2))) / norm(x2 - x1)
+
+    return distance
 
 def plot_eigenvalues(bikes, speeds, colors=None, linestyles=None, largest=False):
     '''Returns a figure with the eigenvalues vs speed for multiple bicycles.
