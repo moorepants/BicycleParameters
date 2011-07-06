@@ -15,7 +15,7 @@ from matplotlib.patches import Ellipse, Wedge
 from uncertainties import ufloat, unumpy, umath, UFloat
 
 # local modules
-from inertia import *
+from dtk.inertia import *
 
 class Bicycle(object):
     '''An object for a bicycle. A bicycle has parameters. That's about it for
@@ -171,13 +171,17 @@ class Bicycle(object):
         else:
             print "There are no photos of your bicycle."
 
-    def steer_assembly_moment_of_inertia(self, withWheel=False):
+    def steer_assembly_moment_of_inertia(self, handlebar=True, fork=True, wheel=True):
         '''Returns the moment of inertia of the steer assembly about the steer
         axis.
 
         Parameters
         ----------
-        withWheel : boolean
+        handlebar : boolean, optional
+            If true the handlebar will be included in the calculation.
+        fork : boolean, optional
+            If true the fork will be included in the calculation.
+        wheel : boolean, optional
             If true then the wheel will be included in the calculation.
 
         Returns
@@ -188,7 +192,29 @@ class Bicycle(object):
         '''
         par = self.parameters['Benchmark']
 
-        IH = part_inertia_tensor(par, 'H')
+        if fork and handlebar:
+            # handlebar/fork
+            I = part_inertia_tensor(par, 'H')
+            m = par['mH']
+            x = par['xH']
+            z = par['zH']
+        elif fork and not handlebar:
+            # fork alone
+            I = part_inertia_tensor(par, 'S')
+            m = par['mH']
+            x = par['xH']
+            z = par['zH']
+        elif not fork and handlebar:
+            # handlebar alone
+            I = part_inertia_tensor(par, 'G')
+            m = par['mH']
+            x = par['xH']
+            z = par['zH']
+        else:
+            I = np.zeros((3, 3))
+            m = 0.
+            x = 0.
+            z = 0.
 
         if withWheel:
             masses = np.array([par['mH'], par['mF']])
