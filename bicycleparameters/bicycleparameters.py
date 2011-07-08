@@ -272,6 +272,30 @@ class Bicycle(object):
         self.parameters['Benchmark']['IByy'] = I[1, 1]
         self.parameters['Benchmark']['IBzz'] = I[2, 2]
 
+    def calc_human_position_vectors(self);
+        # bottom bracket height
+        hhb = 1.
+        # chain stay length
+        Lcs = 1.
+        # rear wheel radius
+        rR = 1.
+        # seat post length
+        Lsp = 1.
+        # seat tube length
+        Lst = 1.
+        # seat tube angle
+        lambst = .314
+        # handlebar width
+        whb = 1.
+        # distance from rear wheel hub to hand
+        LhbR = 1.
+        # distance from front wheel hub to hand
+        LhbF = 1.
+
+        # vector to pedal
+        r_pedal = np.zeros( (3,1) )
+        
+
     def plot_bicycle_geometry(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
         '''Returns a figure showing the basic bicycle geometry, the centers of
