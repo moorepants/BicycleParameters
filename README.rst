@@ -226,7 +226,7 @@ these, simply replace w, gamma, and f with:
 The details of these measurements can be found in our `raw data sheet`_ and on our
 website_.
 
-.. _raw data sheet: http://bit.ly/jIeKKB_
+.. _raw data sheet: http://bit.ly/jIeKKB
 .. _website: http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/frame-dimensions
 
 Fork/Handlebar Separation
