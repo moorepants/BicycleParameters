@@ -223,8 +223,11 @@ these, simply replace w, gamma, and f with:
 - `d4` : outer diameter of the steer tube [m]
 - `d` : inside distance between the rear and the front axles with the fork reversed [m]
 
-The details of these measurements can be found in our `raw data sheet<http://bit.ly/jIeKKB>`_ and on our
-`website<http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/frame-dimensions>`_.
+The details of these measurements can be found in our `raw data sheet`_ and on our
+website_.
+
+.. _raw data sheet: http://bit.ly/jIeKKB_
+.. _website: http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/frame-dimensions
 
 Fork/Handlebar Separation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -267,14 +270,13 @@ conventions of the raw signal data files.
 Example Code
 ============
 
-:
-
-from bicycleparameters import bicycleparameters as bp
-rigid = bp.Bicycle('Rigid')
-rigid.parameters['Benchmark']
-rigid.plot_bicycle_geometry()
-speeds = bp.np.linspace(0., 10., num=100)
-rigid.plot_eigenvalues_vs_speed(speeds)
+::
+    from bicycleparameters import bicycleparameters as bp
+    rigid = bp.Bicycle('Rigid')
+    rigid.parameters['Benchmark']
+    rigid.plot_bicycle_geometry()
+    speeds = bp.np.linspace(0., 10., num=100)
+    rigid.plot_eigenvalues_vs_speed(speeds)
 
 ToDo
 ====
@@ -300,11 +302,11 @@ among others.
    bicycle dynamics. Calspan Report YA-3063-K-1, Cornell Aeronautical
    Laboratory, Inc., Buffalo, NY, 14221, Jun 1971. Prepared for Schwinn Bicycle
    Company, Chicago, IL 60639.
-1. Moore, J. K., Hubbard, M., Peterson, D. L., Schwab, A. L., and Kooijman, J.
+4. Moore, J. K., Hubbard, M., Peterson, D. L., Schwab, A. L., and Kooijman, J.
    D. G. (2010). An accurate method of measuring and comparing a bicycle's
    physical parameters. In Bicycle and Motorcycle Dynamics: Symposium on the
    Dynamics and Control of Single Track Vehicles, Delft, Netherlands.
-2. Moore, J. K., Kooijman, J. D. G., Hubbard, M., and Schwab, A. L. (2009). A
+5. Moore, J. K., Kooijman, J. D. G., Hubbard, M., and Schwab, A. L. (2009). A
    Method for Estimating Physical Properties of a Combined Bicycle and Rider.
    In Proceedings of the ASME 2009 International Design Engineering Technical
    Conferences & Computers and Information in Engineering Conference,
