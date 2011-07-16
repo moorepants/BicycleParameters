@@ -271,6 +271,7 @@ Example Code
 ============
 
 ::
+
     from bicycleparameters import bicycleparameters as bp
     rigid = bp.Bicycle('Rigid')
     rigid.parameters['Benchmark']
