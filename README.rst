@@ -11,7 +11,9 @@ This is code associated with the work done to measure the physical parameters
 of a bicycle and the rider of a bicycle. Physical parameters include but are
 not limited to the geometry, mass, mass location and mass distribution of the
 bicycle rider system. More detail can be found in our papers and the
-[website](http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/).
+website__.
+
+.. __: http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/
 
 Features
 ========
@@ -36,18 +38,23 @@ Dependencies
 These are the versions that I tested the code with, but the code will most
 likely work with older versions with minor adjustments.
 
-- [Python 2.6.6](http://www.python.org/)
-- [Scipy 0.9.0](http://www.scipy.org/)
-- [Numpy 1.5.1](http://numpy.scipy.org/)
-- [Matplotlib 0.99.3](http://matplotlib.sourceforge.net/)
-- [Uncertainties 1.7.2](http://packages.python.org/uncertainties/)
+- Python 2.6.6__
+.. __: http://www.python.org/
+- Scipy 0.9.0__
+.. __: http://www.scipy.org/
+- Numpy 1.5.1__
+.. __: http://numpy.scipy.org/
+- Matplotlib 0.99.3__
+.. __: http://matplotlib.sourceforge.net/
+- Uncertainties 1.7.3__
+.. __: http://packages.python.org/uncertainties/
 
 Installation
 ============
 For now simply clone the source code with git or download the tarball from
 github. Make sure you have the dependencies installed.
 
-Set up your subdirectories like this::
+Also set up a data folder like this::
 
     /data
     |
@@ -69,18 +76,15 @@ Set up your subdirectories like this::
           |
           -->/RawData
 
-Root Directory
---------------
-The root folder should contain BicycleParameters.py and the other top level
-files found in the source code.
-
 Bicycles Directory
 ------------------
 This directory contains directories for the parameter sets, raw data, and
 experiment photos. There should be a folder with a short name for each bicycle
-that you have parameter sets and/or raw data for. The short name should be a word
-with the first letter capitalized. Examples of Shortname include
-"Bianchipista", "Bike", "Mybike", "Rigidrider", "Schwintandem", "Gyrobike", etc.
+that you have parameter sets and/or raw data for. The short name should be a
+word with the first letter capitalized. Examples of Shortname include
+"Bianchipista", "Bike", "Mybike", "Rigidrider", "Schwintandem", "Gyrobike",
+etc. The program relies on CamelCase words, so make sure the first letter is
+capitalized and no others are.
 
 Parameters directory
 --------------------
@@ -96,6 +100,7 @@ uncertainties in other values. Use the same units as the benchmark bicycle
 paper for less headaches. These are the possible variables:
 
 Required Parameters
+~~~~~~~~~~~~~~~~~~~
 
 - `g` : acceleration due to gravity
 - `c` : trail
@@ -128,7 +133,7 @@ RawData directory
 -----------------
 If you have raw data it can come in two forms: either a file containing all the
 manual measurements (including the oscillation periods for each rigid body) or
-a file containing all the manual measurments and a set of data files containing
+a file containing all the manual measurements and a set of data files containing
 oscillatory signals from which the periods can be estimated. The manual
 measurement data file should follow the naming convention
 `ShortnameMeasure.txt` and should have one variable on each line in the
@@ -137,6 +142,7 @@ previous parameter variable definition accept that multiple measurements can be
 included as comma separated values.
 
 Required Parameters
+~~~~~~~~~~~~~~~~~~~
 
 - `aB1` : perpendicular distance from the pendulum axis to the rear axle
   center, first orienation [m]
@@ -198,6 +204,7 @@ Required Parameters
 - `w` : wheelbase [m]
 
 Geometry Option
+~~~~~~~~~~~~~~~
 
 The default option is to provide the wheelbase, fork offset, head tube angle
 and the wheel radii, but there is a secondary option for the geometric
@@ -216,11 +223,12 @@ these, simply replace w, gamma, and f with:
 - `d4` : outer diameter of the steer tube [m]
 - `d` : inside distance between the rear and the front axles with the fork reversed [m]
 
-The details of these measurements can be found in our [raw data
-sheet](http://bit.ly/jIeKKB) and on our
+The details of these measurements can be found in our `raw data
+sheet<http://bit.ly/jIeKKB>`_ and on our
 [website](http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/frame-dimensions).
 
 Fork/Handlebar Separation
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The measurement of the fork and the handlebar as two rigid bodies is also
 supported. See the example bicycle called Rigid for more details.
