@@ -38,15 +38,15 @@ Dependencies
 These are the versions that I tested the code with, but the code will most
 likely work with older versions with minor adjustments.
 
-- Python 2.6.6__
+- `Python 2.6.6`__
 .. __: http://www.python.org/
-- Scipy 0.9.0__
+- `Scipy 0.9.0`__
 .. __: http://www.scipy.org/
-- Numpy 1.5.1__
+- `Numpy 1.5.1`__
 .. __: http://numpy.scipy.org/
-- Matplotlib 0.99.3__
+- `Matplotlib 0.99.3`__
 .. __: http://matplotlib.sourceforge.net/
-- Uncertainties 1.7.3__
+- `Uncertainties 1.7.3`__
 .. __: http://packages.python.org/uncertainties/
 
 Installation
@@ -223,9 +223,8 @@ these, simply replace w, gamma, and f with:
 - `d4` : outer diameter of the steer tube [m]
 - `d` : inside distance between the rear and the front axles with the fork reversed [m]
 
-The details of these measurements can be found in our `raw data
-sheet<http://bit.ly/jIeKKB>`_ and on our
-[website](http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/frame-dimensions).
+The details of these measurements can be found in our `raw data sheet<http://bit.ly/jIeKKB>`_ and on our
+`website<http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/frame-dimensions>`_.
 
 Fork/Handlebar Separation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -234,18 +233,19 @@ The measurement of the fork and the handlebar as two rigid bodies is also
 supported. See the example bicycle called Rigid for more details.
 
 Notes
-
+~~~~~
 - The periods (T) are not required if you provide oscillation signal data
   files.
 - You have to specify at least three orientations, and currently you can
   specify up to 6 orientation for each rigid body.
 
 Pendulum Data Files
+-------------------
 
 If you have raw signal data that the periods can be estimated from, then these
 should be included in the `RawData` directory. There should be at least one
-file for every period in the `ShortnameMeasured.txt` file. Currently the only supported
-file is a Matlab mat file with these variables:
+file for every period in the `ShortnameMeasured.txt` file. Currently the only
+supported file is a Matlab mat file with these variables:
 
 - data : signal of a decaying oscillation
 - sampleRate : sample rate of data in hertz
@@ -258,31 +258,33 @@ The files should be named in this manner
 - Orientation is either First, Second, Third, Fourth, Fifth, or Sixth
 - Trial is an integer greater than or equal to 1
 
-### Photos directory
+Photos directory
+----------------
 The Photos folder should contain photos of the bicycle parts hung as the
 various pendulums in the various orientations. The filename should follow the
 conventions of the raw signal data files.
 
 Example Code
 ============
-```python
+
+:
+
 from bicycleparameters import bicycleparameters as bp
 rigid = bp.Bicycle('Rigid')
 rigid.parameters['Benchmark']
 rigid.plot_bicycle_geometry()
 speeds = bp.np.linspace(0., 10., num=100)
 rigid.plot_eigenvalues_vs_speed(speeds)
-```
 
 ToDo
 ====
 
 - Add the root loci plots.
 - Add Bode plots.
-- Merge the table generation code.
+- Merge the table generation code from PhysicalParameters
 - Make a bike comparison function.
 - Separate the general dynamics functions to another module
-- Start using some other covention other than camel case for the file names.
+- Start using some other convention other than camel case for the file names.
 
 References
 ==========
