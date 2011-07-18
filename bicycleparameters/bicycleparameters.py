@@ -2542,7 +2542,26 @@ def load_pendulum_mat_file(pathToFile):
     return pendDat
 
 def calc_two_link_angles(L1,L2,D):
-    ''' both positive
+    '''Solves a simple case of the two-link revolute joint inverse
+    kinematics problem. Both output angles are positive. The simple case
+    is taht the end of the second link lies on the x-axis.
+
+    Parameters
+    ----------
+    L1 : float
+        Length of the first link.
+    L2 : float
+        Length of the second link.
+    D : float
+        Distance from the base of first link to the end of the second link.
+
+    Returns
+    -------
+    theta1 : float
+        (radians) Angle between x-axis and first link; always positive.
+    theta2 : float
+        (radians) Angle between first link and second link; always positive.
+
     '''
     num = L1**2 + D**2 - L2**2
     den = 2.0 * L1 * D
@@ -2551,7 +2570,24 @@ def calc_two_link_angles(L1,L2,D):
     return theta1,theta2
 
 def vec_project(vec,direction):
-    '''
+    '''Vector projection into a plane, where the plane is defined by a
+    normal vector.
+
+    Parameters
+    ----------
+    vec : np.array(3,1)
+        vector to be projected into a plane
+    direction : int or np.array
+        If int, it is one of the three orthogonal directions, (0,1 or 2) of
+        the input vector (essentially, that component of vec is set to zero).
+        If np.array, can be in any direction (not necessarily a coordinate
+        direction).
+
+    Returns
+    -------
+    vec_out : np.array(3,1)
+        Projected vector.
+
     '''
     if type(direction) == int:
         unitdir = np.zeros( (3,1) )
@@ -2561,7 +2597,19 @@ def vec_project(vec,direction):
     return vec - float(np.dot(vec.T,unitdir))
 
 def vec_angle(v1,v2):
-    '''
+    '''Returns the interior angle between two vectors using the dot product. Inputs do not need to be unit vectors.
+
+    Parameters
+    ----------
+    v1 : np.array (3,1)
+        input vector.
+    v2 : np.array (3,1)
+        input vector.
+
+    Returns
+    -------
+    angle : float
+        (radians) interior angle between v1 and v2.
     '''
     return np.arccos( float(np.dot(v1.T,v2)) / (
            np.linalg.norm(v1) * np.linalg.norm(v2) ) )
