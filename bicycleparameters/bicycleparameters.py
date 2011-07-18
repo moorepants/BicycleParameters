@@ -350,7 +350,9 @@ class Bicycle(object):
         '''Adds a static rider using the yeadon python module. Solves for
         the joint angles required to sit the rider on the bike (any bike
         for which parameters are available), and combines the riders inertia
-        with that of the bike.
+        with that of the bike. Requires that the bike object has a raw data
+        text input file that contains the measurements necessary to situate
+        a rider on the bike.
 
         Parameters
         ----------
