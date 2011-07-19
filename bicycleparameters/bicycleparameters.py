@@ -172,7 +172,7 @@ class Bicycle(object):
             print "There are no photos of your bicycle."
 
     def steer_assembly_moment_of_inertia(self, handlebar=True, fork=True,
-            wheel=True, aboutSteerAxis=False):
+            wheel=True, aboutSteerAxis=False, nominal=False):
         """
         Returns the inertia tensor of the steer assembly with respect to a
         reference frame aligned with the steer axis.
@@ -188,11 +188,21 @@ class Bicycle(object):
         aboutSteerAxis : boolean, optional
             If true the inertia tensor will be with respect to a point made
             from the projection of the center of mass onto the steer axis.
+        nominal : boolean, optional
+            If true the nominal values will be returned instead of a uarray.
 
         Returns
         -------
-        ISteer : float
-            Moment of inertia of the specified steer assembly about the steer axis.
+        iAss : float
+            Inertia tensor of the specified steer assembly parts with respect
+            to a reference frame aligned with the steer axis.
+
+        Notes
+        -----
+        The 3 component is aligned with the steer axis (pointing downward), the
+        1 component is perpendicular to the steer axis (pointing forward) and
+        the 2 component is perpendicular to the steer axis (pointing to the
+        right).
 
         """
         # load in the Benchmark parameter set
@@ -291,7 +301,10 @@ class Bicycle(object):
         else:
             iAss = iAssRot
 
-        return iAss
+        if nominal:
+            return unumpy.nominal_values(iAss)
+        else:
+            return iAss
 
     def calculate_from_measured(self, forcePeriodCalc=False):
         '''Calculates the parameters from measured data.'''
