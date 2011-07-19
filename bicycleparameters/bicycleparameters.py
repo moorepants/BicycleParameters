@@ -171,9 +171,11 @@ class Bicycle(object):
         else:
             print "There are no photos of your bicycle."
 
-    def steer_assembly_moment_of_inertia(self, handlebar=True, fork=True, wheel=True):
-        '''Returns the moment of inertia of the steer assembly about the steer
-        axis.
+    def steer_assembly_moment_of_inertia(self, handlebar=True, fork=True,
+            wheel=True, aboutSteerAxis=False):
+        """
+        Returns the inertia tensor of the steer assembly with respect to a
+        reference frame aligned with the steer axis.
 
         Parameters
         ----------
@@ -183,18 +185,22 @@ class Bicycle(object):
             If true the fork will be included in the calculation.
         wheel : boolean, optional
             If true then the wheel will be included in the calculation.
+        aboutSteerAxis : boolean, optional
+            If true the inertia tensor will be with respect to a point made
+            from the projection of the center of mass onto the steer axis.
 
         Returns
         -------
         ISteer : float
             Moment of inertia of the specified steer assembly about the steer axis.
 
-        '''
+        """
         # load in the Benchmark parameter set
         par = self.parameters['Benchmark']
 
-        # there should always be either an H and sometimes there is a G and S
-        # also if the fork and handlebar were measured separately
+        # there should always be either an H (handlebar/fork) and sometimes
+        # there is a G (handlebar) and S (fork) if the fork and handlebar were
+        # measured separately
         try:
             if fork and handlebar:
                 # handlebar/fork
@@ -208,20 +214,23 @@ class Bicycle(object):
                 m = par['mS']
                 x = par['xS']
                 z = par['zS']
-            elif not fork and handlebar:
+            elif handlebar and not fork:
                 # handlebar alone
                 I = part_inertia_tensor(par, 'G')
                 m = par['mG']
                 x = par['xG']
                 z = par['zG']
             else:
+                # if neither set to zero
                 I = np.zeros((3, 3))
                 m = 0.
                 x = 0.
                 z = 0.
         except KeyError:
-            raise ValueError("That part is not an option for this bicycle." +
-                             " Try again.")
+            raise ValueError("The fork and handlebar were not measured " +
+                             "separately for this bicycle." +
+                             " Try making both the fork and handlebar either" +
+                             " both True or both False.")
 
         if wheel:
             # list the mass and com of the handlebar/assembly and the front
@@ -263,23 +272,26 @@ class Bicycle(object):
             cAss = np.array([x, 0., z])
             iAssRot = rotate_inertia_tensor(I, par['lam'])
 
-        # now find the inertia about the steer axis
-        pointOnAxis1 = np.array([par['w'] + par['c'],
-                                 0.,
-                                 0.])
-        pointOnAxis2 = pointOnAxis1 +\
-                       np.array([-umath.sin(par['lam']),
-                                 0.,
-                                 -umath.cos(par['lam'])])
-        pointsOnLine = np.array([pointOnAxis1, pointOnAxis2]).T
+        if aboutSteerAxis:
+            # now find the inertia about the steer axis
+            pointOnAxis1 = np.array([par['w'] + par['c'],
+                                     0.,
+                                     0.])
+            pointOnAxis2 = pointOnAxis1 +\
+                           np.array([-umath.sin(par['lam']),
+                                     0.,
+                                     -umath.cos(par['lam'])])
+            pointsOnLine = np.array([pointOnAxis1, pointOnAxis2]).T
 
-        # this is the distance from the assembly com to the steer axis
-        distance = point_to_line_distance(cAss, pointsOnLine)
+            # this is the distance from the assembly com to the steer axis
+            distance = point_to_line_distance(cAss, pointsOnLine)
 
-        # now calculate the inertia about the steer axis of the rotated frame
-        iAss = parallel_axis(iAssRot, mAss, np.array([distance, 0., 0.]))
+            # now calculate the inertia about the steer axis of the rotated frame
+            iAss = parallel_axis(iAssRot, mAss, np.array([distance, 0., 0.]))
+        else:
+            iAss = iAssRot
 
-        return iAss[2, 2]
+        return iAss
 
     def calculate_from_measured(self, forcePeriodCalc=False):
         '''Calculates the parameters from measured data.'''
