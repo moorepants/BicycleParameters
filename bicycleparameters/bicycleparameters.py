@@ -370,7 +370,7 @@ class Bicycle(object):
 
         '''
         # create human using input measurements and configuration files
-        H = yeadon.human.human(yeadonMeas,yeadonCFG)
+        H = yeadon.human(yeadonMeas,yeadonCFG)
         # solve for joint angles
         self.H = self.calc_yeadon_joint_angles(H,drawrider)
         # combine relevant portions of the biker
