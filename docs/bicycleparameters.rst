@@ -23,4 +23,3 @@ Subpackages
 .. toctree::
 
     bicycleparameters.test
-

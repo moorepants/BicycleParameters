@@ -8,7 +8,9 @@ Parameters/<short name>Benchmark.txt
 analyze the Whipple bicycle model linearized about the upright configuration.
 Each line should have one of the 24 benchmark parameters in the following
 format::
+
     c = 0.080+/-0.001
+
 The first characters are a unique variable name, followed by an equal sign, the
 value of the parameter, a plus or minus symbol (``+/-``), and the standard
 deviation of the value. There can be spaces between the parts. Use ``0.0`` for
@@ -55,10 +57,12 @@ These parameters are assumed to equal zero if not given.
 - ``IHyz`` : yz product of inertia of the handlebar/fork
 
 RawData/<short name>Measured.txt
-=============================
+================================
 ``<Shortname>Measured.txt`` contains the raw measurement data for a bicycle.
 The file should have one variable on each line in the following format::
+
     mR = 1.38+/-0.02, 1.37+/-0.02
+
 This is the same as the previous parameter variable
 definition accept that multiple measurements can be included as comma separated
 values. The values will be averaged together on import. The following gives the

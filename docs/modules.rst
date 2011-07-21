@@ -5,4 +5,3 @@ Project Modules
    :maxdepth: 4
 
    bicycleparameters
-   inertia

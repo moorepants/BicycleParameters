@@ -6,7 +6,6 @@ setup(
     author='Jason Keith Moore',
     author_email='moorepants@gmail.com',
     packages=['bicycleparameters', 'bicycleparameters.test'],
-    scripts=['bin/create_bicycle_files.py','bin/largest_eigenvalue_plot.py'],
     url='http://github.com/moorepants/BicycleParameters/',
     license='LICENSE.txt',
     description='Generates and manipulates the physical parameters of a bicycle.',
