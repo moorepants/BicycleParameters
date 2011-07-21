@@ -406,15 +406,18 @@ class Bicycle(object):
                                 [self.H.COM[1,0],0.],
                                 [self.H.COM[2,0],bicyclePar['zB']]])
         mT, cT = total_com(coordinates, masses)
+        if cT[1] != 0:
+            print "Error in bicycleparameters.add_yeadon_rider. " \
+                  "The center of mass of the rider must not have a y " \
+                  "(out-of-plane) component."
+            raise Exception()
         dRider = self.H.COM - np.array([[cT[0],cT[1],cT[2]]]).T
         dBicycle = np.array([bicyclePar['xB'] - cT[0],
                              0.,
                              bicyclePar['zB'] - cT[2]])
-# here is where I'm not sure, and will be quicker for you to implement
-        #riderPar = np.array([self.H.COM[0,0],self.H.COM[1,0],self.H.COM[2,0]]))
-        IRider = part_inertia_tensor(riderPar, 'B')
+        IRider = H.Inertia
         IBicycle = part_inertia_tensor(bicyclePar, 'B')
-        I = (parallel_axis(IRider, riderPar['mB'], dRider) +
+        I = (parallel_axis(IRider, H.Mass, dRider) +
              parallel_axis(IBicycle, bicyclePar['mB'], dBicycle))
         # assign new inertia back to bike
         self.parameters['Benchmark']['xB'] = cT[0]
@@ -479,12 +482,13 @@ class Bicycle(object):
         LhbR = measparam['LhbR'] #106
         # distance from front wheel hub to hand
         LhbF = measparam['LhbF'] #49
-        # rear hub to front hub distance
-        D = measparam['D'] #102
+        # wheelbase
+        w = benchparam['w']
         # intermediate quantities
+        D = np.sqrt(w**2 + (rR - rF)**2)
         # projection into the plane of the bike
-        dhbR = np.sqrt(LhbR**2 + (whb/2)**2)
-        dhbF = np.sqrt(LhbF**2 + (whb/2)**2)
+        dhbR = np.sqrt(LhbR**2 - (whb/2)**2)
+        dhbF = np.sqrt(LhbF**2 - (whb/2)**2)
         # angle with vertex at rear hub, from horizontal "down" to front hub
         alpha = np.arcsin( (rR - rF) / D )
         # angle at rear hub of the LhbR-LhbF-D triangle (side-side-side)
@@ -526,8 +530,6 @@ class Bicycle(object):
         pos_footl[1,0] = H.J1.pos[1,0]
         pos_footr = pos_bb.copy()
         pos_footr[1,0] = H.K1.pos[1,0]
-        H.draw_vector(H.A1.pos,pos_handl)
-        H.draw_vector(H.B1.pos,pos_handr)
         DJ = np.linalg.norm( pos_footl - H.J1.pos)
         DK = np.linalg.norm( pos_footr - H.K1.pos)
         DA = np.linalg.norm( pos_handl - H.A1.pos)
@@ -562,11 +564,11 @@ class Bicycle(object):
             H.J1.length, H.J2.length, DJ)
         tempangle2 = vec_angle(np.array([[0,0,1]]).T, vec_legs)
         CFG['PJ1flexion'] = tempangle + tempangle2 + CFG['somersalt']
-        CFG['PJ1abduction'] = CFG['tilt']
+        #CFG['PJ1abduction'] = CFG['tilt']
         tempangle,CFG['K1K2flexion'] = calc_two_link_angles(
             H.K1.length,H.K2.length,DK)
         CFG['PK1flexion'] = tempangle + tempangle2 + CFG['somersalt']
-        CFG['PK1abduction'] = -CFG['tilt']
+        #CFG['PK1abduction'] = -CFG['tilt']
         # arms second. only somersalt can be specified, other torso
         # configuration variables must be zero
         tempangle,CFG['A1A2flexion'] = calc_two_link_angles(
