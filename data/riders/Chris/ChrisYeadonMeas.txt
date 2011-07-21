@@ -78,14 +78,14 @@ La0p=28.5
 La1p=24.2
 La2p=23
 La3p=23.5
-La4p=16.4
+La4p=15.4
 La5p=21
 La6p=21.5
 La7p=10.7
 #
 # stadium widths:
 # arm levels 0-3 are do not have widths because they are circles
-La4w=5.2
+La4w=5
 La5w=7.3
 La6w=9.8
 La7w=4.9
@@ -109,14 +109,14 @@ Lb0p=29
 Lb1p=24.2
 Lb2p=22.7
 Lb3p=23.4
-Lb4p=16
+Lb4p=15.2
 Lb5p=20.9
 Lb6p=22.4
 Lb7p=11
 #
 # stadium widths:
 # arm levels 0-3 are do not have widths because they are circles
-Lb4w=5
+Lb4w=5.2
 Lb5w=7.2
 Lb6w=9.6
 Lb7w=5
