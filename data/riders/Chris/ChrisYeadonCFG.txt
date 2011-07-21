@@ -1,4 +1,4 @@
-somersalt=.68
+somersalt=1
 tilt=0.0
 twist=0.0
 PTsagittalFlexion=0.0

@@ -6,8 +6,8 @@ import re
 from math import pi
 
 # THE NEXT TWO LINES ARE TEMPORARY
-#import sys
-#sys.path.append('/home/fitze/Dropbox/UCD/yeadon')
+import sys
+sys.path.append('/home/fitze/Dropbox/UCD/yeadon')
 
 # dependencies
 import numpy as np
@@ -394,6 +394,7 @@ class Bicycle(object):
             to the desired hand and foot positions. Requires python-visual.
 
         '''
+        bicyclePar = self.parameters['Benchmark']
         # create human using input measurements and configuration files
         H = yeadon.human(yeadonMeas,yeadonCFG)
         # solve for joint angles
@@ -401,7 +402,7 @@ class Bicycle(object):
         # combine relevant portions of the biker
         # (to be implemented later)
         # combine inertia of bike and rider
-        masses = np.array([self.H.Mass, bicyclePar['mB'])
+        masses = np.array([self.H.Mass, bicyclePar['mB']])
         coordinates = np.array([[self.H.COM[0,0],bicyclePar['xB']],
                                 [self.H.COM[1,0],0.],
                                 [self.H.COM[2,0],bicyclePar['zB']]])
@@ -409,9 +410,11 @@ class Bicycle(object):
         if cT[1] != 0:
             print "Error in bicycleparameters.add_yeadon_rider. " \
                   "The center of mass of the rider must not have a y " \
-                  "(out-of-plane) component."
-            raise Exception()
-        dRider = self.H.COM - np.array([[cT[0],cT[1],cT[2]]]).T
+                  "(out-of-plane) component. cT[1] =",cT[1]
+#            raise Exception()
+        dRider = np.array([self.H.COM[0,0] - cT[0],
+                           self.H.COM[1,0], #- cT[1],
+                           self.H.COM[2,0] - cT[2]])
         dBicycle = np.array([bicyclePar['xB'] - cT[0],
                              0.,
                              bicyclePar['zB'] - cT[2]])
@@ -617,7 +620,7 @@ class Bicycle(object):
                   np.linalg.norm(H.A2.endpos-H.B1.pos),", Right arm D:",DB
         # draw rider for fun, but possibly to check results aren't crazy
         if drawrider==True:
-            H.draw_visual((0,-1,0),(0,0,-1))
+            H.draw_visual(forward=(0,-1,0),up=(0,0,-1))
             H.draw_vector('origin',pos_footl)
             H.draw_vector('origin',pos_footr)
             H.draw_vector('origin',pos_handl)
