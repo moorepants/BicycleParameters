@@ -1,0 +1,197 @@
+# yeadon. (cld72@cornell.edu)
+# Measurement input template.
+# Lines beginning with pound are comment lines.
+# There are 95 measurements, consisting of lengths, perimeters, widths, and
+# depths.
+#
+# For details about how the measurements are to be taken, consult the 
+# journal article Yeadon 1989-ii or the documentation of this python package.
+#
+# CONVERSION FACTOR to convert measurements INTO meters
+# (set to 1 if measurements are in meters, 0.001 if measurements are in mm,
+# 0.003937 = 1/2.54/100 if measurements are in inches)
+measurementconversionfactor = .01
+#
+##############################################################################
+# TORSO
+# Ls0 hip joint centre
+# Ls1 umbilicus
+# Ls2 lowest front rib
+# Ls3 nipple
+# Ls4 shoulder joint centre
+# Ls5 acromion
+# Ls6 beneath nose
+# Ls7 above ear
+# Ls8 top of head
+#
+# lengths to levels 1 through 5 are measured from Ls0, the hip centre:
+Ls1L=18
+Ls2L=30
+Ls3L=43
+Ls4L=58
+Ls5L=61
+# lengths to levels 6 through 8 are measured from Ls5, the acromion:
+Ls6L=12
+Ls7L=17.5
+Ls8L=28
+#
+# stadium parameters:
+Ls0p=96
+Ls1p=91
+Ls2p=89
+Ls3p=96
+# Ls5p is really measured around the neck at the acromion level (base of neck).
+Ls5p=37.5
+Ls6p=52
+Ls7p=59
+#
+# stadium widths:
+# width nor depth are measured for Ls5, acromion, because its shape is set by
+# estimates from Ls4, shoulder joint centre.
+Ls0w=37
+Ls1w=32
+Ls2w=29
+Ls3w=35 #30
+Ls4w=32
+#
+# depth: the presence of the shoulder joint at Ls4, the shoulder joint centre, 
+# makes it difficult to measure the width of the Ls4 stadium. Therefore the
+# depth (=2r) of the stadium is measured instead.
+Ls4d=10
+# torso (s) levels 5 through 8 do not have widths because they are circles EDIT.
+#
+##############################################################################
+# LEFT ARM
+#
+# lenghts measured from La0, shoulder joint centre:
+# La1L is not measured because it is set to be .5 * La2L.
+# Accordingly, La1p should be measured at the location .5 * La2L
+La2L=29
+La3L=32
+La4L=54
+# lengths measured from La4, wrist joint centre:
+La5L=10
+La6L=13
+La7L=18
+#
+# stadium perimeters:
+La0p=37.5
+La1p=28.5
+La2p=28
+La3p=28.5
+La4p=17
+La5p=22.5
+La6p=17.5
+La7p=11
+#
+# stadium widths:
+# arm levels 0-3 are do not have widths because they are circles
+La4w=6
+La5w=10
+La6w=7.5
+La7w=5
+#
+##############################################################################
+# RIGHT ARM
+#
+# lengths measured from Lb0, shoulder joint centre:
+# Lb1L is not measured because it is set to be .5 * Lb2L.
+# Accordingly, Lb1p should be measured at the location .5 * Lb2L
+Lb2L=31
+Lb3L=36
+Lb4L=58
+# lengths measured from Lb4, wrist joint centre:
+Lb5L=12.5
+Lb6L=14
+Lb7L=20
+#
+# stadium perimeters:
+Lb0p=36
+Lb1p=31
+Lb2p=28.5
+Lb3p=29
+Lb4p=17.5
+Lb5p=22.5
+Lb6p=17.5
+Lb7p=11.5
+#
+# stadium widths:
+# arm levels 0-3 are do not have widths because they are circles
+Lb4w=6
+Lb5w=10
+Lb6w=8
+Lb7w=5
+#
+##############################################################################
+# LEFT LEG
+#
+# lengths measured from Lj0, hip joint centre:
+Lj1L=10
+# Lj2L is not measured because it is set as the average of Lj1L and Lj3L.
+Lj3L=45
+Lj4L=62
+Lj5L=93.5
+# lengths measured from Lj5, ankle joint centre:
+Lj6L=3
+# Lj7L is not measured because it is set as the average of Lj6L and Lj8L.
+Lj8L=15
+Lj9L=20
+#
+# stadium perimeters:
+# Lj0p is not measured because it is set by Ls0p and Ls0w.
+Lj1p=61
+Lj2p=57
+Lj3p=41
+Lj4p=39
+Lj5p=28
+Lj6p=34
+Lj7p=26
+Lj8p=25
+Lj9p=20
+#
+# stadium widths:
+# leg levels 0-5 and 7 do not have widths because they are circles
+Lj8w=11
+Lj9w=8
+#
+# stadium depths:
+# this stadium is rotated 90 degrees from the other, so that its longitudinal
+# axis is oriented anterior-posteriorly (from back to front)
+Lj6d=13
+#
+##############################################################################
+# RIGHT LEG
+#
+# lengths measured from Lk0, hip joint centre:
+Lk1L=10
+# Lk2L is not measured because it is set as the average of Lk1L and Lk3L.
+Lk3L=46
+Lk4L=60
+Lk5L=92
+# lengths measured from Lk5, ankle joint centre:
+Lk6L=3
+# Lk7L is not measured because it is set as the average of Lk6L and Lk8L.
+Lk8L=16
+Lk9L=20
+#
+# stadium perimeters:
+# Lk0p is not measured because it is set by Ls0p and Ls0w.
+Lk1p=61
+Lk2p=54
+Lk3p=38.5
+Lk4p=38
+Lk5p=32
+Lk6p=34
+Lk7p=26
+Lk8p=24
+Lk9p=18.5
+#
+# stadium widths:
+# leg levels 0-5 and 7 do not have widths because they are circles
+Lk8w=9
+Lk9w=6
+#
+# stadium depths:
+# this stadium is rotated 90 degrees from the other, so that its longitudinal
+# axis is oriented anterior-posteriorly (from back to front)
+Lk6d=13
