@@ -300,6 +300,7 @@ class Bicycle(object):
 
             # this is the distance from the assembly com to the steer axis
             distance = point_to_line_distance(cAss, pointsOnLine)
+            print "handlebar cg distance", distance
 
             # now calculate the inertia about the steer axis of the rotated frame
             iAss = parallel_axis(iAssRot, mAss, np.array([distance, 0., 0.]))
