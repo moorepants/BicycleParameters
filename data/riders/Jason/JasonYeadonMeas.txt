@@ -110,14 +110,14 @@ Lb0p=34.5
 Lb1p=29.3
 Lb2p=28
 Lb3p=28.6
-Lb4p=17
+Lb4p=16.5
 Lb5p=24
-Lb6p=18
+Lb6p=24
 Lb7p=12.5
 #
 # stadium widths:
 # arm levels 0-3 are do not have widths because they are circles
-Lb4w=5.4
+Lb4w=5.5
 Lb5w=10
 Lb6w=10.2
 Lb7w=4.9
