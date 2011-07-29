@@ -73,7 +73,8 @@ class Bicycle(object):
         self.shortname = shortname
         self.directory = os.path.join(pathToBicycles, shortname)
 
-        self.has_rider = False
+        self.hasRider = False
+        self.riderPar = {}
 
         self.parameters = {}
         # if there are some parameter files, then load them
@@ -360,22 +361,23 @@ class Bicycle(object):
             image of the rider.
 
         """
-        def add_rider(pathToRider, bicyclePar):
+        def add_rider(pathToRider, bicyclePar, measuredPar, draw):
             try:
                 # run the calculations
                 pathToYeadon = os.path.join(pathToRider, 'RawData',
                                             rider + 'YeadonMeas.txt')
                 pathToCFG = os.path.join(pathToRider, 'RawData',
                                          rider + 'YeadonCFG.txt')
-                human = rider_on_bike(bicyclePar, pathToYeadon, pathToCFG)
-                riderPar = {'IB11': human.I[0, 0],
-                            'IB22': human.I[1, 1],
-                            'IB33': human.I[2, 2],
-                            'IB31': human.I[2, 0],
-                            'mB': human.M,
-                            'xB': human.COM[0],
-                            'yB': human.COM[1],
-                            'zB': human.COM[2]}
+                human = rider_on_bike(bicyclePar, measuredPar,
+                                      pathToYeadon, pathToCFG, draw)
+                riderPar = {'IBxx': human.Inertia[0, 0],
+                            'IByy': human.Inertia[1, 1],
+                            'IBzz': human.Inertia[2, 2],
+                            'IBxz': human.Inertia[2, 0],
+                            'mB': human.Mass,
+                            'xB': human.COM[0][0],
+                            'yB': human.COM[1][0],
+                            'zB': human.COM[2][0]}
             except: #except if this fails
                 # no rider was added
                 print('Calculations in yeadon failed. No rider added.')
@@ -397,8 +399,9 @@ class Bicycle(object):
             if reCalc == True:
                 # run the calculations
                 bicyclePar = self.parameters['Benchmark']
+                measuredPar = self.parameters['Measured']
                 riderPar, human, bicycleRiderPar =\
-                    add_rider(pathToRider, bicyclePar)
+                    add_rider(pathToRider, bicyclePar, measuredPar, draw)
                 self.riderPar['Benchmark'] = riderPar
                 self.human = human
                 self.parameters['Benchmark'] = bicycleRiderPar
@@ -412,8 +415,9 @@ class Bicycle(object):
                 except IOError:
                     # file doesn't exist so run the calculations
                     bicyclePar = self.parameters['Benchmark']
+                    measuredPar = self.parameters['Measured']
                     riderPar, human, bicycleRiderPar =\
-                        add_rider(pathToRider, bicyclePar)
+                        add_rider(pathToRider, bicyclePar, measuredPar, draw)
                     self.riderPar['Benchmark'] = riderPar
                     self.human = human
                     self.parameters['Benchmark'] = bicycleRiderPar
@@ -820,22 +824,29 @@ class Bicycle(object):
 
         return fig
 
-def calc_yeadon_joint_angles(H, drawrider):
-    '''Calculates the configuration of a human, described using Yeadon's
-    1990 inertia model. For an overview of the use of the yeaodn module
-    in this module, see the documentation for the method
-    bicycleparameters.add_yeadon_rider.
+def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
+                             drawrider):
+    """
+    Returns a yeadon human configured to sit on a bicycle.
 
     Parameters
     ----------
-    H : yeadon.human
-        A human object, required to extract the position of the shoulder
-        and hip joint centres of the rider. The joint angles in H.CFG
-        are used in the calculations in this method.
+    benchmarkPar : dictionary
+        A dictionary containing the benchmark bicycle parameters.
+    measuredPar : dictionary
+        A dictionary containting the raw geometric measurements of the bicycle.
+    yeadonMeas : str
+        Path to a text file that holds the 95 yeadon measurements. See
+        yeadon documentation.
+    yeadonCFG : str
+        Path to a text file that holds configuration variables. See yeadon
+        documentation. As of now, only 'somersalt' angle can be set as an
+        input. The remaining variables are either zero or calculated in
+        this method.
     drawrider : bool
         Switch to draw the rider, with vectors pointing to the desired
         position of the hands and feet of the rider (at the handles and
-        bottom bracket)
+        bottom bracket). Requires python-visual.
 
     Returns
     -------
@@ -846,37 +857,46 @@ def calc_yeadon_joint_angles(H, drawrider):
         CB1abduction, B1B2flexion, PJ1elevation,PJ1abduction,
         J1J2flexion, PK1elevation, PK1abduction, K1K2flexion
 
-    '''
+    Notes
+    -----
+    Requires that the bike object has a raw data text input file that contains
+    the measurements necessary to situate a rider on the bike.
+
+    """
+
+    # create human using input measurements and configuration files
+    H = yeadon.human(yeadonMeas, yeadonCFG)
+
+    measuredPar = remove_uncertainties(measuredPar)
+    benchmarkPar = remove_uncertainties(benchmarkPar)
+
     # for simplicity of code
     CFG = H.CFG
-    # parameters have uncertanties attached; must remove for math
-    # operations. not the cleanest solution, but works for now.
-    benchparam = remove_uncertainties(self.parameters['Benchmark'])
-    measparam = remove_uncertainties(self.parameters['Measured'])
     # bottom bracket height
-    hbb = measparam['hbb'] #.295
+    hbb = measuredPar['hbb'] #.295
     # chain stay length
-    Lcs = measparam['Lcs'] #.46
+    Lcs = measuredPar['Lcs'] #.46
     # rear wheel radius
-    rR = benchparam['rR'] #.342
+    rR = benchmarkPar['rR'] #.342
     # front wheel radius
-    rF = benchparam['rF'] #.342
+    rF = benchmarkPar['rF'] #.342
     # seat post length
-    Lsp = measparam['Lsp'] #.24
+    Lsp = measuredPar['Lsp'] #.24
     # seat tube length
-    Lst = measparam['Lst'] #.53
+    Lst = measuredPar['Lst'] #.53
     # seat tube angle
-    lamst = measparam['lamst'] #68.5*np.pi/180
+    lamst = measuredPar['lamst'] #68.5*np.pi/180
     # handlebar width
-    whb = measparam['whb'] #43
+    whb = measuredPar['whb'] #43
     # distance from rear wheel hub to hand
-    LhbR = measparam['LhbR'] #106
+    LhbR = measuredPar['LhbR'] #106
     # distance from front wheel hub to hand
-    LhbF = measparam['LhbF'] #49
+    LhbF = measuredPar['LhbF'] #49
     # wheelbase
-    w = benchparam['w']
+    w = benchmarkPar['w']
+
     # intermediate quantities
-    D = np.sqrt(w**2 + (rR - rF)**2)
+    D = np.sqrt(w**2 + (rR - rF)**2)**0.5
     # projection into the plane of the bike
     dhbR = np.sqrt(LhbR**2 - (whb/2)**2)
     dhbF = np.sqrt(LhbF**2 - (whb/2)**2)
@@ -907,6 +927,7 @@ def calc_yeadon_joint_angles(H, drawrider):
     pos_handr = vec_hb_out + vec_hb_in
     # position of left hand with respect to rear wheel contact point
     pos_handl = -vec_hb_out + vec_hb_in
+
     # time to calculate the relevant quantities!
     # vector from seat to feet, ignoring out-of-plane distance
     vec_legs = -vec_seat
@@ -1015,40 +1036,7 @@ def calc_yeadon_joint_angles(H, drawrider):
         H.draw_vector('origin',pos_handr)
     return H
 
-def calculate_yeadon_rider(measBikePar, yeadonMeas, yeadonCFG,
-        drawrider=False):
-    """
-    Computes the inertial properties of a rider seated on a bicycle.
-
-    Parameters
-    ----------
-    yeadonMeas : str
-        Path to a text file that holds the 95 yeadon measurements. See
-        yeadon documentation.
-    yeadonCFG : str
-        Path to a text file that holds configuration variables. See yeadon
-        documentation. As of now, only 'somersalt' angle can be set as an
-        input. The remaining variables are either zero or calculated in
-        this method.
-    drawrider = False : bool
-        Optional argument to plot the rider, including vectors that point
-        to the desired hand and foot positions. Requires python-visual.
-
-    Notes
-    -----
-    Requires that the bike object
-    has a raw data text input file that contains the measurements necessary
-    to situate a rider on the bike.
-
-    """
-
-    # create human using input measurements and configuration files
-    H = yeadon.human(yeadonMeas, yeadonCFG)
-
-    # solve for joint angles
-    return calc_yeadon_joint_angles(H, drawrider)
-
-def combine_bike_rider(bikePar, riderPar):
+def combine_bike_rider(bicyclePar, riderPar):
     """
     Combines the inertia of the bicycle frame with the
     inertia of a rider.
@@ -1094,15 +1082,15 @@ def combine_bike_rider(bikePar, riderPar):
          parallel_axis(IBicycle, bicyclePar['mB'], dBicycle))
 
     # assign new inertia back to bike
-    bikePar['xB'] = cT[0]
-    bikePar['zB'] = cT[2]
-    bikePar['mB'] = mT
-    bikePar['IBxx'] = I[0, 0]
-    bikePar['IBxz'] = I[0, 2]
-    bikePar['IByy'] = I[1, 1]
-    bikePar['IBzz'] = I[2, 2]
+    bicyclePar['xB'] = cT[0]
+    bicyclePar['zB'] = cT[2]
+    bicyclePar['mB'] = mT
+    bicyclePar['IBxx'] = I[0, 0]
+    bicyclePar['IBxz'] = I[0, 2]
+    bicyclePar['IByy'] = I[1, 1]
+    bicyclePar['IBzz'] = I[2, 2]
 
-    return bikePar
+    return bicyclePar
 
 def point_to_line_distance(point, pointsOnLine):
     '''Returns the minimal distance from a point to a line in three
