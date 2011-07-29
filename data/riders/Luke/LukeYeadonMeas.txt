@@ -17,7 +17,7 @@ measurementconversionfactor = .1
 # the mass of the human can be set to a measured mass (by scaling the densities
 # used) if the totalmass field below is set to a a value greater than 0.
 # Alternatively, the next line can be deleted from the input file.
-totalmass=-1
+totalmass=84.273
 ##############################################################################
 # TORSO
 # Ls0 hip joint centre
