@@ -5,10 +5,6 @@ import os
 import re
 from math import pi
 
-# THE NEXT TWO LINES ARE TEMPORARY
-import sys
-sys.path.append('/home/fitze/Dropbox/UCD/yeadon')
-
 # dependencies
 import numpy as np
 from numpy import ma
@@ -17,8 +13,8 @@ from scipy.io import loadmat
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Wedge
 from uncertainties import ufloat, unumpy, umath, UFloat, wrap
-
 import yeadon
+
 # local modules
 from inertia import *
 
@@ -76,6 +72,8 @@ class Bicycle(object):
 
         self.shortname = shortname
         self.directory = os.path.join(pathToBicycles, shortname)
+
+        self.has_rider = False
 
         self.parameters = {}
         # if there are some parameter files, then load them
@@ -344,35 +342,120 @@ class Bicycle(object):
 
         return calculate_benchmark_from_measured(self.parameters['Measured'])
 
+    def add_rider2(self, rider, pathToData, reCalc=False, draw=False):
+        """
+        Adds the inertial effects of a rigid rider to the bicycle.
+
+        Parameters
+        ----------
+        rider : string
+            A rider name that corresponds to a folder in
+            `<pathToData>/riders/rider`.
+        pathToData : string
+            The path to a directory that contains the `riders` directory.
+        reCalc : boolean, optional
+            If true the rider parameters will be recalculated.
+        draw : boolean, optional
+            If true visual python will be used to draw a three dimensional
+            image of the rider.
+
+        """
+        def add_rider(pathToRider, bicyclePar):
+            try:
+                # run the calculations
+                pathToYeadon = os.path.join(pathToRider, 'RawData',
+                                            rider + 'YeadonMeas.txt')
+                pathToCFG = os.path.join(pathToRider, 'RawData',
+                                         rider + 'YeadonCFG.txt')
+                human = rider_on_bike(bicyclePar, pathToYeadon, pathToCFG)
+                riderPar = {'IB11': human.I[0, 0],
+                            'IB22': human.I[1, 1],
+                            'IB33': human.I[2, 2],
+                            'IB31': human.I[2, 0],
+                            'mB': human.M,
+                            'xB': human.COM[0],
+                            'yB': human.COM[1],
+                            'zB': human.COM[2]}
+            except: #except if this fails
+                # no rider was added
+                print('Calculations in yeadon failed. No rider added.')
+                raise
+            else:
+                bicycleRiderPar = combine_bike_rider(bicyclePar, riderPar)
+                return riderPar, human, bicycleRiderPar
+
+        # first check to see if a rider has already been added
+        if self.hasRider == True:
+            print("D'oh! This bicycle already has {0} as a " +
+                  "rider!".format(self.riderName))
+        else:
+            self.riderName = rider
+
+            # get the path to the rider's folder
+            pathToRider = os.path.join(pathToData, 'riders', rider)
+
+            if reCalc == True:
+                # run the calculations
+                bicyclePar = self.parameters['Benchmark']
+                riderPar, human, bicycleRiderPar =\
+                    add_rider(pathToRider, bicyclePar)
+                self.riderPar['Benchmark'] = riderPar
+                self.human = human
+                self.parameters['Benchmark'] = bicycleRiderPar
+            else:
+                try:
+                    # load the parameter file
+                    pathToParFile = os.path.join(pathToRider, 'parameters',
+                        rider + self.shortname + 'Benchmark.txt')
+                    self.riderPar['Benchmark'] =\
+                        load_parameter_text_file(pathToParFile)
+                except IOError:
+                    # file doesn't exist so run the calculations
+                    bicyclePar = self.parameters['Benchmark']
+                    riderPar, human, bicycleRiderPar =\
+                        add_rider(pathToRider, bicyclePar)
+                    self.riderPar['Benchmark'] = riderPar
+                    self.human = human
+                    self.parameters['Benchmark'] = bicycleRiderPar
+                else:
+                    self.parameters['Benchmark'] =\
+                        combine_bike_rider(self.parameters['Benchmark'],
+                                           self.riderPar['Benchmark'])
+
     def add_rider(self, pathToRider):
-        '''Adds the parameters of a rider to the bicycle.'''
+        """Adds the parameters of a rider to the bicycle."""
 
-        riderPar = load_parameter_text_file(pathToRider)
-        bicyclePar = self.parameters['Benchmark']
-        masses = np.array([riderPar['mB'], bicyclePar['mB']])
-        coordinates = np.array([[riderPar['xB'], bicyclePar['xB']],
-                                [0., 0.],
-                                [riderPar['zB'], bicyclePar['zB']]])
-        mT, cT = total_com(coordinates, masses)
-        dRider = np.array([riderPar['xB'] - cT[0],
-                           0.,
-                           riderPar['zB'] - cT[2]])
-        dBicycle = np.array([bicyclePar['xB'] - cT[0],
-                             0.,
-                             bicyclePar['zB'] - cT[2]])
-        IRider = part_inertia_tensor(riderPar, 'B')
-        IBicycle = part_inertia_tensor(bicyclePar, 'B')
-        I = (parallel_axis(IRider, riderPar['mB'], dRider) +
-             parallel_axis(IBicycle, bicyclePar['mB'], dBicycle))
-        self.parameters['Benchmark']['xB'] = cT[0]
-        self.parameters['Benchmark']['zB'] = cT[2]
-        self.parameters['Benchmark']['mB'] = mT
-        self.parameters['Benchmark']['IBxx'] = I[0, 0]
-        self.parameters['Benchmark']['IBxz'] = I[0, 2]
-        self.parameters['Benchmark']['IByy'] = I[1, 1]
-        self.parameters['Benchmark']['IBzz'] = I[2, 2]
+        if self.hasRider == False:
+            riderPar = load_parameter_text_file(pathToRider)
+            bicyclePar = self.parameters['Benchmark']
+            masses = np.array([riderPar['mB'], bicyclePar['mB']])
+            coordinates = np.array([[riderPar['xB'], bicyclePar['xB']],
+                                    [0., 0.],
+                                    [riderPar['zB'], bicyclePar['zB']]])
+            mT, cT = total_com(coordinates, masses)
+            dRider = np.array([riderPar['xB'] - cT[0],
+                               0.,
+                               riderPar['zB'] - cT[2]])
+            dBicycle = np.array([bicyclePar['xB'] - cT[0],
+                                 0.,
+                                 bicyclePar['zB'] - cT[2]])
+            IRider = part_inertia_tensor(riderPar, 'B')
+            IBicycle = part_inertia_tensor(bicyclePar, 'B')
+            I = (parallel_axis(IRider, riderPar['mB'], dRider) +
+                 parallel_axis(IBicycle, bicyclePar['mB'], dBicycle))
+            self.parameters['Benchmark']['xB'] = cT[0]
+            self.parameters['Benchmark']['zB'] = cT[2]
+            self.parameters['Benchmark']['mB'] = mT
+            self.parameters['Benchmark']['IBxx'] = I[0, 0]
+            self.parameters['Benchmark']['IBxz'] = I[0, 2]
+            self.parameters['Benchmark']['IByy'] = I[1, 1]
+            self.parameters['Benchmark']['IBzz'] = I[2, 2]
 
-    def add_yeadon_rider(self,yeadonMeas,yeadonCFG,drawrider=False):
+            self.hasRider = True
+        else:
+            print("D'oh! This bicycle already has a rider!")
+
+    def add_yeadon_rider(self, yeadonMeas, yeadonCFG, drawrider=False):
         '''Adds a static rider using the yeadon python module. Solves for
         the joint angles required to sit the rider on the bike (any bike
         for which parameters are available), and combines the riders inertia
@@ -433,200 +516,6 @@ class Bicycle(object):
         self.parameters['Benchmark']['IBzz'] = I[2, 2]
         print "Yeadon-type rider inertia has been successfuly added to bike."
 
-    def calc_yeadon_joint_angles(self,H,drawrider):
-        '''Calculates the configuration of a human, described using Yeadon's
-        1990 inertia model. For an overview of the use of the yeaodn module
-        in this module, see the documentation for the method
-        bicycleparameters.add_yeadon_rider.
-
-        Parameters
-        ----------
-        H : yeadon.human
-            A human object, required to extract the position of the shoulder
-            and hip joint centres of the rider. The joint angles in H.CFG
-            are used in the calculations in this method.
-        drawrider : bool
-            Switch to draw the rider, with vectors pointing to the desired
-            position of the hands and feet of the rider (at the handles and
-            bottom bracket)
-
-        Returns
-        -------
-        H : yeadon.human
-            Human object is returned with an updated configuration.
-            Dictionary, taken from H.CFG, with the following key's values
-            updated: CA1elevation, CA1abduction, A1A2flexion, CB1elevation
-            CB1abduction, B1B2flexion, PJ1elevation,PJ1abduction,
-            J1J2flexion, PK1elevation, PK1abduction, K1K2flexion
-
-        '''
-        # for simplicity of code
-        CFG = H.CFG
-        # parameters have uncertanties attached; must remove for math
-        # operations. not the cleanest solution, but works for now.
-        benchparam = remove_uncertainties(self.parameters['Benchmark'])
-        measparam = remove_uncertainties(self.parameters['Measured'])
-        # bottom bracket height
-        hbb = measparam['hbb'] #.295
-        # chain stay length
-        Lcs = measparam['Lcs'] #.46
-        # rear wheel radius
-        rR = benchparam['rR'] #.342
-        # front wheel radius
-        rF = benchparam['rF'] #.342
-        # seat post length
-        Lsp = measparam['Lsp'] #.24
-        # seat tube length
-        Lst = measparam['Lst'] #.53
-        # seat tube angle
-        lamst = measparam['lamst'] #68.5*np.pi/180
-        # handlebar width
-        whb = measparam['whb'] #43
-        # distance from rear wheel hub to hand
-        LhbR = measparam['LhbR'] #106
-        # distance from front wheel hub to hand
-        LhbF = measparam['LhbF'] #49
-        # wheelbase
-        w = benchparam['w']
-        # intermediate quantities
-        D = np.sqrt(w**2 + (rR - rF)**2)
-        # projection into the plane of the bike
-        dhbR = np.sqrt(LhbR**2 - (whb/2)**2)
-        dhbF = np.sqrt(LhbF**2 - (whb/2)**2)
-        # angle with vertex at rear hub, from horizontal "down" to front hub
-        alpha = np.arcsin( (rR - rF) / D )
-        # angle at rear hub of the LhbR-LhbF-D triangle (side-side-side)
-        gamma = np.arccos( (dhbR**2 + D**2 - dhbF**2) / (2 * dhbR * D) )
-        # position of pedal with respect to rear wheel contact point
-        pos_bb = np.array([[np.sqrt(Lcs**2 + (rR - hbb)**2)],
-                           [0],
-                           [-hbb]])
-        # vector from bottom bracket to seat
-        vec_seat = -(Lst + Lsp) * np.array([[np.cos(lamst)],
-                                            [0],
-                                            [np.sin(lamst)]])
-        # position of seat with respect to rear wheel contact point
-        pos_seat = pos_bb + vec_seat
-        # vector (out of plane) from plane to right hand on the handlebars
-        vec_hb_out  = np.array([[0],
-                                [whb/2],
-                                [0]])
-        # vector (in plane) from rear wheel contact point to in-plane
-        # location of hands
-        vec_hb_in = np.array([[dhbR * np.cos(gamma-alpha)],
-                              [0],
-                              [-rR - dhbR * np.sin(gamma-alpha)]])
-        # position of right hand with respect to rear wheel contact point
-        pos_handr = vec_hb_out + vec_hb_in
-        # position of left hand with respect to rear wheel contact point
-        pos_handl = -vec_hb_out + vec_hb_in
-        # time to calculate the relevant quantities!
-        # vector from seat to feet, ignoring out-of-plane distance
-        vec_legs = -vec_seat
-        # vector from seat to right hand
-        vec_armr = pos_handr - pos_seat
-        # vector from seat to left hand
-        vec_arml = pos_handl - pos_seat
-        # translation is done in bike's coordinate system
-        H.translate_coord_sys( pos_seat )
-        H.rotate_coord_sys( (np.pi,0,-np.pi/2) )
-        pos_footl = pos_bb.copy()
-        pos_footl[1,0] = H.J1.pos[1,0]
-        pos_footr = pos_bb.copy()
-        pos_footr[1,0] = H.K1.pos[1,0]
-        DJ = np.linalg.norm( pos_footl - H.J1.pos)
-        DK = np.linalg.norm( pos_footr - H.K1.pos)
-        DA = np.linalg.norm( pos_handl - H.A1.pos)
-        DB = np.linalg.norm( pos_handr - H.B1.pos)
-        # error-checking to make sure limbs are long enough for rider to sit
-        # on the bike
-        if (H.J1.length + H.J2.length < DJ):
-            print "For the given measurements, the left leg is not " \
-                  "long enough. Left leg length is",H.J1.length+H.J2.length, \
-                  "m, but distance from left hip joint to bottom bracket is", \
-                  DJ,"m."
-            raise Exception()
-        if (H.K1.length + H.K2.length < DK):
-            print "For the given measurements, the right leg is not " \
-                  "long enough. Right leg length is",H.K1.length+H.K2.length, \
-                  "m, but distance from right hip joint to bottom bracket is", \
-                  DK,"m."
-            raise Exception()
-        if (H.A1.length + H.A2.length < DA):
-            print "For the given configuration, the left arm is not " \
-                  "long enough. Left arm length is",H.A1.length+H.A2.length, \
-                  "m, but distance from shoulder to left hand is",DA,"m."
-            raise Exception()
-        if (H.B1.length + H.B2.length < DB):
-            print "For the given configuration, the right arm is not " \
-                  "long enough. Right arm length is",H.B1.length+H.B2.length, \
-                  "m, but distance from shoulder to right hand is",DB,"m."
-            raise Exception()
-        # joint angle time
-        # legs first. torso cannot have twist
-        tempangle,CFG['J1J2flexion'] = calc_two_link_angles(
-            H.J1.length, H.J2.length, DJ)
-        tempangle2 = vec_angle(np.array([[0,0,1]]).T, vec_legs)
-        CFG['PJ1flexion'] = tempangle + tempangle2 + CFG['somersalt']
-        #CFG['PJ1abduction'] = CFG['tilt']
-        tempangle,CFG['K1K2flexion'] = calc_two_link_angles(
-            H.K1.length,H.K2.length,DK)
-        CFG['PK1flexion'] = tempangle + tempangle2 + CFG['somersalt']
-        #CFG['PK1abduction'] = -CFG['tilt']
-        # arms second. only somersalt can be specified, other torso
-        # configuration variables must be zero
-        tempangle,CFG['A1A2flexion'] = calc_two_link_angles(
-            H.A1.length, H.A2.length, DA)
-        tempangle2 = vec_angle( vec_project(H.A1.pos - pos_seat,1),
-                                vec_project(pos_handl - H.A1.pos,1) )
-        tempangle2 = CFG['somersalt'] + vec_angle( np.array([[0,0,1]]).T,
-                                                   pos_handl - H.A1.pos)
-        CFG['CA1elevation'] = tempangle2 - tempangle
-        CFG['CA1abduction'] = vec_angle( pos_handl - H.A1.pos,
-                                         vec_project(pos_handl - H.A1.pos,1) )
-        tempangle,CFG['B1B2flexion'] = calc_two_link_angles(
-            H.B1.length, H.B2.length, DB)
-        tempangle2 = vec_angle( vec_project(H.B1.pos - pos_seat,1),
-                                vec_project(pos_handr - H.B1.pos,1) )
-        tempangle2 = CFG['somersalt'] + vec_angle( np.array([[0,0,1]]).T,
-                                                   pos_handr - H.B1.pos)
-        CFG['CB1elevation'] = tempangle2 - tempangle
-        CFG['CB1abduction'] = vec_angle( pos_handr - H.B1.pos,
-                                         vec_project(pos_handr - H.B1.pos,1) )
-        # assign configuration to human and check that the solution worked
-        H.set_CFG_dict(CFG)
-        if (np.round(H.J2.endpos,2) != np.round(pos_footl,2)).all():
-            print "Left leg's actual position does not match its desired " \
-                  "position near the bike's bottom bracket. Left leg actual " \
-                  "position:\n",H.J2.endpos,".\nLeft leg desired position:\n",\
-                  pos_footl,".\nLeft leg base to end distance:", \
-                  np.linalg.norm(H.J2.endpos-H.J1.pos),", Left leg D:",DJ
-        if (np.round(H.K2.endpos,2) != np.round(pos_footr,2)).all():
-            print "Right leg's actual position does not match its desired " \
-                  "position near the bike's bottom bracket. Right leg actual " \
-                  "position:\n",H.K2.endpos,".\nRight leg desired position:\n",\
-                  pos_footr,".\nRight leg base to end distance:", \
-                  np.linalg.norm(H.K2.endpos-H.K1.pos),", Left leg D:",DK
-        if (np.round(H.A2.endpos,2) != np.round(pos_handl,2)).all():
-            print "Left arm's actual position does not match its desired " \
-                  "position on the bike's handlebar. Left arm actual " \
-                  "position:\n",H.A2.endpos,".\nLeft arm desired position:\n",\
-                  pos_handl,"\nLeft arm base to end distance:", \
-                  np.linalg.norm(H.A2.endpos-H.A1.pos),", Left arm D:",DA
-        if (np.round(H.B2.endpos,2) != np.round(pos_handr,2)).all():
-            print "Right arm's actual position does not match its desired " \
-                  "position on the bike's handrebar. Right arm actual " \
-                  "position:",H.B2.endpos,".\nRight arm desired position:\n",\
-                  pos_handr,".\nRight arm base to end distance:", \
-                  np.linalg.norm(H.A2.endpos-H.B1.pos),", Right arm D:",DB
-        # draw rider for fun, but possibly to check results aren't crazy
-        if drawrider==True:
-            H.draw_visual(forward=(0,-1,0),up=(0,0,-1))
-            H.draw_vector('origin',pos_footl)
-            H.draw_vector('origin',pos_footr)
-            H.draw_vector('origin',pos_handl)
-            H.draw_vector('origin',pos_handr)
-        return H
 
     def plot_bicycle_geometry(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
@@ -930,6 +819,290 @@ class Bicycle(object):
             plt.show()
 
         return fig
+
+def calc_yeadon_joint_angles(H, drawrider):
+    '''Calculates the configuration of a human, described using Yeadon's
+    1990 inertia model. For an overview of the use of the yeaodn module
+    in this module, see the documentation for the method
+    bicycleparameters.add_yeadon_rider.
+
+    Parameters
+    ----------
+    H : yeadon.human
+        A human object, required to extract the position of the shoulder
+        and hip joint centres of the rider. The joint angles in H.CFG
+        are used in the calculations in this method.
+    drawrider : bool
+        Switch to draw the rider, with vectors pointing to the desired
+        position of the hands and feet of the rider (at the handles and
+        bottom bracket)
+
+    Returns
+    -------
+    H : yeadon.human
+        Human object is returned with an updated configuration.
+        Dictionary, taken from H.CFG, with the following key's values
+        updated: CA1elevation, CA1abduction, A1A2flexion, CB1elevation
+        CB1abduction, B1B2flexion, PJ1elevation,PJ1abduction,
+        J1J2flexion, PK1elevation, PK1abduction, K1K2flexion
+
+    '''
+    # for simplicity of code
+    CFG = H.CFG
+    # parameters have uncertanties attached; must remove for math
+    # operations. not the cleanest solution, but works for now.
+    benchparam = remove_uncertainties(self.parameters['Benchmark'])
+    measparam = remove_uncertainties(self.parameters['Measured'])
+    # bottom bracket height
+    hbb = measparam['hbb'] #.295
+    # chain stay length
+    Lcs = measparam['Lcs'] #.46
+    # rear wheel radius
+    rR = benchparam['rR'] #.342
+    # front wheel radius
+    rF = benchparam['rF'] #.342
+    # seat post length
+    Lsp = measparam['Lsp'] #.24
+    # seat tube length
+    Lst = measparam['Lst'] #.53
+    # seat tube angle
+    lamst = measparam['lamst'] #68.5*np.pi/180
+    # handlebar width
+    whb = measparam['whb'] #43
+    # distance from rear wheel hub to hand
+    LhbR = measparam['LhbR'] #106
+    # distance from front wheel hub to hand
+    LhbF = measparam['LhbF'] #49
+    # wheelbase
+    w = benchparam['w']
+    # intermediate quantities
+    D = np.sqrt(w**2 + (rR - rF)**2)
+    # projection into the plane of the bike
+    dhbR = np.sqrt(LhbR**2 - (whb/2)**2)
+    dhbF = np.sqrt(LhbF**2 - (whb/2)**2)
+    # angle with vertex at rear hub, from horizontal "down" to front hub
+    alpha = np.arcsin( (rR - rF) / D )
+    # angle at rear hub of the LhbR-LhbF-D triangle (side-side-side)
+    gamma = np.arccos( (dhbR**2 + D**2 - dhbF**2) / (2 * dhbR * D) )
+    # position of pedal with respect to rear wheel contact point
+    pos_bb = np.array([[np.sqrt(Lcs**2 + (rR - hbb)**2)],
+                       [0],
+                       [-hbb]])
+    # vector from bottom bracket to seat
+    vec_seat = -(Lst + Lsp) * np.array([[np.cos(lamst)],
+                                        [0],
+                                        [np.sin(lamst)]])
+    # position of seat with respect to rear wheel contact point
+    pos_seat = pos_bb + vec_seat
+    # vector (out of plane) from plane to right hand on the handlebars
+    vec_hb_out  = np.array([[0],
+                            [whb/2],
+                            [0]])
+    # vector (in plane) from rear wheel contact point to in-plane
+    # location of hands
+    vec_hb_in = np.array([[dhbR * np.cos(gamma-alpha)],
+                          [0],
+                          [-rR - dhbR * np.sin(gamma-alpha)]])
+    # position of right hand with respect to rear wheel contact point
+    pos_handr = vec_hb_out + vec_hb_in
+    # position of left hand with respect to rear wheel contact point
+    pos_handl = -vec_hb_out + vec_hb_in
+    # time to calculate the relevant quantities!
+    # vector from seat to feet, ignoring out-of-plane distance
+    vec_legs = -vec_seat
+    # vector from seat to right hand
+    vec_armr = pos_handr - pos_seat
+    # vector from seat to left hand
+    vec_arml = pos_handl - pos_seat
+    # translation is done in bike's coordinate system
+    H.translate_coord_sys( pos_seat )
+    H.rotate_coord_sys( (np.pi,0,-np.pi/2) )
+    pos_footl = pos_bb.copy()
+    pos_footl[1,0] = H.J1.pos[1,0]
+    pos_footr = pos_bb.copy()
+    pos_footr[1,0] = H.K1.pos[1,0]
+    DJ = np.linalg.norm( pos_footl - H.J1.pos)
+    DK = np.linalg.norm( pos_footr - H.K1.pos)
+    DA = np.linalg.norm( pos_handl - H.A1.pos)
+    DB = np.linalg.norm( pos_handr - H.B1.pos)
+    # error-checking to make sure limbs are long enough for rider to sit
+    # on the bike
+    if (H.J1.length + H.J2.length < DJ):
+        print "For the given measurements, the left leg is not " \
+              "long enough. Left leg length is",H.J1.length+H.J2.length, \
+              "m, but distance from left hip joint to bottom bracket is", \
+              DJ,"m."
+        raise Exception()
+    if (H.K1.length + H.K2.length < DK):
+        print "For the given measurements, the right leg is not " \
+              "long enough. Right leg length is",H.K1.length+H.K2.length, \
+              "m, but distance from right hip joint to bottom bracket is", \
+              DK,"m."
+        raise Exception()
+    if (H.A1.length + H.A2.length < DA):
+        print "For the given configuration, the left arm is not " \
+              "long enough. Left arm length is",H.A1.length+H.A2.length, \
+              "m, but distance from shoulder to left hand is",DA,"m."
+        raise Exception()
+    if (H.B1.length + H.B2.length < DB):
+        print "For the given configuration, the right arm is not " \
+              "long enough. Right arm length is",H.B1.length+H.B2.length, \
+              "m, but distance from shoulder to right hand is",DB,"m."
+        raise Exception()
+    # joint angle time
+    # legs first. torso cannot have twist
+    tempangle,CFG['J1J2flexion'] = calc_two_link_angles(
+        H.J1.length, H.J2.length, DJ)
+    tempangle2 = vec_angle(np.array([[0,0,1]]).T, vec_legs)
+    CFG['PJ1flexion'] = tempangle + tempangle2 + CFG['somersalt']
+    #CFG['PJ1abduction'] = CFG['tilt']
+    tempangle,CFG['K1K2flexion'] = calc_two_link_angles(
+        H.K1.length,H.K2.length,DK)
+    CFG['PK1flexion'] = tempangle + tempangle2 + CFG['somersalt']
+    #CFG['PK1abduction'] = -CFG['tilt']
+    # arms second. only somersalt can be specified, other torso
+    # configuration variables must be zero
+    tempangle,CFG['A1A2flexion'] = calc_two_link_angles(
+        H.A1.length, H.A2.length, DA)
+    tempangle2 = vec_angle( vec_project(H.A1.pos - pos_seat,1),
+                            vec_project(pos_handl - H.A1.pos,1) )
+    tempangle2 = CFG['somersalt'] + vec_angle( np.array([[0,0,1]]).T,
+                                               pos_handl - H.A1.pos)
+    CFG['CA1elevation'] = tempangle2 - tempangle
+    CFG['CA1abduction'] = vec_angle( pos_handl - H.A1.pos,
+                                     vec_project(pos_handl - H.A1.pos,1) )
+    tempangle,CFG['B1B2flexion'] = calc_two_link_angles(
+        H.B1.length, H.B2.length, DB)
+    tempangle2 = vec_angle( vec_project(H.B1.pos - pos_seat,1),
+                            vec_project(pos_handr - H.B1.pos,1) )
+    tempangle2 = CFG['somersalt'] + vec_angle( np.array([[0,0,1]]).T,
+                                               pos_handr - H.B1.pos)
+    CFG['CB1elevation'] = tempangle2 - tempangle
+    CFG['CB1abduction'] = vec_angle( pos_handr - H.B1.pos,
+                                     vec_project(pos_handr - H.B1.pos,1) )
+    # assign configuration to human and check that the solution worked
+    H.set_CFG_dict(CFG)
+    if (np.round(H.J2.endpos,2) != np.round(pos_footl,2)).all():
+        print "Left leg's actual position does not match its desired " \
+              "position near the bike's bottom bracket. Left leg actual " \
+              "position:\n",H.J2.endpos,".\nLeft leg desired position:\n",\
+              pos_footl,".\nLeft leg base to end distance:", \
+              np.linalg.norm(H.J2.endpos-H.J1.pos),", Left leg D:",DJ
+    if (np.round(H.K2.endpos,2) != np.round(pos_footr,2)).all():
+        print "Right leg's actual position does not match its desired " \
+              "position near the bike's bottom bracket. Right leg actual " \
+              "position:\n",H.K2.endpos,".\nRight leg desired position:\n",\
+              pos_footr,".\nRight leg base to end distance:", \
+              np.linalg.norm(H.K2.endpos-H.K1.pos),", Left leg D:",DK
+    if (np.round(H.A2.endpos,2) != np.round(pos_handl,2)).all():
+        print "Left arm's actual position does not match its desired " \
+              "position on the bike's handlebar. Left arm actual " \
+              "position:\n",H.A2.endpos,".\nLeft arm desired position:\n",\
+              pos_handl,"\nLeft arm base to end distance:", \
+              np.linalg.norm(H.A2.endpos-H.A1.pos),", Left arm D:",DA
+    if (np.round(H.B2.endpos,2) != np.round(pos_handr,2)).all():
+        print "Right arm's actual position does not match its desired " \
+              "position on the bike's handrebar. Right arm actual " \
+              "position:",H.B2.endpos,".\nRight arm desired position:\n",\
+              pos_handr,".\nRight arm base to end distance:", \
+              np.linalg.norm(H.A2.endpos-H.B1.pos),", Right arm D:",DB
+    # draw rider for fun, but possibly to check results aren't crazy
+    if drawrider==True:
+        H.draw_visual(forward=(0,-1,0),up=(0,0,-1))
+        H.draw_vector('origin',pos_footl)
+        H.draw_vector('origin',pos_footr)
+        H.draw_vector('origin',pos_handl)
+        H.draw_vector('origin',pos_handr)
+    return H
+
+def calculate_yeadon_rider(measBikePar, yeadonMeas, yeadonCFG,
+        drawrider=False):
+    """
+    Computes the inertial properties of a rider seated on a bicycle.
+
+    Parameters
+    ----------
+    yeadonMeas : str
+        Path to a text file that holds the 95 yeadon measurements. See
+        yeadon documentation.
+    yeadonCFG : str
+        Path to a text file that holds configuration variables. See yeadon
+        documentation. As of now, only 'somersalt' angle can be set as an
+        input. The remaining variables are either zero or calculated in
+        this method.
+    drawrider = False : bool
+        Optional argument to plot the rider, including vectors that point
+        to the desired hand and foot positions. Requires python-visual.
+
+    Notes
+    -----
+    Requires that the bike object
+    has a raw data text input file that contains the measurements necessary
+    to situate a rider on the bike.
+
+    """
+
+    # create human using input measurements and configuration files
+    H = yeadon.human(yeadonMeas, yeadonCFG)
+
+    # solve for joint angles
+    return calc_yeadon_joint_angles(H, drawrider)
+
+def combine_bike_rider(bikePar, riderPar):
+    """
+    Combines the inertia of the bicycle frame with the
+    inertia of a rider.
+
+    Parameters
+    ----------
+    bikePar : dictionary
+        The benchmark parameter set of a bicycle.
+    riderPar : dictionary
+        The rider's mass, center of mass, and inertia expressed in the
+        benchmark bicycle reference frame.
+
+    Returns
+    -------
+    bikePar : dictionary
+        The benchmark bicycle parameters with a rigid rider included with the
+        bicycle frame.
+
+    """
+    masses = np.array([riderPar['mB'], bicyclePar['mB']])
+    coordinates = np.array([[riderPar['xB'], bicyclePar['xB']],
+                            [riderPar['yB'], 0.],
+                            [riderPar['zB'], bicyclePar['zB']]])
+
+    # calculate the new mass and center of mass
+    mT, cT = total_com(coordinates, masses)
+
+    # get inertia tensors for the bicycle and rider
+    IBicycle = part_inertia_tensor(bicyclePar, 'B')
+    IRider = part_inertia_tensor(riderPar, 'B')
+
+    # calculate the distance from the center of mass of each body to the
+    # center of mass of the combined body
+    dRider = np.array([riderPar['xB'] - cT[0],
+                       riderPar['xB'] - cT[1],
+                       riderPar['xB'] - cT[2]])
+    dBicycle = np.array([bicyclePar['xB'] - cT[0],
+                         0.,
+                         bicyclePar['zB'] - cT[2]])
+
+    # calculate the total inertia about the total body center of mass
+    I = (parallel_axis(IRider, riderPar['mB'], dRider) +
+         parallel_axis(IBicycle, bicyclePar['mB'], dBicycle))
+
+    # assign new inertia back to bike
+    bikePar['xB'] = cT[0]
+    bikePar['zB'] = cT[2]
+    bikePar['mB'] = mT
+    bikePar['IBxx'] = I[0, 0]
+    bikePar['IBxz'] = I[0, 2]
+    bikePar['IByy'] = I[1, 1]
+    bikePar['IBzz'] = I[2, 2]
+
+    return bikePar
 
 def point_to_line_distance(point, pointsOnLine):
     '''Returns the minimal distance from a point to a line in three
@@ -2525,9 +2698,11 @@ def load_parameter_text_file(pathToFile):
     -------
     parameters : dictionary
 
-    For example:
+    For example::
 
-    'c = 0.08 +/- 0.01\nd=0.314+/-0.002\nt = 0.1+/-0.01, 0.12+/-0.02'
+        c = 0.08 +/- 0.01
+        d=0.314+/-0.002
+        t = 0.1+/-0.01, 0.12+/-0.02
 
     The first item on the line must be the variable name and the second is an
     equals sign. The values to the right of the equal sign much contain an
