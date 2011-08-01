@@ -756,6 +756,7 @@ def add_rider(pathToRider, bicyclePar, measuredPar, draw):
     except: #except if this fails
         # no rider was added
         print('Calculations in yeadon failed. No rider added.')
+        # raise the error that caused things to fail
         raise
     else:
         bicycleRiderPar = combine_bike_rider(bicyclePar, riderPar)
@@ -1003,13 +1004,15 @@ def combine_bike_rider(bicyclePar, riderPar):
 
     # get inertia tensors for the bicycle and rider
     IBicycle = part_inertia_tensor(bicyclePar, 'B')
+    print IBicycle
     IRider = part_inertia_tensor(riderPar, 'B')
+    print IRider
 
     # calculate the distance from the center of mass of each body to the
     # center of mass of the combined body
     dRider = np.array([riderPar['xB'] - cT[0],
-                       riderPar['xB'] - cT[1],
-                       riderPar['xB'] - cT[2]])
+                       riderPar['yB'] - cT[1],
+                       riderPar['zB'] - cT[2]])
     dBicycle = np.array([bicyclePar['xB'] - cT[0],
                          0.,
                          bicyclePar['zB'] - cT[2]])
