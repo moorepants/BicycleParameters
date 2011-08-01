@@ -12,7 +12,7 @@ from scipy.optimize import leastsq, newton
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Wedge
-from uncertainties import ufloat, unumpy, umath, UFloat, wrap
+from uncertainties import ufloat, unumpy, umath, UFloat
 import yeadon
 
 # local modules
@@ -343,7 +343,7 @@ class Bicycle(object):
 
         return calculate_benchmark_from_measured(self.parameters['Measured'])
 
-    def add_rider2(self, rider, pathToData, reCalc=False, draw=False):
+    def add_rider(self, rider, pathToData, reCalc=False, draw=False):
         """
         Adds the inertial effects of a rigid rider to the bicycle.
 
@@ -351,48 +351,22 @@ class Bicycle(object):
         ----------
         rider : string
             A rider name that corresponds to a folder in
-            `<pathToData>/riders/rider`.
+            `<pathToData>/riders/`.
         pathToData : string
             The path to a directory that contains the `riders` directory.
         reCalc : boolean, optional
-            If true the rider parameters will be recalculated.
+            If true, the rider parameters will be recalculated.
         draw : boolean, optional
-            If true visual python will be used to draw a three dimensional
+            If true, visual python will be used to draw a three dimensional
             image of the rider.
 
         """
-        def add_rider(pathToRider, bicyclePar, measuredPar, draw):
-            try:
-                # run the calculations
-                pathToYeadon = os.path.join(pathToRider, 'RawData',
-                                            rider + 'YeadonMeas.txt')
-                pathToCFG = os.path.join(pathToRider, 'RawData',
-                                         rider + 'YeadonCFG.txt')
-                human = rider_on_bike(bicyclePar, measuredPar,
-                                      pathToYeadon, pathToCFG, draw)
-                riderPar = {'IBxx': human.Inertia[0, 0],
-                            'IByy': human.Inertia[1, 1],
-                            'IBzz': human.Inertia[2, 2],
-                            'IBxz': human.Inertia[2, 0],
-                            'mB': human.Mass,
-                            'xB': human.COM[0][0],
-                            'yB': human.COM[1][0],
-                            'zB': human.COM[2][0]}
-            except: #except if this fails
-                # no rider was added
-                print('Calculations in yeadon failed. No rider added.')
-                raise
-            else:
-                bicycleRiderPar = combine_bike_rider(bicyclePar, riderPar)
-                return riderPar, human, bicycleRiderPar
 
         # first check to see if a rider has already been added
         if self.hasRider == True:
             print("D'oh! This bicycle already has {0} as a " +
                   "rider!".format(self.riderName))
         else:
-            self.riderName = rider
-
             # get the path to the rider's folder
             pathToRider = os.path.join(pathToData, 'riders', rider)
 
@@ -405,11 +379,12 @@ class Bicycle(object):
                 self.riderPar['Benchmark'] = riderPar
                 self.human = human
                 self.parameters['Benchmark'] = bicycleRiderPar
+                self.riderName = rider
             else:
+                pathToParFile = os.path.join(pathToRider, 'parameters',
+                    rider + self.shortname + 'Benchmark.txt')
                 try:
                     # load the parameter file
-                    pathToParFile = os.path.join(pathToRider, 'parameters',
-                        rider + self.shortname + 'Benchmark.txt')
                     self.riderPar['Benchmark'] =\
                         load_parameter_text_file(pathToParFile)
                 except IOError:
@@ -425,101 +400,6 @@ class Bicycle(object):
                     self.parameters['Benchmark'] =\
                         combine_bike_rider(self.parameters['Benchmark'],
                                            self.riderPar['Benchmark'])
-
-    def add_rider(self, pathToRider):
-        """Adds the parameters of a rider to the bicycle."""
-
-        if self.hasRider == False:
-            riderPar = load_parameter_text_file(pathToRider)
-            bicyclePar = self.parameters['Benchmark']
-            masses = np.array([riderPar['mB'], bicyclePar['mB']])
-            coordinates = np.array([[riderPar['xB'], bicyclePar['xB']],
-                                    [0., 0.],
-                                    [riderPar['zB'], bicyclePar['zB']]])
-            mT, cT = total_com(coordinates, masses)
-            dRider = np.array([riderPar['xB'] - cT[0],
-                               0.,
-                               riderPar['zB'] - cT[2]])
-            dBicycle = np.array([bicyclePar['xB'] - cT[0],
-                                 0.,
-                                 bicyclePar['zB'] - cT[2]])
-            IRider = part_inertia_tensor(riderPar, 'B')
-            IBicycle = part_inertia_tensor(bicyclePar, 'B')
-            I = (parallel_axis(IRider, riderPar['mB'], dRider) +
-                 parallel_axis(IBicycle, bicyclePar['mB'], dBicycle))
-            self.parameters['Benchmark']['xB'] = cT[0]
-            self.parameters['Benchmark']['zB'] = cT[2]
-            self.parameters['Benchmark']['mB'] = mT
-            self.parameters['Benchmark']['IBxx'] = I[0, 0]
-            self.parameters['Benchmark']['IBxz'] = I[0, 2]
-            self.parameters['Benchmark']['IByy'] = I[1, 1]
-            self.parameters['Benchmark']['IBzz'] = I[2, 2]
-
-            self.hasRider = True
-        else:
-            print("D'oh! This bicycle already has a rider!")
-
-    def add_yeadon_rider(self, yeadonMeas, yeadonCFG, drawrider=False):
-        '''Adds a static rider using the yeadon python module. Solves for
-        the joint angles required to sit the rider on the bike (any bike
-        for which parameters are available), and combines the riders inertia
-        with that of the bike. Requires that the bike object has a raw data
-        text input file that contains the measurements necessary to situate
-        a rider on the bike.
-
-        Parameters
-        ----------
-        yeadonMeas : str
-            Path to a text file that holds the 95 yeadon measurements. See
-            yeadon documentation.
-        yeadonCFG : str
-            Path to a text file that holds configuration variables. See yeadon
-            documentation. As of now, only 'somersalt' angle can be set as an
-            input. The remaining variables are either zero or calculated in
-            this method.
-        drawrider = False : bool
-            Optional argument to plot the rider, including vectors that point
-            to the desired hand and foot positions. Requires python-visual.
-
-        '''
-        bicyclePar = self.parameters['Benchmark']
-        # create human using input measurements and configuration files
-        H = yeadon.human(yeadonMeas,yeadonCFG)
-        # solve for joint angles
-        self.H = self.calc_yeadon_joint_angles(H,drawrider)
-        # combine relevant portions of the biker
-        # (to be implemented later)
-        # combine inertia of bike and rider
-        masses = np.array([self.H.Mass, bicyclePar['mB']])
-        coordinates = np.array([[self.H.COM[0,0],bicyclePar['xB']],
-                                [self.H.COM[1,0],0.],
-                                [self.H.COM[2,0],bicyclePar['zB']]])
-        mT, cT = total_com(coordinates, masses)
-        if cT[1] != 0:
-            print "Error in bicycleparameters.add_yeadon_rider. " \
-                  "The center of mass of the rider must not have a y " \
-                  "(out-of-plane) component. cT[1] =",cT[1]
-#            raise Exception()
-        dRider = np.array([self.H.COM[0,0] - cT[0],
-                           self.H.COM[1,0], #- cT[1],
-                           self.H.COM[2,0] - cT[2]])
-        dBicycle = np.array([bicyclePar['xB'] - cT[0],
-                             0.,
-                             bicyclePar['zB'] - cT[2]])
-        IRider = H.Inertia
-        IBicycle = part_inertia_tensor(bicyclePar, 'B')
-        I = (parallel_axis(IRider, H.Mass, dRider) +
-             parallel_axis(IBicycle, bicyclePar['mB'], dBicycle))
-        # assign new inertia back to bike
-        self.parameters['Benchmark']['xB'] = cT[0]
-        self.parameters['Benchmark']['zB'] = cT[2]
-        self.parameters['Benchmark']['mB'] = mT
-        self.parameters['Benchmark']['IBxx'] = I[0, 0]
-        self.parameters['Benchmark']['IBxz'] = I[0, 2]
-        self.parameters['Benchmark']['IByy'] = I[1, 1]
-        self.parameters['Benchmark']['IBzz'] = I[2, 2]
-        print "Yeadon-type rider inertia has been successfuly added to bike."
-
 
     def plot_bicycle_geometry(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
@@ -548,7 +428,6 @@ class Bicycle(object):
 
         if inertiaEllipse:
             # plot the principal moments of inertia
-            tensors = {}
             for j, part in enumerate(parts):
                 I = part_inertia_tensor(par, part)
                 Ip, C = principal_axes(I)
@@ -823,6 +702,64 @@ class Bicycle(object):
             plt.show()
 
         return fig
+
+def add_rider(pathToRider, bicyclePar, measuredPar, draw):
+    """
+    Returns the rider parameters, bicycle paramters with a rider and a
+    human object that is conifigured to sit on the bicycle.
+
+    Parameters
+    ----------
+    pathToRider : string
+        Path to the rider's data folder.
+    bicyclePar : dictionary
+        Contains the benchmark bicycle parameters for a bicycle.
+    measuredPar : dictionary
+        Contains the measured values of the bicycle.
+    draw : boolean, optional
+        If true, visual python will be used to draw a three dimensional
+        image of the rider.
+
+    Returns
+    -------
+    riderpar : dictionary
+        The inertial parameters of the rider with reference to the
+        benchmark coordinate system.
+    human : yeadon.human
+        The human object that represents the rider seated on the
+        bicycle.
+    bicycleRiderPar : dictionary
+        The benchmark parameters of the bicycle with the rider added to
+        the rear frame.
+
+    """
+    try:
+        # get the rider name
+        rider = os.path.split(pathToRider)[1]
+        # get the paths to the yeadon data files
+        pathToYeadon = os.path.join(pathToRider, 'RawData',
+                                    rider + 'YeadonMeas.txt')
+        pathToCFG = os.path.join(pathToRider, 'RawData',
+                                 rider + 'YeadonCFG.txt')
+        # generate the human that has been configured to sit on the bicycle
+        human = rider_on_bike(bicyclePar, measuredPar,
+                              pathToYeadon, pathToCFG, draw)
+        # build a dictionary to store the inertial data
+        riderPar = {'IBxx': human.Inertia[0, 0],
+                    'IByy': human.Inertia[1, 1],
+                    'IBzz': human.Inertia[2, 2],
+                    'IBxz': human.Inertia[2, 0],
+                    'mB': human.Mass,
+                    'xB': human.COM[0][0],
+                    'yB': human.COM[1][0],
+                    'zB': human.COM[2][0]}
+    except: #except if this fails
+        # no rider was added
+        print('Calculations in yeadon failed. No rider added.')
+        raise
+    else:
+        bicycleRiderPar = combine_bike_rider(bicyclePar, riderPar)
+        return riderPar, human, bicycleRiderPar
 
 def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
                              drawrider):
