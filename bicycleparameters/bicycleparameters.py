@@ -364,42 +364,61 @@ class Bicycle(object):
 
         # first check to see if a rider has already been added
         if self.hasRider == True:
-            print("D'oh! This bicycle already has {0} as a " +
-                  "rider!".format(self.riderName))
+            print(("D'oh! This bicycle already has {0} as a " +
+                  "rider!").format(self.riderName))
         else:
+            print("There is no rider on the bicycle, now adding " +
+                  "{0}.".format(rider))
             # get the path to the rider's folder
             pathToRider = os.path.join(pathToData, 'riders', rider)
+            # load in the parameters
+            bicyclePar = self.parameters['Benchmark']
 
             if reCalc == True:
+                print("Calculating the human configuration.")
                 # run the calculations
-                bicyclePar = self.parameters['Benchmark']
-                measuredPar = self.parameters['Measured']
+                try:
+                    measuredPar = self.parameters['Measured']
+                except KeyError:
+                    print('The measured bicycle parameters need to be ' +
+                          'available, create your bicycle such that they ' +
+                          'are available.')
+                    raise
                 riderPar, human, bicycleRiderPar =\
-                    add_rider(pathToRider, bicyclePar, measuredPar, draw)
-                self.riderPar['Benchmark'] = riderPar
-                self.human = human
-                self.parameters['Benchmark'] = bicycleRiderPar
-                self.riderName = rider
+                    configure_rider(pathToRider, bicyclePar, measuredPar, draw)
             else:
-                pathToParFile = os.path.join(pathToRider, 'parameters',
+                pathToParFile = os.path.join(pathToRider, 'Parameters',
                     rider + self.shortname + 'Benchmark.txt')
                 try:
+                    print pathToParFile
                     # load the parameter file
-                    self.riderPar['Benchmark'] =\
-                        load_parameter_text_file(pathToParFile)
+                    riderPar = load_parameter_text_file(pathToParFile)
                 except IOError:
                     # file doesn't exist so run the calculations
-                    bicyclePar = self.parameters['Benchmark']
-                    measuredPar = self.parameters['Measured']
+                    print("No parameter files found, calculating the human " +
+                          "configuration.")
+                    try:
+                        measuredPar = self.parameters['Measured']
+                    except KeyError:
+                        print('The measured bicycle parameters need to be ' +
+                              'available, create your bicycle such that they ' +
+                              'are available.')
+                        raise
                     riderPar, human, bicycleRiderPar =\
-                        add_rider(pathToRider, bicyclePar, measuredPar, draw)
-                    self.riderPar['Benchmark'] = riderPar
-                    self.human = human
-                    self.parameters['Benchmark'] = bicycleRiderPar
+                        configure_rider(pathToRider, bicyclePar, measuredPar, draw)
                 else:
-                    self.parameters['Benchmark'] =\
-                        combine_bike_rider(self.parameters['Benchmark'],
-                                           self.riderPar['Benchmark'])
+                    print("Loaded the precalculated parameters from " +
+                          "{0}".format(pathToParFile))
+                    bicycleRiderPar = combine_bike_rider(bicyclePar, riderPar)
+            # set the attributes
+            self.riderPar['Benchmark'] = riderPar
+            try:
+                self.human = human
+            except NameError:
+                self.human = None
+            self.parameters['Benchmark'] = bicycleRiderPar
+            self.riderName = rider
+            self.hasRider = True
 
     def plot_bicycle_geometry(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
@@ -409,6 +428,7 @@ class Bicycle(object):
         '''
         par = remove_uncertainties(self.parameters['Benchmark'])
         parts = get_parts_in_parameters(par)
+
         try:
             slopes = remove_uncertainties(self.extras['slopes'])
             intercepts = remove_uncertainties(self.extras['intercepts'])
@@ -703,7 +723,7 @@ class Bicycle(object):
 
         return fig
 
-def add_rider(pathToRider, bicyclePar, measuredPar, draw):
+def configure_rider(pathToRider, bicyclePar, measuredPar, draw):
     """
     Returns the rider parameters, bicycle paramters with a rider and a
     human object that is conifigured to sit on the bicycle.
@@ -981,7 +1001,7 @@ def combine_bike_rider(bicyclePar, riderPar):
 
     Parameters
     ----------
-    bikePar : dictionary
+    bicyclePar : dictionary
         The benchmark parameter set of a bicycle.
     riderPar : dictionary
         The rider's mass, center of mass, and inertia expressed in the
@@ -989,25 +1009,23 @@ def combine_bike_rider(bicyclePar, riderPar):
 
     Returns
     -------
-    bikePar : dictionary
-        The benchmark bicycle parameters with a rigid rider included with the
+    bicyclePar : dictionary
+        The benchmark bicycle parameters with a rigid rider added to the
         bicycle frame.
 
     """
+
+    # list the masses of the rider and bicycle
     masses = np.array([riderPar['mB'], bicyclePar['mB']])
+    # list the centers of mass of the rider and bicycle
     coordinates = np.array([[riderPar['xB'], bicyclePar['xB']],
                             [riderPar['yB'], 0.],
                             [riderPar['zB'], bicyclePar['zB']]])
-
     # calculate the new mass and center of mass
     mT, cT = total_com(coordinates, masses)
-
     # get inertia tensors for the bicycle and rider
-    IBicycle = part_inertia_tensor(bicyclePar, 'B')
-    print IBicycle
     IRider = part_inertia_tensor(riderPar, 'B')
-    print IRider
-
+    IBicycle = part_inertia_tensor(bicyclePar, 'B')
     # calculate the distance from the center of mass of each body to the
     # center of mass of the combined body
     dRider = np.array([riderPar['xB'] - cT[0],
@@ -1016,14 +1034,13 @@ def combine_bike_rider(bicyclePar, riderPar):
     dBicycle = np.array([bicyclePar['xB'] - cT[0],
                          0.,
                          bicyclePar['zB'] - cT[2]])
-
     # calculate the total inertia about the total body center of mass
     I = (parallel_axis(IRider, riderPar['mB'], dRider) +
          parallel_axis(IBicycle, bicyclePar['mB'], dBicycle))
-
     # assign new inertia back to bike
     bicyclePar['xB'] = cT[0]
     bicyclePar['zB'] = cT[2]
+    bicyclePar['yB'] = 0.0
     bicyclePar['mB'] = mT
     bicyclePar['IBxx'] = I[0, 0]
     bicyclePar['IBxz'] = I[0, 2]
