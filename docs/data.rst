@@ -1,6 +1,6 @@
-===================================
-BicycleParameters Input Information
-===================================
+=======================================
+BicycleParameters Data File Information
+=======================================
 
 bicycles/<short name>/Parameters/<short name>Benchmark.txt
 ==========================================================
@@ -225,15 +225,26 @@ riders/<rider name>/Parameters/
 -------------------------------------
 This file contains the inertial parameters for a rigid rider configured to sit
 on a particular bicycle expressed with reference to the benchmark reference
-frame and the rider's center of mass.
+frame and the rider's center of mass. You can provide these values or let the
+program generate them.
 
-- ``mB`` : frame/rider mass [kg]
-- ``xB`` : x distance to the frame/rider center of mass [m]
-- ``yB`` : y distance to the frame/rider center of mass [m]
-- ``zB`` : z distance to the frame/rider center of mass [m]
-- ``IBxx`` : x moment of inertia of the frame/rider [kg*m**2]
-- ``IByy`` : y moment of inertia of the frame/rider [kg*m**2]
-- ``IBzz`` : z moment of inertia of the frame/rider [kg*m**2]
-- ``IBxy`` : xy product of inertia of the frame/rider [kg*m**2]
-- ``IBxz`` : xz product of inertia of the frame/rider [kg*m**2]
-- ``IByz`` : yz product of inertia of the frame/rider [kg*m**2]
+- ``mB`` : rider mass [kg]
+- ``xB`` : x distance to the rider center of mass [m]
+- ``yB`` : y distance to the rider center of mass [m]
+- ``zB`` : z distance to the rider center of mass [m]
+- ``IBxx`` : x moment of inertia of the rider [kg*m**2]
+- ``IByy`` : y moment of inertia of the rider [kg*m**2]
+- ``IBzz`` : z moment of inertia of the rider [kg*m**2]
+- ``IBxy`` : xy product of inertia of the rider [kg*m**2]
+- ``IBxz`` : xz product of inertia of the rider [kg*m**2]
+- ``IByz`` : yz product of inertia of the rider [kg*m**2]
+
+``yB``, ``IBxy``, and ``IByz`` are optional due to the assumed symmetry of the rider.
+
+Combined/<rider name><short name>Benchmark.txt
+-----------------------------------------------
+This file contains the geometric and inertial benchmark parameters for a rider
+seated on a bicycle. The rider is assumed to be rigidly attached to the bicycle
+frame. These parameters are the same as the ones stored in
+``bicycles/Parameters/<short name>Benchmark.txt``. These file are only output
+files.
