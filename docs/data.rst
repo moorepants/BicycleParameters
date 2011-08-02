@@ -248,3 +248,24 @@ seated on a bicycle. The rider is assumed to be rigidly attached to the bicycle
 frame. These parameters are the same as the ones stored in
 ``bicycles/Parameters/<short name>Benchmark.txt``. These file are only output
 files.
+
+riders/<rider name>/RawData/
+============================
+
+<rider name><short name>YeadonCFG.txt
+-------------------------------------
+This is an input file to set the configuration of the joint angles for the
+`yeadon package`_. All values should be set to zero except the ``sommersault``
+value. The ``sommersault`` value is pi minus the hunch angle of the rider on
+the bicycle. The hunch angle is the angle between the horizontal and the
+rider's torso mid line. It is essentially the angle at which the rider is
+leaned forward.
+
+<rider name><short name>YeadonCFG.txt
+-------------------------------------
+This is the yeadon_ measurement input file for the yeadon package. It contains
+all of the geometric measurements of the rider. See the `yeadon documentation`_
+for more details.
+
+.. _yeadon : http://pypi.python.org/pypi/yeadon
+.. _yeadon documentation : http://packages.python.org/yeadon/
