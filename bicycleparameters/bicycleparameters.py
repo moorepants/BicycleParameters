@@ -868,15 +868,15 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     # bottom bracket height
     hbb = measuredPar['hbb'] #.295
     # chain stay length
-    Lcs = measuredPar['Lcs'] #.46
+    Lcs = measuredPar['lcs'] #.46
     # rear wheel radius
     rR = benchmarkPar['rR'] #.342
     # front wheel radius
     rF = benchmarkPar['rF'] #.342
     # seat post length
-    Lsp = measuredPar['Lsp'] #.24
+    Lsp = measuredPar['lsp'] #.24
     # seat tube length
-    Lst = measuredPar['Lst'] #.53
+    Lst = measuredPar['lst'] #.53
     # seat tube angle
     lamst = measuredPar['lamst'] #68.5*np.pi/180
     # handlebar width
