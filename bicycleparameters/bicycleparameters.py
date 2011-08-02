@@ -2666,7 +2666,8 @@ def filename_to_dict(filename):
     return dat
 
 def load_parameter_text_file(pathToFile):
-    '''Returns a dictionary of ufloat parameters from a parameter file.
+    """
+    Returns a dictionary of float and/or ufloat parameters from a parameter file.
 
     Parameters
     ----------
@@ -2677,31 +2678,40 @@ def load_parameter_text_file(pathToFile):
     Returns
     -------
     parameters : dictionary
+        A dictionary of the values stored in the text files.
 
     For example::
 
         c = 0.08 +/- 0.01
         d=0.314+/-0.002
         t = 0.1+/-0.01, 0.12+/-0.02
+        whb = 0.5
 
     The first item on the line must be the variable name and the second is an
-    equals sign. The values to the right of the equal sign much contain an
-    uncertainty and multiple comma seperated values will be averaged.
+    equals sign. The values to the right of the equal sign much may or may not
+    contain an uncertainty designated by `+/-`. Multiple comma seperated values
+    will be averaged.
 
-    '''
+    """
 
-    f = open(pathToFile, 'r')
     parameters = {}
     # parse the text file
-    for line in f:
-        if line[0] != '#':
-            # remove any whitespace characters and split into a list
-            equality = line.strip().split('=')
-            # ['a ', ' 0.1 +/- 0.05 , 0.09 +/- 0.05']
-            vals = equality[1].strip().split(',')
-            # ['0.1 +/- 0.05 ', ' 0.09 +/- 0.05']
-            ufloats = [ufloat(x) for x in vals]
-            parameters[equality[0].strip()] = np.mean(ufloats)
+    with open(pathToFile, 'r') as f:
+        for line in f:
+            # ignore lines that start with a hash
+            if line[0] != '#':
+                # remove any whitespace characters and comments at the end of
+                # the line, then split the right and left side of the equality
+                equality = line.strip().split('#')[0].split('=')
+                # ['a ', ' 0.1 +/- 0.05 , 0.09 +/- 0.05']
+                valList = equality[1].strip().split(',')
+                # ['0.1 +/- 0.05 ', ' 0.09 +/- 0.05']
+                if '+/-' in equality[1]:
+                    values = [ufloat(x) for x in valList]
+                else:
+                    values = [float(x) for x in valList]
+                # store in dictionary
+                parameters[equality[0].strip()] = np.mean(values)
 
     return parameters
 
