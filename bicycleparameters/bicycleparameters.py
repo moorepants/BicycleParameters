@@ -1320,9 +1320,15 @@ def remove_uncertainties(dictionary):
     noUncert = {}
     for k, v in dictionary.items():
         try:
+            # this is the case if the value is a single uncertainty
             noUncert[k] = v.nominal_value
         except AttributeError:
-            noUncert[k] = [x.nominal_value for x in v]
+            # this is the case if the value is an array of ufloats
+            try:
+                noUncert[k] = [x.nominal_value for x in v]
+            except TypeError:
+                # this is the case if the value is a float
+                noUncert[k] = v
     return noUncert
 
 def benchmark_par_to_canonical(p):
