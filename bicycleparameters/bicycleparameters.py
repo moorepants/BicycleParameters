@@ -158,24 +158,34 @@ class Bicycle(object):
             pathToData = os.path.split(os.path.split(self.directory)[0])[0]
             pathToParDir = os.path.join(pathToData, 'riders', self.riderName,
                                         'Parameters')
+            pathToCombDir = os.path.join(pathToParDir, 'Combined')
+            if not os.path.exists(pathToCombDir):
+                os.makedirs(pathToCombDir)
             fileName = self.riderName + self.shortName
+            # don't resave the measured parameters
+            psets = [x for x in self.riderPar.keys() if x != 'Measured']
+            parameters = self.riderPar
             print(('This bicycle has a rider, {0}, so the data will be ' +
                    'saved here: {1}').format(self.riderName, pathToParDir))
         else:
             pathToParDir = os.path.join(self.directory, 'Parameters')
             fileName = self.shortName
+            # don't resave the measured parameters
+            psets = [x for x in self.parameters.keys() if x != 'Measured']
+            parameters = self.parameters
             print(('This bicycle has no rider so the data will be ' +
                    'saved here: {0}').format(pathToParDir))
 
         if filetype == 'text':
-            # don't resave the measured parameters
-            psets = [x for x in self.parameters.keys() if x != 'Measured']
             for pset in psets:
                 fileName = fileName + pset + '.txt'
                 pathToTxtFile = os.path.join(pathToParDir, fileName)
-                write_parameter_text_file(pathToTxtFile,
-                                          self.parameters[pset])
-                print('Saved {0}'.format(fileName))
+                write_parameter_text_file(pathToTxtFile, parameters[pset])
+                if self.hasRider:
+                    pathToCombFile = os.path.join(pathToCombDir, fileName)
+                    write_parameter_text_file(pathToCombFile,
+                                              self.parameters[pset])
+
         elif filetype == 'matlab':
             # this should handle the uncertainties properly
             raise NotImplementedError("Doesn't work yet.")
