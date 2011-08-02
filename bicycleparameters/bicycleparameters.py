@@ -19,60 +19,68 @@ import yeadon
 from inertia import *
 
 class Bicycle(object):
-    '''An object for a bicycle. A bicycle has parameters. That's about it for
-    now.
+    """
+    An object for a bicycle. A bicycle has parameters and can have a rider
+    attached to it. That's about it for now.
 
-    '''
+    """
 
-    def __new__(cls, shortname, pathToBicycles='data/bicycles',
-                forceRawCalc=False, forcePeriodCalc=False):
+    def __new__(cls, shortName, pathToData=os.getcwd(), forceRawCalc=False,
+            forcePeriodCalc=False):
         '''Returns a NoneType object if there is no directory for the bicycle.'''
         # is there a data directory for this bicycle? if not, tell the user to
         # put some data in the folder so we have something to work with!
         try:
-            if os.path.isdir(os.path.join(pathToBicycles, shortname)) == True:
-                print "We have foundeth a directory named: bicycles/" + shortname
+            pathToBicycle = os.path.join(pathToData, 'bicycles', shortName)
+            if os.path.isdir(pathToBicycle) == True:
+                print("We have foundeth a directory named: " +
+                      "{0}.".format(pathToBicycle))
                 return super(Bicycle, cls).__new__(cls)
             else:
                 raise ValueError
         except:
-            a = "Are you nuts?! Make a directory with basic data for your "
-            b = "bicycle in bicycles/%s. " % shortname
+            a = "Are you nuts?! Make a directory called {0} ".format(shortName)
+            b = "with basic data for your bicycle in {0}. ".format(pathToData)
             c = "Then I can actually created a bicycle object."
             print a + b + c
             return None
 
-    def __init__(self, shortname, pathToBicycles='data/bicycles',
-                 forceRawCalc=False, forcePeriodCalc=False):
-        '''Creates a bicycle object and sets the parameters based on the
-        available data.
+    def __init__(self, shortName, pathToData=os.getcwd(), forceRawCalc=False,
+            forcePeriodCalc=False):
+        """
+        Creates a bicycle object and sets the parameters based on the available
+        data.
 
         Parameters
         ----------
-        shortname : string
+        shortName : string
             The short name of your bicicleta. It should be one word with the
-            first letter capitilized and all other letters lower case. You
-            should have a matching directory under "data/bicycles/". For example:
-            "data/bicycles/Shortname".
-
-        pathToBicycles : string
-            This is the path to the folder where the bicycle parameters and raw
-            data is stored. The default is a folder named data/bicycles in the
-            current directory.
-
+            first letter capitalized and all other letters lower case. You
+            should have a matching directory under `<pathToData>/bicycles/`.
+            For example: `<pathToData>/bicycles/Shortname`.
+        pathToData : string
+            This is the path to the folder where the bicycle/rider parameters
+            and raw data are stored. The default is the current working
+            directory.
         forceRawCalc : boolean
             Forces a recalculation of the benchmark parameters from the measured
-            parameter. Otherwise it will only run the calculation if there is
+            parameters. Otherwise it will only run the calculation if there is
             no benchmark parameter file.
-
         forcePeriodCalc : boolean
             Forces a recalculation of the periods from the oscillation data.
 
-        '''
+        Notes
+        -----
+        Bicycles are assumed not to have a rider when initially loaded.
 
-        self.shortname = shortname
-        self.directory = os.path.join(pathToBicycles, shortname)
+        """
 
+        self.shortName = shortName
+        pathToBicycles = os.path.join(pathToData, 'bicycles')
+        # the directory where the files for this bicycle are stored
+        self.directory = os.path.join(pathToBicycles, shortName)
+
+        # bicycles are assumed not to have a rider when initially loaded
         self.hasRider = False
         self.riderPar = {}
 
@@ -102,7 +110,7 @@ class Bicycle(object):
 
         if isRawDataDir:
             print "Found the RawData directory:", rawDataDir
-            isMeasuredFile = shortname + 'Measured.txt' in os.listdir(rawDataDir)
+            isMeasuredFile = shortName + 'Measured.txt' in os.listdir(rawDataDir)
         else:
             isMeasuredFile = False
 
@@ -121,40 +129,53 @@ class Bicycle(object):
             self.parameters['Benchmark'] = par
             self.extras = extras
             print("The glory of the %s parameters are upon you!"
-                  % self.shortname)
+                  % self.shortName)
         elif not forceRawCalc and isBenchmark:
             # we already have what we need
             stmt1 = "Looks like you've already got some parameters for %s, "
             stmt2 = "use forceRawCalc to recalculate."
-            print (stmt1 + stmt2) % self.shortname
+            print (stmt1 + stmt2) % self.shortName
             pass
         else:
             print '''There is no data available. Create
             bicycles/{sn}/Parameters/{sn}Benchmark.txt and/or fill
             bicycle/{sn}/RawData/ with pendulum data mat files and the
-            {sn}Measured.txt file'''.format(sn=shortname)
+            {sn}Measured.txt file'''.format(sn=shortName)
 
     def save_parameters(self, filetype='text'):
-        '''Saves all the parameter sets to file.
+        """
+        Saves all the parameter sets to file.
 
         Parameters
         ----------
         filetype : string, optional
-            'text' : a text file with parameters as "c = 0.10+/-0.01\n"
-            'matlab' : matlab .mat file
-            'pickle' : python pickled dictionary
+            - 'text' : a text file with parameters as `c = 0.10+/-0.01\n`
+            - 'matlab' : matlab .mat file
+            - 'pickle' : python pickled dictionary
 
-        '''
+        """
+        if self.hasRider:
+            pathToData = os.path.split(os.path.split(self.directory)[0])[0]
+            pathToParDir = os.path.join(pathToData, 'riders', self.riderName,
+                                        'Parameters')
+            fileName = self.riderName + self.shortName
+            print(('This bicycle has a rider, {0}, so the data will be ' +
+                   'saved here: {1}').format(self.riderName, pathToParDir))
+        else:
+            pathToParDir = os.path.join(self.directory, 'Parameters')
+            fileName = self.shortName
+            print(('This bicycle has no rider so the data will be ' +
+                   'saved here: {0}').format(pathToParDir))
 
         if filetype == 'text':
             # don't resave the measured parameters
             psets = [x for x in self.parameters.keys() if x != 'Measured']
             for pset in psets:
-                pathToTxtFile = os.path.join(self.directory,
-                                             'Parameters',
-                                             self.shortname + pset + '.txt')
+                fileName = fileName + pset + '.txt'
+                pathToTxtFile = os.path.join(pathToParDir, fileName)
                 write_parameter_text_file(pathToTxtFile,
                                           self.parameters[pset])
+                print('Saved {0}'.format(fileName))
         elif filetype == 'matlab':
             # this should handle the uncertainties properly
             raise NotImplementedError("Doesn't work yet.")
@@ -163,12 +184,13 @@ class Bicycle(object):
             raise NotImplementedError("Doesn't work yet.")
 
     def show_pendulum_photos(self):
-        '''Opens up the pendulum photos in eye of gnome for inspection.
+        """
+        Opens up the pendulum photos in eye of gnome for inspection.
 
         This only works in Linux and if eog is installed. Maybe check pythons
         xdg-mime model for having this work cross platform.
 
-        '''
+        """
         photoDir = os.path.join(self.directory, 'Photos')
         if os.path.isdir(photoDir):
             os.system('eog ' + os.path.join(photoDir, '*.*'))
@@ -315,7 +337,7 @@ class Bicycle(object):
         '''Calculates the parameters from measured data.'''
 
         rawDataDir = os.path.join(self.directory, 'RawData')
-        pathToRawFile = os.path.join(rawDataDir, self.shortname + 'Measured.txt')
+        pathToRawFile = os.path.join(rawDataDir, self.shortName + 'Measured.txt')
 
         # load the measured parameters
         self.parameters['Measured'] = load_parameter_text_file(pathToRawFile)
@@ -343,7 +365,7 @@ class Bicycle(object):
 
         return calculate_benchmark_from_measured(self.parameters['Measured'])
 
-    def add_rider(self, rider, pathToData, reCalc=False, draw=False):
+    def add_rider(self, rider, reCalc=False, draw=False):
         """
         Adds the inertial effects of a rigid rider to the bicycle.
 
@@ -352,8 +374,6 @@ class Bicycle(object):
         rider : string
             A rider name that corresponds to a folder in
             `<pathToData>/riders/`.
-        pathToData : string
-            The path to a directory that contains the `riders` directory.
         reCalc : boolean, optional
             If true, the rider parameters will be recalculated.
         draw : boolean, optional
@@ -369,10 +389,12 @@ class Bicycle(object):
         else:
             print("There is no rider on the bicycle, now adding " +
                   "{0}.".format(rider))
+            pathToData = os.path.split(os.path.split(self.directory)[0])[0]
             # get the path to the rider's folder
             pathToRider = os.path.join(pathToData, 'riders', rider)
             # load in the parameters
             bicyclePar = self.parameters['Benchmark']
+            bicycle = self.shortName
 
             if reCalc == True:
                 print("Calculating the human configuration.")
@@ -385,12 +407,12 @@ class Bicycle(object):
                           'are available.')
                     raise
                 riderPar, human, bicycleRiderPar =\
-                    configure_rider(pathToRider, bicyclePar, measuredPar, draw)
+                    configure_rider(pathToRider, bicycle, bicyclePar,
+                        measuredPar, draw)
             else:
                 pathToParFile = os.path.join(pathToRider, 'Parameters',
-                    rider + self.shortname + 'Benchmark.txt')
+                    rider + self.shortName + 'Benchmark.txt')
                 try:
-                    print pathToParFile
                     # load the parameter file
                     riderPar = load_parameter_text_file(pathToParFile)
                 except IOError:
@@ -405,7 +427,8 @@ class Bicycle(object):
                               'are available.')
                         raise
                     riderPar, human, bicycleRiderPar =\
-                        configure_rider(pathToRider, bicyclePar, measuredPar, draw)
+                        configure_rider(pathToRider, bicycle, bicyclePar,
+                            measuredPar, draw)
                 else:
                     print("Loaded the precalculated parameters from " +
                           "{0}".format(pathToParFile))
@@ -562,7 +585,7 @@ class Bicycle(object):
 
         plt.axis('equal')
         plt.ylim((0., 1.))
-        plt.title(self.shortname)
+        plt.title(self.shortName)
 
         if show:
             fig.show()
@@ -661,8 +684,8 @@ class Bicycle(object):
             capsizeColor = color
             casterColor = color
             legend = ['_nolegend_'] * 6
-            legend[5] = self.shortname
-            maxLabel = self.shortname
+            legend[5] = self.shortName
+            maxLabel = self.shortName
         else:
             weaveColor = 'blue'
             capsizeColor = 'red'
@@ -715,7 +738,7 @@ class Bicycle(object):
         if generic:
             plt.title('Eigenvalues vs Speed')
         else:
-            plt.title('%s\nEigenvalues vs Speed' % self.shortname)
+            plt.title('%s\nEigenvalues vs Speed' % self.shortName)
             plt.legend()
 
         if show:
@@ -723,15 +746,17 @@ class Bicycle(object):
 
         return fig
 
-def configure_rider(pathToRider, bicyclePar, measuredPar, draw):
+def configure_rider(pathToRider, bicycle, bicyclePar, measuredPar, draw):
     """
-    Returns the rider parameters, bicycle paramters with a rider and a
+    Returns the rider parameters, bicycle paramaters with a rider and a
     human object that is conifigured to sit on the bicycle.
 
     Parameters
     ----------
     pathToRider : string
         Path to the rider's data folder.
+    bicycle : string
+        The short name of the bicycle.
     bicyclePar : dictionary
         Contains the benchmark bicycle parameters for a bicycle.
     measuredPar : dictionary
@@ -760,7 +785,7 @@ def configure_rider(pathToRider, bicyclePar, measuredPar, draw):
         pathToYeadon = os.path.join(pathToRider, 'RawData',
                                     rider + 'YeadonMeas.txt')
         pathToCFG = os.path.join(pathToRider, 'RawData',
-                                 rider + 'YeadonCFG.txt')
+                                 rider + bicycle + 'YeadonCFG.txt')
         # generate the human that has been configured to sit on the bicycle
         human = rider_on_bike(bicyclePar, measuredPar,
                               pathToYeadon, pathToCFG, draw)
@@ -2221,8 +2246,8 @@ def is_fork_split(mp):
 def trail(rF, lam, fo):
     '''Caluculate the trail and mechanical trail
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     rF: float
         The front wheel radius
     lam: float
@@ -2231,8 +2256,8 @@ def trail(rF, lam, fo):
     fo: float
         The fork offset
 
-    Returns:
-    --------
+    Returns
+    -------
     c: float
         Trail
     cm: float
@@ -2431,8 +2456,8 @@ def get_period(data, sampleRate, pathToPlotFile):
 def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
     '''Plot fitted data over the measured
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     t : ndarray (n,)
         Measurement time in seconds
     ym : ndarray (n,)
@@ -2447,8 +2472,8 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
     m : float
         The maximum value to plot
 
-    Returns:
-    --------
+    Returns
+    -------
     fig : the figure
 
     '''
@@ -2545,13 +2570,13 @@ def jac_fitfunc(p, t):
 
     Uses the analytical formulations of the partial derivatives.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     p : the five parameters of the equation
     t : time vector
 
-    Returns:
-    --------
+    Returns
+    -------
     jac : The jacobian, the partial of the vector function with respect to the
     parameters vector. A 5 x N matrix where N is the number of time steps.
 
@@ -2574,13 +2599,13 @@ def fit_goodness(ym, yp):
     '''
     Calculate the goodness of fit.
 
-    Parameters:
+    Parameters
     ----------
     ym : vector of measured values
     yp : vector of predicted values
 
-    Returns:
-    --------
+    Returns
+    -------
     rsq: r squared value of the fit
     SSE: error sum of squares
     SST: total sum of squares
