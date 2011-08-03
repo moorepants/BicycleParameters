@@ -1067,6 +1067,9 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
         H.draw_vector('origin',pos_footr)
         H.draw_vector('origin',pos_handl)
         H.draw_vector('origin',pos_handr)
+        H.draw_vector('origin',H.A2.endpos)
+        H.draw_vector('origin',H.A2.endpos,(0,0,1))
+        H.draw_vector('origin',H.B2.endpos,(0,0,1))
     return H
 
 def combine_bike_rider(bicyclePar, riderPar):
