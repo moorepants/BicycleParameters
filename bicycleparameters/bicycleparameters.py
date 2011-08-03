@@ -959,17 +959,21 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     DA = np.linalg.norm( pos_handl - H.A1.pos)
     DB = np.linalg.norm( pos_handr - H.B1.pos)
 
+    # distance from knees to heel level
+    dj2 = np.linalg.norm( H.j[7].pos - H.J2.pos)
+    dk2 = np.linalg.norm( H.k[7].pos - H.K2.pos)
+
     # error-checking to make sure limbs are long enough for rider to sit
     # on the bike
-    if (H.J1.length + H.J2.length < DJ):
+    if (H.J1.length + dj2 < DJ):
         print "For the given measurements, the left leg is not " \
-              "long enough. Left leg length is",H.J1.length+H.J2.length, \
+              "long enough. Left leg length is",H.J1.length+dj2, \
               "m, but distance from left hip joint to bottom bracket is", \
               DJ,"m."
         raise Exception()
-    if (H.K1.length + H.K2.length < DK):
+    if (H.K1.length + dk2 < DK):
         print "For the given measurements, the right leg is not " \
-              "long enough. Right leg length is",H.K1.length+H.K2.length, \
+              "long enough. Right leg length is",H.K1.length+dk2, \
               "m, but distance from right hip joint to bottom bracket is", \
               DK,"m."
         raise Exception()
@@ -988,12 +992,12 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     # legs first. torso cannot have twist
     # left leg
     tempangle, CFG['J1J2flexion'] =\
-        calc_two_link_angles(H.J1.length, H.J2.length, DJ)
+        calc_two_link_angles(H.J1.length, dj2, DJ)
     tempangle2 = vec_angle(np.array([[0,0,1]]).T, vec_legs)
     CFG['PJ1flexion'] = tempangle + tempangle2 + CFG['somersalt']
     # right leg
     tempangle,CFG['K1K2flexion'] =\
-        calc_two_link_angles(H.K1.length, H.K2.length, DK)
+        calc_two_link_angles(H.K1.length, dk2, DK)
     CFG['PK1flexion'] = tempangle + tempangle2 + CFG['somersalt']
 
     # arms second. only somersalt can be specified, other torso
@@ -1035,18 +1039,18 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
                                     vec_project(pos_handr - H.B1.pos, 1))
     # assign configuration to human and check that the solution worked
     H.set_CFG_dict(CFG)
-    if (np.round(H.J2.endpos, 3) != np.round(pos_footl, 3)).any():
+    if (np.round(H.j[7].pos, 3) != np.round(pos_footl, 3)).any():
         print "Left leg's actual position does not match its desired " \
               "position near the bike's bottom bracket. Left leg actual " \
-              "position:\n", H.J2.endpos ,".\nLeft leg desired position:\n",\
+              "position:\n", H.j[7].pos ,".\nLeft leg desired position:\n",\
               pos_footl, ".\nLeft leg base to end distance:", \
-              np.linalg.norm(H.J2.endpos - H.J1.pos), ", Left leg D:", DJ
-    if (np.round(H.K2.endpos, 3) != np.round(pos_footr, 3)).any():
+              np.linalg.norm(H.j[7].pos - H.J1.pos), ", Left leg D:", DJ
+    if (np.round(H.k[7].pos, 3) != np.round(pos_footr, 3)).any():
         print "Right leg's actual position does not match its desired " \
               "position near the bike's bottom bracket. Right leg actual " \
-              "position:\n", H.K2.endpos, ".\nRight leg desired position:\n",\
+              "position:\n", H.k[7].pos, ".\nRight leg desired position:\n",\
               pos_footr, ".\nRight leg base to end distance:", \
-              np.linalg.norm(H.K2.endpos - H.K1.pos), ", Left leg D:", DK
+              np.linalg.norm(H.k[7].pos - H.K1.pos), ", Left leg D:", DK
     if (np.round(H.A2.endpos, 3) != np.round(pos_handl, 3)).any():
         print "Left arm's actual position does not match its desired " \
               "position on the bike's handlebar. Left arm actual " \
@@ -1058,7 +1062,7 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
               "position on the bike's handrebar. Right arm actual " \
               "position:", H.B2.endpos ,".\nRight arm desired position:\n",\
               pos_handr, ".\nRight arm base to end distance:", \
-              np.linalg.norm(H.A2.endpos - H.B1.pos), ", Right arm D:", DB
+              np.linalg.norm(H.B2.endpos - H.B1.pos), ", Right arm D:", DB
 
     # draw rider for fun, but possibly to check results aren't crazy
     if drawrider==True:
@@ -1067,6 +1071,9 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
         H.draw_vector('origin',pos_footr)
         H.draw_vector('origin',pos_handl)
         H.draw_vector('origin',pos_handr)
+        H.draw_vector('origin',H.A2.endpos)
+        H.draw_vector('origin',H.A2.endpos,(0,0,1))
+        H.draw_vector('origin',H.B2.endpos,(0,0,1))
     return H
 
 def combine_bike_rider(bicyclePar, riderPar):

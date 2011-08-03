@@ -1,4 +1,4 @@
-somersalt=0.455530935 # hunch angle of 63.9 degrees
+somersalt=0.455530935
 tilt=0.0
 twist=0.0
 PTsagittalFlexion=0.0
