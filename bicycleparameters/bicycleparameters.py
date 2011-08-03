@@ -1058,7 +1058,7 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
               "position on the bike's handrebar. Right arm actual " \
               "position:", H.B2.endpos ,".\nRight arm desired position:\n",\
               pos_handr, ".\nRight arm base to end distance:", \
-              np.linalg.norm(H.A2.endpos - H.B1.pos), ", Right arm D:", DB
+              np.linalg.norm(H.B2.endpos - H.B1.pos), ", Right arm D:", DB
 
     # draw rider for fun, but possibly to check results aren't crazy
     if drawrider==True:
