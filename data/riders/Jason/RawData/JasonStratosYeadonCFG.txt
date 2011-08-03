@@ -1,4 +1,4 @@
-somersalt=.9
+somersalt=0.455530935
 tilt=0.0
 twist=0.0
 PTsagittalFlexion=0.0
@@ -18,4 +18,4 @@ PJ1abduction=0.0
 PK1flexion=0.0
 PK1abduction=0.0
 J1J2flexion=0.0
-K1K2flexion=0.0  
+K1K2flexion=0.0

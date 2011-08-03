@@ -95,13 +95,13 @@ def inertia_components(jay, beta):
 def tor_inertia(k, T):
     '''Calculate the moment of inertia for an ideal torsional pendulm
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     k: torsional stiffness
     T: period
 
-    Returns:
-    --------
+    Returns
+    -------
     I: moment of inertia
 
     '''

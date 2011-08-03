@@ -1,9 +1,9 @@
-===================================
-BicycleParameters Input Information
-===================================
+=======================================
+BicycleParameters Data File Information
+=======================================
 
-Parameters/<short name>Benchmark.txt
-====================================
+bicycles/<short name>/Parameters/<short name>Benchmark.txt
+==========================================================
 ``<short name>Benchmark.txt`` contains the complete parameter set needed to
 analyze the Whipple bicycle model linearized about the upright configuration.
 Each line should have one of the 24 benchmark parameters in the following
@@ -14,59 +14,58 @@ format::
 The first characters are a unique variable name, followed by an equal sign, the
 value of the parameter, a plus or minus symbol (``+/-``), and the standard
 deviation of the value. There can be spaces between the parts. Use ``0.0`` for
-the standard deviation if this is unknown or you don't need to know the
-uncertainties in other values. Use the same units as the benchmark bicycle
-paper for less headaches. These are the possible variables:
+the standard deviation if this is unknown or if you are not concerned with the
+uncertainties. Use the same units as the benchmark bicycle paper. These are the
+possible variables:
 
-- ``g`` : acceleration due to gravity
-- ``c`` : trail
-- ``w`` : wheelbase
-- ``lam`` : steer axis tilt
-- ``rR`` : rear wheel radius
-- ``rF`` : front wheel radius
-- ``mB`` : frame/rider mass
-- ``mF`` : front wheel mass
-- ``mH`` : handlebar/fork assembly mass
-- ``mR`` : rear wheel mass
-- ``xB`` : x distance to the frame/rider center of mass
-- ``zB`` : z distance to the frame/rider center of mass
-- ``xH`` : x distance to the frame/rider center of mass
-- ``zH`` : z distance to the frame/rider center of mass
-- ``IBxx`` : x moment of inertia of the frame/rider
-- ``IBzz`` : z moment of inertia of the frame/rider
-- ``IBxz`` : xz product of inertia of the frame/rider
-- ``IFxx`` : x moment of inertia of the front wheel
-- ``IFyy`` : y moment of inertia of the front wheel
-- ``IHxx`` : x moment of inertia of the handlebar/fork
-- ``IHzz`` : z moment of inertia of the handlebar/fork
-- ``IHxz`` : xz product of inertia of the handlebar/fork
-- ``IRxx`` : x moment of inertia of the rear wheel
-- ``IRyy`` : y moment of inertia of the rear wheel
+- ``g`` : acceleration due to gravity [m/s**2]
+- ``c`` : trail [m]
+- ``w`` : wheelbase [m]
+- ``lam`` : steer axis tilt [rad]
+- ``rR`` : rear wheel radius [m]
+- ``rF`` : front wheel radius [m]
+- ``mB`` : frame/rider mass [kg]
+- ``mF`` : front wheel mass [kg]
+- ``mH`` : handlebar/fork assembly mass [kg]
+- ``mR`` : rear wheel mass [kg]
+- ``xB`` : x distance to the frame/rider center of mass [m]
+- ``zB`` : z distance to the frame/rider center of mass [m]
+- ``xH`` : x distance to the frame/rider center of mass [m]
+- ``zH`` : z distance to the frame/rider center of mass [m]
+- ``IBxx`` : x moment of inertia of the frame/rider [kg*m**2]
+- ``IBzz`` : z moment of inertia of the frame/rider [kg*m**2]
+- ``IBxz`` : xz product of inertia of the frame/rider [kg*m**2]
+- ``IFxx`` : x moment of inertia of the front wheel [kg*m**2]
+- ``IFyy`` : y moment of inertia of the front wheel [kg*m**2]
+- ``IHxx`` : x moment of inertia of the handlebar/fork [kg*m**2]
+- ``IHzz`` : z moment of inertia of the handlebar/fork [kg*m**2]
+- ``IHxz`` : xz product of inertia of the handlebar/fork [kg*m**2]
+- ``IRxx`` : x moment of inertia of the rear wheel [kg*m**2]
+- ``IRyy`` : y moment of inertia of the rear wheel [kg*m**2]
 
 Optional Parameters
 -------------------
 These parameters are assumed to equal zero if not given.
 
-- ``yB`` : y distance to the frame/rider center of mass
-- ``yH`` : y distance to the handlebar/fork center of mass
-- ``IBxy`` : xy product of inertia of the frame/rider
-- ``IByy`` : y moment of inertia of the frame/rider
-- ``IByz`` : yz product of inertia of the frame/rider
-- ``IHxy`` : xy product of inertia of the handlebar/fork
-- ``IHyy`` : y moment of inertia of the handlebar/fork
-- ``IHyz`` : yz product of inertia of the handlebar/fork
+- ``yB`` : y distance to the frame/rider center of mass [m]
+- ``yH`` : y distance to the handlebar/fork center of mass [m]
+- ``IBxy`` : xy product of inertia of the frame/rider [kg*m**2]
+- ``IByy`` : y moment of inertia of the frame/rider [kg*m**2]
+- ``IByz`` : yz product of inertia of the frame/rider [kg*m**2]
+- ``IHxy`` : xy product of inertia of the handlebar/fork [kg*m**2]
+- ``IHyy`` : y moment of inertia of the handlebar/fork [kg*m**2]
+- ``IHyz`` : yz product of inertia of the handlebar/fork [kg*m**2]
 
-RawData/<short name>Measured.txt
-================================
+bicycles/<shortname>/RawData/<short name>Measured.txt
+=====================================================
 ``<Shortname>Measured.txt`` contains the raw measurement data for a bicycle.
 The file should have one variable on each line in the following format::
 
     mR = 1.38+/-0.02, 1.37+/-0.02
 
-This is the same as the previous parameter variable
-definition accept that multiple measurements can be included as comma separated
-values. The values will be averaged together on import. The following gives the
-measured values:
+This is the same as the previous parameter variable definition accept that
+multiple measurements can be included as comma separated values. The values
+will be averaged together on import. The following gives the measured values:
 
 - ``aB1`` : perpendicular distance from the pendulum axis to the rear axle
   center, first orienation [m]
@@ -156,6 +155,26 @@ sheet`_ and on our website_.
 .. _raw data sheet: http://bit.ly/jIeKKB
 .. _website: http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/frame-dimensions
 
+Rider Configuration Details
+---------------------------
+A rider can be situated on the bicycle if other raw bicycle measurements are provided.
+
+- ``lsp`` : the length of the seat post (i.e. the length from the intersection
+  of the top tube with the seat tube to the top of the seat along the axis of
+  the seat tube. [m]
+- ``lst`` : the length of the seat tube (i.e. the distance from the center of
+  the bottom bracket to the intersection of the seat tube and the top tube) [m]
+- ``hbb`` : the height of the bottom bracket off the ground [m]
+- ``lamst`` : the acute angle between horizontal and the seat tube [rad]
+- ``lcs`` : the distance from the center of the bottom bracket to the center of
+  the rear wheel [m]
+- ``LhbR`` : the distance from the center of the rear wheel to either the left
+  or right the handlebar grip (roughly where the center of the hand would fall)
+  [m]
+- ``LhbF`` : the distance from the center of the front wheel to either the left
+  or right the handlebar grip (roughly where the center of the hand would fall)
+  [m]
+
 Fork/Handlebar Separation
 -------------------------
 The measurement of the fork and the handlebar as two rigid bodies is also
@@ -175,7 +194,7 @@ Pendulum Data Files
 ===================
 If you have raw signal data that the periods can be estimated from, then these
 should be included in the ``RawData`` directory. There should be at least one
-file for every period typically found in ``ShortnameMeasured.txt`` file. The
+file for every period typically found in ``<short name>Measured.txt`` file. The
 signals collected should exhibit very typical decayed oscillations. Currently
 the only supported file is a Matlab mat file with these variables:
 
@@ -198,3 +217,55 @@ Notes
 - ``Fork`` is the handlbar/fork assembly if they are measured as one rigid body
   (subscript is ``H``). Otherwise ``Fork`` (``S``) is the fork and
   ``Handlebar`` (``G``) is the handlebar when they are measured separately.
+
+riders/<rider name>/Parameters/
+===============================
+
+<rider name><short name>Benchmark.txt
+-------------------------------------
+This file contains the inertial parameters for a rigid rider configured to sit
+on a particular bicycle expressed with reference to the benchmark reference
+frame and the rider's center of mass. You can provide these values or let the
+program generate them.
+
+- ``mB`` : rider mass [kg]
+- ``xB`` : x distance to the rider center of mass [m]
+- ``yB`` : y distance to the rider center of mass [m]
+- ``zB`` : z distance to the rider center of mass [m]
+- ``IBxx`` : x moment of inertia of the rider [kg*m**2]
+- ``IByy`` : y moment of inertia of the rider [kg*m**2]
+- ``IBzz`` : z moment of inertia of the rider [kg*m**2]
+- ``IBxy`` : xy product of inertia of the rider [kg*m**2]
+- ``IBxz`` : xz product of inertia of the rider [kg*m**2]
+- ``IByz`` : yz product of inertia of the rider [kg*m**2]
+
+``yB``, ``IBxy``, and ``IByz`` are optional due to the assumed symmetry of the rider.
+
+Combined/<rider name><short name>Benchmark.txt
+-----------------------------------------------
+This file contains the geometric and inertial benchmark parameters for a rider
+seated on a bicycle. The rider is assumed to be rigidly attached to the bicycle
+frame. These parameters are the same as the ones stored in
+``bicycles/Parameters/<short name>Benchmark.txt``. These file are only output
+files.
+
+riders/<rider name>/RawData/
+============================
+
+<rider name><short name>YeadonCFG.txt
+-------------------------------------
+This is an input file to set the configuration of the joint angles for the
+`yeadon package`_. All values should be set to zero except the ``sommersault``
+value. The ``sommersault`` value is pi minus the hunch angle of the rider on
+the bicycle. The hunch angle is the angle between the horizontal and the
+rider's torso mid line. It is essentially the angle at which the rider is
+leaned forward.
+
+<rider name><short name>YeadonCFG.txt
+-------------------------------------
+This is the yeadon_ measurement input file for the yeadon package. It contains
+all of the geometric measurements of the rider. See the `yeadon documentation`_
+for more details.
+
+.. _yeadon : http://pypi.python.org/pypi/yeadon
+.. _yeadon documentation : http://packages.python.org/yeadon/
