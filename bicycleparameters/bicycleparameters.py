@@ -25,13 +25,13 @@ class Bicycle(object):
 
     """
 
-    def __new__(cls, shortName, pathToData=os.getcwd(), forceRawCalc=False,
+    def __new__(cls, bicycleName, pathToData=os.getcwd(), forceRawCalc=False,
             forcePeriodCalc=False):
         '''Returns a NoneType object if there is no directory for the bicycle.'''
         # is there a data directory for this bicycle? if not, tell the user to
         # put some data in the folder so we have something to work with!
         try:
-            pathToBicycle = os.path.join(pathToData, 'bicycles', shortName)
+            pathToBicycle = os.path.join(pathToData, 'bicycles', bicycleName)
             if os.path.isdir(pathToBicycle) == True:
                 print("We have foundeth a directory named: " +
                       "{0}.".format(pathToBicycle))
@@ -39,13 +39,13 @@ class Bicycle(object):
             else:
                 raise ValueError
         except:
-            a = "Are you nuts?! Make a directory called {0} ".format(shortName)
+            a = "Are you nuts?! Make a directory called {0} ".format(bicycleName)
             b = "with basic data for your bicycle in {0}. ".format(pathToData)
             c = "Then I can actually created a bicycle object."
             print a + b + c
             return None
 
-    def __init__(self, shortName, pathToData=os.getcwd(), forceRawCalc=False,
+    def __init__(self, bicycleName, pathToData=os.getcwd(), forceRawCalc=False,
             forcePeriodCalc=False):
         """
         Creates a bicycle object and sets the parameters based on the available
@@ -53,7 +53,7 @@ class Bicycle(object):
 
         Parameters
         ----------
-        shortName : string
+        bicycleName : string
             The short name of your bicicleta. It should be one word with the
             first letter capitalized and all other letters lower case. You
             should have a matching directory under `<pathToData>/bicycles/`.
@@ -75,10 +75,10 @@ class Bicycle(object):
 
         """
 
-        self.shortName = shortName
+        self.bicycleName = bicycleName
         pathToBicycles = os.path.join(pathToData, 'bicycles')
         # the directory where the files for this bicycle are stored
-        self.directory = os.path.join(pathToBicycles, shortName)
+        self.directory = os.path.join(pathToBicycles, bicycleName)
 
         # bicycles are assumed not to have a rider when initially loaded
         self.hasRider = False
@@ -110,7 +110,7 @@ class Bicycle(object):
 
         if isRawDataDir:
             print "Found the RawData directory:", rawDataDir
-            isMeasuredFile = shortName + 'Measured.txt' in os.listdir(rawDataDir)
+            isMeasuredFile = bicycleName + 'Measured.txt' in os.listdir(rawDataDir)
         else:
             isMeasuredFile = False
 
@@ -129,25 +129,25 @@ class Bicycle(object):
             self.parameters['Benchmark'] = par
             self.extras = extras
             print("The glory of the %s parameters are upon you!"
-                  % self.shortName)
+                  % self.bicycleName)
         elif not forceRawCalc and isBenchmark:
             # we already have what we need
             stmt1 = "Looks like you've already got some parameters for %s, "
             stmt2 = "use forceRawCalc to recalculate."
-            print (stmt1 + stmt2) % self.shortName
+            print (stmt1 + stmt2) % self.bicycleName
             pass
         else:
             print '''There is no data available. Create
             bicycles/{sn}/Parameters/{sn}Benchmark.txt and/or fill
             bicycle/{sn}/RawData/ with pendulum data mat files and the
-            {sn}Measured.txt file'''.format(sn=shortName)
+            {sn}Measured.txt file'''.format(sn=bicycleName)
 
     def __str__(self):
         if self.hasRider:
-            desc = "{0} with {1} on board.".format(self.shortName,
+            desc = "{0} with {1} on board.".format(self.bicycleName,
                 self.riderName)
         else:
-            desc = "{0} with no one on board.".format(self.shortName)
+            desc = "{0} with no one on board.".format(self.bicycleName)
         return desc
 
     def save_parameters(self, filetype='text'):
@@ -169,7 +169,7 @@ class Bicycle(object):
             pathToCombDir = os.path.join(pathToParDir, 'Combined')
             if not os.path.exists(pathToCombDir):
                 os.makedirs(pathToCombDir)
-            fileName = self.riderName + self.shortName
+            fileName = self.riderName + self.bicycleName
             # don't resave the measured parameters
             psets = [x for x in self.riderPar.keys() if x != 'Measured']
             parameters = self.riderPar
@@ -177,7 +177,7 @@ class Bicycle(object):
                    'saved here: {1}').format(self.riderName, pathToParDir))
         else:
             pathToParDir = os.path.join(self.directory, 'Parameters')
-            fileName = self.shortName
+            fileName = self.bicycleName
             # don't resave the measured parameters
             psets = [x for x in self.parameters.keys() if x != 'Measured']
             parameters = self.parameters
@@ -355,7 +355,7 @@ class Bicycle(object):
         '''Calculates the parameters from measured data.'''
 
         rawDataDir = os.path.join(self.directory, 'RawData')
-        pathToRawFile = os.path.join(rawDataDir, self.shortName + 'Measured.txt')
+        pathToRawFile = os.path.join(rawDataDir, self.bicycleName + 'Measured.txt')
 
         # load the measured parameters
         self.parameters['Measured'] = load_parameter_text_file(pathToRawFile)
@@ -416,7 +416,7 @@ class Bicycle(object):
             pathToRider = os.path.join(pathToData, 'riders', rider)
             # load in the parameters
             bicyclePar = self.parameters['Benchmark']
-            bicycle = self.shortName
+            bicycle = self.bicycleName
 
             if reCalc == True:
                 print("Calculating the human configuration.")
@@ -433,7 +433,7 @@ class Bicycle(object):
                         measuredPar, draw)
             else:
                 pathToParFile = os.path.join(pathToRider, 'Parameters',
-                    rider + self.shortName + 'Benchmark.txt')
+                    rider + self.bicycleName + 'Benchmark.txt')
                 try:
                     # load the parameter file
                     riderPar = load_parameter_text_file(pathToParFile)
@@ -612,7 +612,7 @@ class Bicycle(object):
 
         plt.axis('equal')
         plt.ylim((0., 1.))
-        plt.title(self.shortName)
+        plt.title(self.bicycleName)
 
         # if there is a rider on the bike, make a simple stick figure
         if self.human:
@@ -733,8 +733,8 @@ class Bicycle(object):
             capsizeColor = color
             casterColor = color
             legend = ['_nolegend_'] * 6
-            legend[5] = self.shortName
-            maxLabel = self.shortName
+            legend[5] = self.bicycleName
+            maxLabel = self.bicycleName
         else:
             weaveColor = 'blue'
             capsizeColor = 'red'
@@ -787,7 +787,7 @@ class Bicycle(object):
         if generic:
             plt.title('Eigenvalues vs Speed')
         else:
-            plt.title('%s\nEigenvalues vs Speed' % self.shortName)
+            plt.title('%s\nEigenvalues vs Speed' % self.bicycleName)
             plt.legend()
 
         if show:

@@ -2,9 +2,9 @@
 BicycleParameters Data File Information
 =======================================
 
-bicycles/<short name>/Parameters/<short name>Benchmark.txt
+bicycles/<bicycle name>/Parameters/<bicycle name>Benchmark.txt
 ==========================================================
-``<short name>Benchmark.txt`` contains the complete parameter set needed to
+``<bicycle name>Benchmark.txt`` contains the complete parameter set needed to
 analyze the Whipple bicycle model linearized about the upright configuration.
 Each line should have one of the 24 benchmark parameters in the following
 format::
@@ -56,7 +56,7 @@ These parameters are assumed to equal zero if not given.
 - ``IHyy`` : y moment of inertia of the handlebar/fork [kg*m**2]
 - ``IHyz`` : yz product of inertia of the handlebar/fork [kg*m**2]
 
-bicycles/<shortname>/RawData/<short name>Measured.txt
+bicycles/<shortname>/RawData/<bicycle name>Measured.txt
 =====================================================
 ``<Shortname>Measured.txt`` contains the raw measurement data for a bicycle.
 The file should have one variable on each line in the following format::
@@ -194,7 +194,7 @@ Pendulum Data Files
 ===================
 If you have raw signal data that the periods can be estimated from, then these
 should be included in the ``RawData`` directory. There should be at least one
-file for every period typically found in ``<short name>Measured.txt`` file. The
+file for every period typically found in ``<bicycle name>Measured.txt`` file. The
 signals collected should exhibit very typical decayed oscillations. Currently
 the only supported file is a Matlab mat file with these variables:
 
@@ -204,7 +204,7 @@ the only supported file is a Matlab mat file with these variables:
 The files should be named in this manner ``<short
 name><part><pendulum><orientation><trial>.mat`` where:
 
-- ``<short name>`` is the short name of the bicycle
+- ``<bicycle name>`` is the short name of the bicycle
 - ``<part>`` is either ``Fork``, ``Handlebar``, ``Frame``, ``Rwheel``, or
   ``Fwheel``
 - ``<orientation>`` is either ``First``, ``Second``, ``Third``, ``Fourth``,
@@ -221,7 +221,7 @@ Notes
 riders/<rider name>/Parameters/
 ===============================
 
-<rider name><short name>Benchmark.txt
+<rider name><bicycle name>Benchmark.txt
 -------------------------------------
 This file contains the inertial parameters for a rigid rider configured to sit
 on a particular bicycle expressed with reference to the benchmark reference
@@ -241,18 +241,18 @@ program generate them.
 
 ``yB``, ``IBxy``, and ``IByz`` are optional due to the assumed symmetry of the rider.
 
-Combined/<rider name><short name>Benchmark.txt
+Combined/<rider name><bicycle name>Benchmark.txt
 -----------------------------------------------
 This file contains the geometric and inertial benchmark parameters for a rider
 seated on a bicycle. The rider is assumed to be rigidly attached to the bicycle
 frame. These parameters are the same as the ones stored in
-``bicycles/Parameters/<short name>Benchmark.txt``. These file are only output
+``bicycles/Parameters/<bicycle name>Benchmark.txt``. These file are only output
 files.
 
 riders/<rider name>/RawData/
 ============================
 
-<rider name><short name>YeadonCFG.txt
+<rider name><bicycle name>YeadonCFG.txt
 -------------------------------------
 This is an input file to set the configuration of the joint angles for the
 `yeadon package`_. All values should be set to zero except the ``sommersault``
@@ -261,7 +261,7 @@ the bicycle. The hunch angle is the angle between the horizontal and the
 rider's torso mid line. It is essentially the angle at which the rider is
 leaned forward.
 
-<rider name><short name>YeadonCFG.txt
+<rider name><bicycle name>YeadonCFG.txt
 -------------------------------------
 This is the yeadon_ measurement input file for the yeadon package. It contains
 all of the geometric measurements of the rider. See the `yeadon documentation`_
