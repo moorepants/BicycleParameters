@@ -400,6 +400,10 @@ class Bicycle(object):
 
         """
 
+        # can't draw the rider model without the human object
+        if draw:
+            reCalc=True
+
         # first check to see if a rider has already been added
         if self.hasRider == True:
             print(("D'oh! This bicycle already has {0} as a " +
@@ -614,23 +618,23 @@ class Bicycle(object):
         if self.human:
             human = self.human
             # K2: lower leg
-            plt.plot([human.K2.endpos[0, 0], human.K2.pos[0, 0]],
-                     [-human.K2.endpos[2, 0], -human.K2.pos[2, 0]])
+            plt.plot([human.k[7].pos[0, 0], human.K2.pos[0, 0]],
+                     [-human.k[7].endpos[2, 0], -human.K2.pos[2, 0]], 'k')
             # K1: upper leg
             plt.plot([human.K2.pos[0, 0], human.K1.pos[0, 0]],
-                     [-human.K2.pos[2, 0], -human.K1.pos[2, 0]])
+                     [-human.K2.pos[2, 0], -human.K1.pos[2, 0]], 'k')
             # torso
             plt.plot([human.K1.pos[0, 0], human.B1.pos[0, 0]],
-                     [-human.K1.pos[2, 0], -human.B1.pos[2, 0]])
+                     [-human.K1.pos[2, 0], -human.B1.pos[2, 0]], 'k')
             # B1: upper arm
             plt.plot([human.B1.pos[0, 0], human.B2.pos[0, 0]],
-                     [-human.B1.pos[2, 0], -human.B2.pos[2, 0]])
+                     [-human.B1.pos[2, 0], -human.B2.pos[2, 0]], 'k')
             # B2: lower arm
-            plt.plot([human.B2.pos[0, 0], human.B2.endpos[0, 0]],
-                     [-human.B2.pos[2, 0], -human.B2.endpos[2, 0]])
+            plt.plot([human.B2.pos[0, 0], human.b[6].pos[0, 0]],
+                     [-human.B2.pos[2, 0], -human.b[6].endpos[2, 0]], 'k')
             # C: chest/head
-            plt.plot([human.C.pos[0, 0], human.C.endpos[0, 0]],
-                     [-human.C.pos[2, 0], -human.C.endpos[2, 0]])
+            plt.plot([human.B1.pos[0, 0], human.C.endpos[0, 0]],
+                     [-human.B1.pos[2, 0], -human.C.endpos[2, 0]], 'k')
 
         if show:
             fig.show()
@@ -991,8 +995,8 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     dk2 = np.linalg.norm( H.k[7].pos - H.K2.pos)
 
     # distance from elbow to knuckle level
-    da2 = np.linalg.norm( H.a[5].pos - H.A2.pos)
-    db2 = np.linalg.norm( H.b[5].pos - H.B2.pos)
+    da2 = np.linalg.norm( H.a[6].pos - H.A2.pos)
+    db2 = np.linalg.norm( H.b[6].pos - H.B2.pos)
 
     # error-checking to make sure limbs are long enough for rider to sit
     # on the bike
@@ -1008,14 +1012,14 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
               "m, but distance from right hip joint to bottom bracket is", \
               DK,"m."
         raise Exception()
-    if (H.A1.length + H.A2.length < DA):
+    if (H.A1.length + da2 < DA):
         print "For the given configuration, the left arm is not " \
-              "long enough. Left arm length is",H.A1.length+H.A2.length, \
+              "long enough. Left arm length is", H.A1.length + da2, \
               "m, but distance from shoulder to left hand is",DA,"m."
         raise Exception()
-    if (H.B1.length + H.B2.length < DB):
+    if (H.B1.length + db2 < DB):
         print "For the given configuration, the right arm is not " \
-              "long enough. Right arm length is",H.B1.length+H.B2.length, \
+              "long enough. Right arm length is",H.B1.length+db2, \
               "m, but distance from shoulder to right hand is",DB,"m."
         raise Exception()
 
@@ -1092,7 +1096,7 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     # left arm
     ##########
     tempangle, CFG['A1A2flexion'] =\
-        calc_two_link_angles(H.A1.length, H.A2.length, DA)
+        calc_two_link_angles(H.A1.length, da2, DA)
 
     # this is the angle between the vector from the seat to the shoulder center
     # and the vector from the shoulder center to the handlebar center
@@ -1121,8 +1125,8 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     # vector from the left shoulder to the hand (elbow bent) expressed in the
     # chest frame
     r_sh_h = np.mat([[0.],
-                     [-H.A2.length * np.sin(CFG['A1A2flexion'])],
-                     [(-(H.A1.length + H.A2.length *
+                     [-da2 * np.sin(CFG['A1A2flexion'])],
+                     [(-(H.A1.length + da2 *
                       np.cos(CFG['A1A2flexion'])))]])
 
     # chris defines his rotations relative to the arm coordinates but the
@@ -1130,14 +1134,15 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     # negative guess
     guess = np.array([-CFG['CA1elevation'], -CFG['CA1abduction']])
     # home in on the exact solution
-    elevation, abduction = fmin(dist_hand_handle, guess, args=(r_sh_hb, r_sh_h))
+    elevation, abduction = fmin(dist_hand_handle, guess,
+                                args=(r_sh_hb, r_sh_h), disp=False)
     # set the angles
     CFG['CA1elevation'], CFG['CA1abduction'] = -elevation, -abduction
 
     # right arm
     ###########
     tempangle, CFG['B1B2flexion'] =\
-        calc_two_link_angles(H.B1.length, H.B2.length, DB)
+        calc_two_link_angles(H.B1.length, db2, DB)
 
     tempangle2 = vec_angle(vec_project(H.B1.pos - pos_seat, 1),
                            vec_project(pos_handr - H.B1.pos, 1))
@@ -1158,8 +1163,8 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     # vector from the left shoulder to the hand (elbow bent) expressed in the
     # chest frame
     r_sh_h = np.mat([[0.],
-                     [-H.B2.length * np.sin(CFG['B1B2flexion'])],
-                     [(-(H.B1.length + H.B2.length *
+                     [-db2 * np.sin(CFG['B1B2flexion'])],
+                     [(-(H.B1.length + db2 *
                       np.cos(CFG['B1B2flexion'])))]])
 
     # chris defines his rotations relative to the arm coordinates but the
@@ -1167,7 +1172,8 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     # one negative guess
     guess = np.array([-CFG['CB1elevation'], CFG['CB1abduction']])
     # home in on the exact solution
-    elevation, abduction = fmin(dist_hand_handle, guess, args=(r_sh_hb, r_sh_h))
+    elevation, abduction = fmin(dist_hand_handle, guess,
+                                args=(r_sh_hb, r_sh_h), disp=False)
     # set the angles
     CFG['CB1elevation'], CFG['CB1abduction'] = -elevation, abduction
 
@@ -1185,13 +1191,13 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
               "position:\n", H.k[7].pos, ".\nRight leg desired position:\n",\
               pos_footr, ".\nRight leg base to end distance:", \
               np.linalg.norm(H.k[7].pos - H.K1.pos), ", Left leg D:", DK
-    if (np.round(H.A2.endpos, 3) != np.round(pos_handl, 3)).any():
+    if (np.round(H.a[6].pos, 3) != np.round(pos_handl, 3)).any():
         print "Left arm's actual position does not match its desired " \
               "position on the bike's handlebar. Left arm actual " \
               "position:\n",H.A2.endpos,".\nLeft arm desired position:\n",\
               pos_handl, "\nLeft arm base to end distance:", \
               np.linalg.norm(H.A2.endpos - H.A1.pos),", Left arm D:", DA
-    if (np.round(H.B2.endpos, 3) != np.round(pos_handr, 3)).any():
+    if (np.round(H.b[6].pos, 3) != np.round(pos_handr, 3)).any():
         print "Right arm's actual position does not match its desired " \
               "position on the bike's handrebar. Right arm actual " \
               "position:", H.B2.endpos ,".\nRight arm desired position:\n",\
@@ -1205,9 +1211,9 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
         H.draw_vector('origin',pos_footr)
         H.draw_vector('origin',pos_handl)
         H.draw_vector('origin',pos_handr)
-        #H.draw_vector('origin',H.A2.endpos)
-        #H.draw_vector('origin',H.A2.endpos,(0,0,1))
-        #H.draw_vector('origin',H.B2.endpos,(0,0,1))
+        H.draw_vector('origin',H.A2.endpos)
+        H.draw_vector('origin',H.A2.endpos,(0,0,1))
+        H.draw_vector('origin',H.B2.endpos,(0,0,1))
     return H
 
 def combine_bike_rider(bicyclePar, riderPar):
