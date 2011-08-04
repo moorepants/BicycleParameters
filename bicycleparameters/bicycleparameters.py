@@ -548,6 +548,11 @@ class Bicycle(object):
         dx3 = deex[2] + deez[2] * (deex[2] - deex[1]) / (deez[1] - deez[2])
         plt.plot([deex[2], dx3],  [-deez[2], 0.], 'k--')
 
+        # don't plot the pendulum lines if a rider has been added because the
+        # inertia has changed
+        if self.hasRider:
+            pendulum = False
+
         if pendulum:
             # plot the pendulum axes for the measured parts
             for j, pair in enumerate(slopes.items()):
@@ -604,6 +609,28 @@ class Bicycle(object):
         plt.axis('equal')
         plt.ylim((0., 1.))
         plt.title(self.shortName)
+
+        # if there is a rider on the bike, make a simple stick figure
+        if self.human:
+            human = self.human
+            # K2: lower leg
+            plt.plot([human.K2.endpos[0, 0], human.K2.pos[0, 0]],
+                     [-human.K2.endpos[2, 0], -human.K2.pos[2, 0]])
+            # K1: upper leg
+            plt.plot([human.K2.pos[0, 0], human.K1.pos[0, 0]],
+                     [-human.K2.pos[2, 0], -human.K1.pos[2, 0]])
+            # torso
+            plt.plot([human.K1.pos[0, 0], human.B1.pos[0, 0]],
+                     [-human.K1.pos[2, 0], -human.B1.pos[2, 0]])
+            # B1: upper arm
+            plt.plot([human.B1.pos[0, 0], human.B2.pos[0, 0]],
+                     [-human.B1.pos[2, 0], -human.B2.pos[2, 0]])
+            # B2: lower arm
+            plt.plot([human.B2.pos[0, 0], human.B2.endpos[0, 0]],
+                     [-human.B2.pos[2, 0], -human.B2.endpos[2, 0]])
+            # C: chest/head
+            plt.plot([human.C.pos[0, 0], human.C.endpos[0, 0]],
+                     [-human.C.pos[2, 0], -human.C.endpos[2, 0]])
 
         if show:
             fig.show()
@@ -963,6 +990,10 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     dj2 = np.linalg.norm( H.j[7].pos - H.J2.pos)
     dk2 = np.linalg.norm( H.k[7].pos - H.K2.pos)
 
+    # distance from elbow to knuckle level
+    da2 = np.linalg.norm( H.a[5].pos - H.A2.pos)
+    db2 = np.linalg.norm( H.b[5].pos - H.B2.pos)
+
     # error-checking to make sure limbs are long enough for rider to sit
     # on the bike
     if (H.J1.length + dj2 < DJ):
@@ -1174,9 +1205,9 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
         H.draw_vector('origin',pos_footr)
         H.draw_vector('origin',pos_handl)
         H.draw_vector('origin',pos_handr)
-        H.draw_vector('origin',H.A2.endpos)
-        H.draw_vector('origin',H.A2.endpos,(0,0,1))
-        H.draw_vector('origin',H.B2.endpos,(0,0,1))
+        #H.draw_vector('origin',H.A2.endpos)
+        #H.draw_vector('origin',H.A2.endpos,(0,0,1))
+        #H.draw_vector('origin',H.B2.endpos,(0,0,1))
     return H
 
 def combine_bike_rider(bicyclePar, riderPar):
