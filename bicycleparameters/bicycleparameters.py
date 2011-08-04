@@ -8,7 +8,7 @@ from math import pi
 # dependencies
 import numpy as np
 from numpy import ma
-from scipy.optimize import leastsq, newton
+from scipy.optimize import leastsq, newton, fmin
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Wedge
@@ -1002,10 +1002,66 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
 
     # arms second. only somersalt can be specified, other torso
     # configuration variables must be zero
+
+    def dist_hand_handle(angles, r_sh_hb, r_sh_h):
+        """
+        Returns the norm of the difference of the vector from the shoulder to
+        the hand to the vector from the shoulder to the handlebar (i.e. the
+        distance from the hand to the handlebar).
+
+        Parameters
+        ----------
+        angles : array_like, shape(2,)
+            The first angle is the elevation angle of the arm and the second is
+            the abduction angle, both relative to the chest using euler 1-2-3
+            angles.
+        r_sh_hb : numpy.matrix, shape(3,1)
+            The vector from the shoulder to the handlebar expressed in the
+            chest reference frame.
+        r_sh_h : numpy.matrix, shape(3,1)
+            The vector from the shoulder to the hand (elbow is bent) expressed
+            in the arm reference frame.
+
+        Returns
+        -------
+        distance : float
+            The distance from the handlebar point to the hand.
+
+        """
+
+        # these are euler rotation functions
+        def x_rot(angle):
+            sa = np.sin(angle)
+            ca = np.cos(angle)
+            Rx = np.matrix([[1., 0. , 0.],
+                            [0., ca, sa],
+                            [0., -sa, ca]])
+            return Rx
+
+        def y_rot(angle):
+            sa = np.sin(angle)
+            ca = np.cos(angle)
+            Ry = np.matrix([[ca, 0. , -sa],
+                            [0., 1., 0.],
+                            [sa, 0., ca]])
+            return Ry
+
+        elevation = angles[0]
+        abduction = angles[1]
+
+        # create the rotation matrix of A (arm) in C (chest)
+        R_A_C = y_rot(abduction) * x_rot(elevation)
+
+        # express the vector from the shoulder to the hand in the C (chest)
+        # refernce frame
+        r_sh_h = R_A_C.T * r_sh_h
+
+        return np.linalg.norm(r_sh_h - r_sh_hb)
+
     # left arm
+    ##########
     tempangle, CFG['A1A2flexion'] =\
         calc_two_link_angles(H.A1.length, H.A2.length, DA)
-
 
     # this is the angle between the vector from the seat to the shoulder center
     # and the vector from the shoulder center to the handlebar center
@@ -1024,7 +1080,31 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     # projection in the sagittal plane
     CFG['CA1abduction'] = vec_angle(pos_handl - H.A1.pos,
                                     vec_project(pos_handl - H.A1.pos, 1))
+
+    # vector from the left shoulder to the left handlebar expressed in the
+    # benchmark coordinates
+    r_sh_hb = pos_handl - H.A1.pos
+    # express r_sh_hb in the chest frame
+    R_C_N = H.C.RotMat.T # transpose because Chris defined opposite my convention
+    r_sh_hb = R_C_N * r_sh_hb
+    # vector from the left shoulder to the hand (elbow bent) expressed in the
+    # chest frame
+    r_sh_h = np.mat([[0.],
+                     [-H.A2.length * np.sin(CFG['A1A2flexion'])],
+                     [(-(H.A1.length + H.A2.length *
+                      np.cos(CFG['A1A2flexion'])))]])
+
+    # chris defines his rotations relative to the arm coordinates but the
+    # dist_hand_handle function is relative to the chest coordinates, thus the
+    # negative guess
+    guess = np.array([-CFG['CA1elevation'], -CFG['CA1abduction']])
+    # home in on the exact solution
+    elevation, abduction = fmin(dist_hand_handle, guess, args=(r_sh_hb, r_sh_h))
+    # set the angles
+    CFG['CA1elevation'], CFG['CA1abduction'] = -elevation, -abduction
+
     # right arm
+    ###########
     tempangle, CFG['B1B2flexion'] =\
         calc_two_link_angles(H.B1.length, H.B2.length, DB)
 
@@ -1037,6 +1117,29 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     CFG['CB1elevation'] = tempangle2 - tempangle
     CFG['CB1abduction'] = vec_angle(pos_handr - H.B1.pos,
                                     vec_project(pos_handr - H.B1.pos, 1))
+
+    # vector from the left shoulder to the left handlebar expressed in the
+    # benchmark coordinates
+    r_sh_hb = pos_handr - H.B1.pos
+    # express r_sh_hb in the chest frame
+    R_C_N = H.C.RotMat.T # transpose because Chris defined opposite my convention
+    r_sh_hb = R_C_N * r_sh_hb
+    # vector from the left shoulder to the hand (elbow bent) expressed in the
+    # chest frame
+    r_sh_h = np.mat([[0.],
+                     [-H.B2.length * np.sin(CFG['B1B2flexion'])],
+                     [(-(H.B1.length + H.B2.length *
+                      np.cos(CFG['B1B2flexion'])))]])
+
+    # chris defines his rotations relative to the arm coordinates but the
+    # dist_hand_handle function is relative to the chest coordinates, thus the
+    # one negative guess
+    guess = np.array([-CFG['CB1elevation'], CFG['CB1abduction']])
+    # home in on the exact solution
+    elevation, abduction = fmin(dist_hand_handle, guess, args=(r_sh_hb, r_sh_h))
+    # set the angles
+    CFG['CB1elevation'], CFG['CB1abduction'] = -elevation, abduction
+
     # assign configuration to human and check that the solution worked
     H.set_CFG_dict(CFG)
     if (np.round(H.j[7].pos, 3) != np.round(pos_footl, 3)).any():
