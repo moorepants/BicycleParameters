@@ -64,19 +64,20 @@ files. The structure of the directory should look like this::
           |
           -->/RawData
 
-Short name
-==========
-A short name is a descriptive word (or compound word) for a bicycle or rider in
-which the first letter is capitalized. Examples of bicycle short names include
-``Bianchipista``, ``Bike``, ``Mybike``, ``Rigidrider``, ``Schwintandem``, ``Gyrobike``,
-``Bicyclea``, etc. Examples of rider short names include ``Jason``, ``Mont``,
-``Lukepeterson``, etc. The program relies on CamelCase words, so make sure the
-first letter is capitalized and no others are.
+Bicycle/rider name
+==================
+A bicycle/rider name is a descriptive word (or compound word) for a bicycle or
+rider in which the first letter is capitalized. Examples of bicycle short names
+include ``Bianchipista``, ``Bike``, ``Mybike``, ``Rigidrider``,
+``Schwintandem``, ``Gyrobike``, ``Bicyclea``, etc. Examples of rider names
+include ``Jason``, ``Mont``, ``Lukepeterson``, etc. The program relies on
+CamelCase words, so make sure the first letter is capitalized and no others
+are.
 
 bicycles Directory
 ==================
 The ``bicycles`` directory contains subdirectories for each bicycle. The
-directory name for a bicycle should be its short name. Each directory in
+directory name for a bicycle should be its bicycle name. Each directory in
 ``bicycles`` should contain at least a ``RawData`` directory or a ``Parameters``
 directory. ``Photos`` is an optional directory.
 
@@ -90,7 +91,7 @@ You can supply raw measurement data two forms:
     oscialloation periods for each rigid body) and a set of data files
     containing oscillatory signals from which the periods can be estimated.
 
-The manual measurement data file should follow the naming convention ``<short
+The manual measurement data file should follow the naming convention ``<bicycle
 name>Measure.txt``. This data is used to generate parameter files in the
 ``Parameters`` directory.
 
@@ -98,7 +99,7 @@ Parameters directory
 --------------------
 If you don't have any raw measurements for the bicycle it is also an option to
 supply a parameter file in the ``Parameters`` direcotry. Simply add a file named
-``<short name>Benchmark.txt`` with the benchmark parameter set into the
+``<bicycle name>Benchmark.txt`` with the benchmark parameter set into the
 ``Parameters`` directory for the particular bicycle.
 
 Photos directory

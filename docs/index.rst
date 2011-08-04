@@ -18,7 +18,7 @@ Table of Contents
 
    description.rst
    installation.rst
-   input.rst
+   data.rst
    modules.rst
 
 * :ref:`genindex`

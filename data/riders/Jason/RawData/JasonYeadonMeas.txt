@@ -4,7 +4,7 @@
 # There are 95 measurements, consisting of lengths, perimeters, widths, and
 # depths.
 #
-# For details about how the measurements are to be taken, consult the 
+# For details about how the measurements are to be taken, consult the
 # journal article Yeadon 1989-ii or the documentation of this python package.
 #
 # CONVERSION FACTOR to convert measurements INTO meters
