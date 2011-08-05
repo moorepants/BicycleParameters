@@ -1407,26 +1407,29 @@ def plot_eigenvalues(bikes, speeds, colors=None, linestyles=None, largest=False)
 
     '''
 
+    numBikes = len(bikes)
+
     if not colors:
         # define some colors for the parts
-        numColors = len(bikes)
         cmap = plt.get_cmap('gist_rainbow')
         colors = []
-        for i in range(len(numColors)):
-            colors.append(cmap(1. * i / numColors))
+        for i in range(numBikes):
+            colors.append(cmap(1. * i / numBikes))
 
     if not linestyles:
-        # define some linestyles
-        pass
+        linestyles = ['-'] * numBikes
 
     for i, bike in enumerate(bikes):
         if i == 0:
             fig = None
         fig = bike.plot_eigenvalues_vs_speed(speeds, fig=fig, color=colors[i],
                                              largest=largest, generic=True,
-                                             linestyle=linestyles[i])
+                                             linestyle=linestyles[i],
+                                             show=False)
         plt.legend()
         plt.axis('tight')
+
+    plt.show()
 
     return fig
 
@@ -1543,10 +1546,13 @@ def sort_modes(evals, evecs):
     caster['evecs'] : ndarray, shape(n, 4, 1)
         The associated eigenvectors of the caster mode.
 
+    Notes
+    -----
     This only works on the standard bicycle eigenvalues, not necessarily on any
     general eigenvalues for the bike model (e.g. there isn't always a distinct weave,
     capsize and caster). Some type of check unsing the derivative of the curves
     could make it more robust.
+
     '''
     evalsorg = np.zeros_like(evals)
     evecsorg = np.zeros_like(evecs)
@@ -1625,6 +1631,8 @@ def benchmark_par_to_canonical(p):
     K2 : ndarray, shape(2,2)
         The stiffness matrix proportional to the speed squared, v**2.
 
+    Notes
+    -----
     This function handles parameters with uncertanties.
 
     '''
@@ -2625,6 +2633,8 @@ def average_rectified_sections(data):
     data : ndarray, shape(m,)
         A slice where m is typically less than n.
 
+    Notes
+    -----
     This is a function to try to handle the fact that some of the data from the
     torsional pendulum had a beating like phenomena and we only want to select
     a section of the data that doesn't seem to exhibit the phenomena.

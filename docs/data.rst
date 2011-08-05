@@ -1,6 +1,11 @@
+.. _data-file:
+
 =======================================
 BicycleParameters Data File Information
 =======================================
+
+
+.. _bicycle-parameter-input:
 
 bicycles/<bicycle name>/Parameters/<bicycle name>Benchmark.txt
 ==============================================================
@@ -56,9 +61,15 @@ These parameters are assumed to equal zero if not given.
 - ``IHyy`` : y moment of inertia of the handlebar/fork [kg*m**2]
 - ``IHyz`` : yz product of inertia of the handlebar/fork [kg*m**2]
 
+.. _bicycle-measured-input:
+
 bicycles/<bicycle name>/RawData/<bicycle name>Measured.txt
 ==========================================================
-``<Shortname>Measured.txt`` contains the raw measurement data for a bicycle.
+This documentation does not contain the complete details of acquiring the raw
+data. Please refer to [Moore2010]_ and our `website
+<http://biosport.ucdavis.edu/bicycle>`_ for more information.
+
+``<bicycle name>Measured.txt`` contains the raw measurement data for a bicycle.
 The file should have one variable on each line in the following format::
 
     mR = 1.38+/-0.02, 1.37+/-0.02
@@ -136,7 +147,7 @@ from the steer axis to the wheel centers and the distance between their
 respective intersection points. To use these, simply replace w, gamma, and f
 with these dimensions:
 
-- ``h1`` : distance from the base of the height gage to the top of the the rear
+- ``h1`` : distance from the base of the height gage to the top of the rear
   wheel axis [m]
 - ``h2`` : distance from the table surface to the base of the height gage [m]
 - ``h3`` : distance from the table surface to the top of the head tube [m]
@@ -190,6 +201,8 @@ Notes
   accuracy of the parameter estimations. Currently you can specify up to six
   orientation for each rigid body.
 
+.. _pendulum-input:
+
 Pendulum Data Files
 ===================
 If you have raw signal data that the periods can be estimated from, then these
@@ -214,9 +227,11 @@ name><part><pendulum><orientation><trial>.mat`` where:
 Notes
 -----
 
-- ``Fork`` is the handlbar/fork assembly if they are measured as one rigid body
+- ``Fork`` is the handlebar/fork assembly if they are measured as one rigid body
   (subscript is ``H``). Otherwise ``Fork`` (``S``) is the fork and
   ``Handlebar`` (``G``) is the handlebar when they are measured separately.
+
+.. _rider-input:
 
 riders/<rider name>/Parameters/
 ===============================
@@ -263,9 +278,9 @@ leaned forward.
 
 <rider name><bicycle name>YeadonCFG.txt
 ---------------------------------------
-This is the yeadon_ measurement input file for the yeadon package. It contains
+This is the yeadon measurement input file for the `yeadon package`_. It contains
 all of the geometric measurements of the rider. See the `yeadon documentation`_
 for more details.
 
-.. _yeadon : http://pypi.python.org/pypi/yeadon
+.. _yeadon package: http://pypi.python.org/pypi/yeadon
 .. _yeadon documentation : http://packages.python.org/yeadon/

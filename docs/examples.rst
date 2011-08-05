@@ -1,14 +1,106 @@
+.. _usage:
+
 =============
 Example Usage
 =============
 
-Bicycle data
-============
+The Data
+========
 The program requires input data in the form of basic text files and a
-particular filesystem structure to organize the data. To use the program you
-will need to navigate to a directory where you have at least one directory name
-for a bicycle that contains parameters files or raw data measurements. Refer
-to the 
+particular file system directory structure to organize the data. To use the
+program you will need to navigate to a directory where you have at least one
+directory named for a bicycle that contains parameters files or raw data
+measurements. Refer to the document :ref:`data-file` for details about what the
+data files should contain.
+
+Data Directory
+--------------
+
+You will need to setup a directory (a directory named ``data`` is used in the
+following examples) somewhere for the data input and output files. The
+structure of the directory should look like this::
+
+    /data
+    |
+    -->/bicycles
+    |  |
+    |  -->/Bicyclea
+    |  |  |
+    |  |  -->/Parameters
+    |  |  |
+    |  |  -->/Photos
+    |  |  |
+    |  |  -->/RawData
+    |  |
+    |  -->/Bicycleb
+    |     |
+    |     -->/Parameters
+    |     |
+    |     -->/Photos
+    |     |
+    |     -->/RawData
+    -->/riders
+       |
+       -->/Ridera
+          |
+          -->/Parameters
+          |
+          -->/RawData
+
+Bicycle/rider name
+------------------
+A bicycle or rider name is a descriptive word (or compound word) for a bicycle or
+rider in which the first letter is capitalized. Examples of bicycle short names
+include ``Bianchipista``, ``Bike``, ``Mybike``, ``Rigidrider``,
+``Schwintandem``, ``Gyrobike``, ``Bicyclea``, etc. Examples of rider names
+include ``Jason``, ``Mont``, ``Lukepeterson``, etc. The program relies on
+CamelCase words, so make sure the first letter is capitalized and no others
+are.
+
+bicycles Directory
+------------------
+The ``bicycles`` directory contains subdirectories for each bicycle. The
+directory name for a bicycle should be its bicycle name. Each directory in
+``bicycles`` should contain at least a ``RawData`` directory or a ``Parameters``
+directory. ``Photos`` is an optional directory.
+
+RawData directory
+~~~~~~~~~~~~~~~~~
+You can supply raw measurement data two forms:
+
+ 1. A file containing all the manual measurements (including the oscillation
+    periods for each rigid body). Refer to :ref:`bicycle-measured-input` for
+    details about the contents of this file.
+ 2. A file containing all the manual measurements (not including the
+    oscillation periods for each rigid body) and a set of data files
+    containing oscillatory signals from which the periods can be
+    estimated. Refer to :ref:`pendulum-input` for details about these files.
+
+The manual measurement data file should follow the naming convention ``<bicycle
+name>Measure.txt``. This data is used to generate parameter files that can be
+saved to the ``Parameters`` directory.
+
+Parameters directory
+~~~~~~~~~~~~~~~~~~~~
+If you don't have any raw measurements for the bicycle it is also an option to
+supply a parameter file in the ``Parameters`` directory. Simply add a file named
+``<bicycle name>Benchmark.txt`` with the benchmark parameter set into the
+``Parameters`` directory for the particular bicycle. Refer to
+:ref:`bicycle-parameter-input` for details about the contents of the file.
+
+Photos directory
+~~~~~~~~~~~~~~~~
+The ``Photos`` folder should contain photos of the bicycle parts hung as the
+various pendulums in the various orientations. The filename should follow the
+conventions of the raw signal data files.
+
+riders directory
+----------------
+The riders directory should contain a directory for each rider that you have
+data for. The individual rider directory contains a ``Parameters`` for the
+rider inertial parameters sets and a ``RawData`` directory for the raw
+measurements needed for the Yeadon inertia model. Refer to :ref:`rider-input`
+for details about these input files.
 
 Loading bicycle data
 ====================
@@ -151,8 +243,8 @@ You can calculate the eigenvalues and eigenvectors at any speed by calling::
              0.04206844+0.25316359j, -0.40305383+0.j        ]]])
 
 The ``eig`` function also accepts a one dimensional array of speeds and returns
-eigenvalues for all speeds. Note that uncertaintity propogation into the
-eigenvalue caluculations is not supported yet.
+eigenvalues for all speeds. Note that uncertainty propagation into the
+eigenvalue calculations is not supported yet.
 
 The moment of inertia of the steer assembly (handlebar, fork and/or front
 wheel) can be computed either about the center of mass or a point on the steer
@@ -185,9 +277,16 @@ real and imaginary parts of the eigenvalues as a function of speed::
 
 .. image:: eigenvaluesVsSpeed.png
 
+You can also compare the eigenvalues of two or more bicycles::
+
+  >>>yellowrev = bp.Bicycle('Yellowrev')
+  >>>bp.plot_eigenvalues([bicycle, yellowrev], speeds)
+
+.. image:: eigCompare.png
+
 Rigid Rider
 ===========
-The program also allows one to add a the inertial affects of a rigid rider to
+The program also allows one to add the inertial affects of a rigid rider to
 the Whipple bicycle system.
 
 Rider Data
@@ -208,7 +307,7 @@ To add a rider key in::
 
 The program first looks for a parameter for for Jason sitting on the Stratos
 and if it can't find one, it looks for the raw data for Jason and computes the
-inertial parameters. You can force calcuation from raw data with::
+inertial parameters. You can force calculation from raw data with::
 
   >>>bicycle.add_rider('Jason', reCalc=True)
 
@@ -252,7 +351,7 @@ frame has the added inertial effects of the rider.
 Plots
 -----
 The bicycle geometry plot now reflects that there is a rider on the bicycle and
-displays a simplifed depiction::
+displays a simplified depiction::
 
   >>>bicycle.plot_bicycle_geometry()
 

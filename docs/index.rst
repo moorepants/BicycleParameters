@@ -18,8 +18,8 @@ Table of Contents
 
    description.rst
    installation.rst
-   data.rst
    examples.rst
+   data.rst
    modules.rst
 
 * :ref:`genindex`
