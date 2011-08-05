@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-from math import pi
 
-import numpy as np
+from math import pi
 from uncertainties import unumpy, umath
+import numpy as np
 
 def rotate_inertia_tensor(I, angle):
     '''Returns inertia tensor rotated through angle. Only for 2D'''
