@@ -25,7 +25,7 @@ class Bicycle(object):
 
     """
 
-    def __new__(cls, bicycleName, pathToData=os.getcwd(), forceRawCalc=False,
+    def __new__(cls, bicycleName, pathToData='.', forceRawCalc=False,
             forcePeriodCalc=False):
         '''Returns a NoneType object if there is no directory for the bicycle.'''
         # is there a data directory for this bicycle? if not, tell the user to
@@ -45,7 +45,7 @@ class Bicycle(object):
             print a + b + c
             return None
 
-    def __init__(self, bicycleName, pathToData=os.getcwd(), forceRawCalc=False,
+    def __init__(self, bicycleName, pathToData='.', forceRawCalc=False,
             forcePeriodCalc=False):
         """
         Creates a bicycle object and sets the parameters based on the available
