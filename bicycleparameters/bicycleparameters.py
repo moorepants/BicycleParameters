@@ -638,6 +638,98 @@ class Bicycle(object):
 
         return fig
 
+    def canonical(self):
+        """
+        Returns the canonical velocity and gravity independent matrices for the
+        Whipple bicycle model.
+
+        Returns
+        -------
+        M : ndarray, shape(2,2)
+            Mass matrix.
+        C1 : ndarray, shape(2,2)
+            Velocity independent damping matrix.
+        K0 : ndarray, shape(2,2)
+            Gravity independent part of the stiffness matrix.
+        K2 : ndarray, shape(2,2)
+            Velocity squared independent part of the stiffness matrix.
+
+        Notes
+        -----
+
+        The canonical matrices complete the following equation:
+
+            M * q'' + v * C1 * q' + [g * K0 + v**2 * K2] * q = f
+
+        where:
+
+            q = [phi, delta]
+            f = [Tphi, Tdelta]
+
+        phi
+            Bicycle roll angle.
+        delta
+            Steer angle.
+        Tphi
+            Roll torque.
+        Tdelta
+            Steer torque.
+        v
+            Bicylce speed.
+
+        """
+
+        par = self.parameters['Benchmark']
+
+        M, C1, K0, K2 = benchmark_par_to_canonical(par)
+
+        return M, C1, K0, K2
+
+    def state_space(self, speed):
+        """
+        Returns the A and B matrices for the Whipple model linearized about
+        the upright constant velocity configuration.
+
+
+        Parameters
+        ----------
+        speed : float
+            The speed of the bicycle.
+
+        Returns
+        -------
+
+        A : ndarray, shape(4,4)
+            The state matrix.
+        B : ndarray, shape(4,2)
+            The input matrix.
+
+        Notes
+        -----
+        ``A`` and ``B`` describe the Whipple model in state space form:
+
+            x' = A * x + B * u
+
+        where
+
+        The states are [roll rate,
+                        steer rate,
+                        roll angle,
+                        steer angle]
+
+        The inputs are [roll torque,
+                        steer torque]
+
+        """
+
+        M, C1, K0, K2 = self.canonical()
+
+        g = self.parameters['Benchmark']['g']
+
+        A, B = abMatrix(M, C1, K0, K2, speed, g)
+
+        return A, B
+
     def eig(self, speeds):
         '''Returns eigenvalues and eigenvectors of the benchmark bicycle.
 
@@ -660,16 +752,11 @@ class Bicycle(object):
         except AttributeError:
             speeds = np.array([speeds])
 
-        par = self.parameters['Benchmark']
-
-        M, C1, K0, K2 = benchmark_par_to_canonical(par)
-        self.canonical = {'M' : M, 'C1' : C1, 'K0' : K0, 'K2' : K2}
-
-        m, n = 2 * M.shape[0], speeds.shape[0]
+        m, n = 4, speeds.shape[0]
         evals = np.zeros((n, m), dtype='complex128')
         evecs = np.zeros((n, m, m), dtype='complex128')
         for i, speed in enumerate(speeds):
-            A, B = abMatrix(M, C1, K0, K2, speed, par['g'])
+            A, B = self.state_space(speed)
             w, v = np.linalg.eig(unumpy.nominal_values(A))
             evals[i] = w
             evecs[i] = v
@@ -1631,7 +1718,7 @@ def abMatrix(M, C1, K0, K2, v, g):
     Returns
     -------
     A : ndarray, shape(4,4)
-        System dynamic matrix.
+        State matrix.
     B : ndarray, shape(4,2)
         Input matrix.
 
