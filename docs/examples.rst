@@ -102,6 +102,14 @@ rider inertial parameters sets and a ``RawData`` directory for the raw
 measurements needed for the Yeadon inertia model. Refer to :ref:`rider-input`
 for details about these input files.
 
+Example Data
+------------
+Example data is available as a `bz2 tarball`_ or a `zip file`_ [~90mb].
+
+.. _bz2 tarball: http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/bicycleparameters-data.tar.bz2
+
+.. _zip file: http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/bicycleparameters-data.zip
+
 Loading bicycle data
 ====================
 The easiest way to load a bicycle is::
