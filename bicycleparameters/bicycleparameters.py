@@ -83,6 +83,7 @@ class Bicycle(object):
         # bicycles are assumed not to have a rider when initially loaded
         self.hasRider = False
         self.riderPar = {}
+        self.human = None
 
         self.parameters = {}
         # if there are some parameter files, then load them
