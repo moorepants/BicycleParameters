@@ -513,10 +513,7 @@ class Bicycle(object):
                 C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
                 # make an ellipse
                 Imin =  Ip2D[0]
-                print part
-                print "Imin", Imin
                 Imax = Ip2D[1]
-                print "Imax", Imax
                 # get width and height of a ellipse with the major axis equal
                 # to one
                 unitWidth = 1. / 2. / np.sqrt(Imin) * np.sqrt(Imin)
