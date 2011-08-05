@@ -1,4 +1,4 @@
-import BicycleParameters as bp
+import bicycleparameters as bp
 
 def test_filename_to_dict():
     out = bp.filename_to_dict('BrowserFrameCompoundFirst1.mat')

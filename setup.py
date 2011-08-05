@@ -13,7 +13,7 @@ setup(
     classifiers=['Programming Language :: Python',
                  'Programming Language :: Python :: 2.7',
                  'Operating System :: OS Independent',
-                 'Development Status :: 4',
+                 'Development Status :: 4 - Beta',
                  'Intended Audience :: Science/Research',
                  'License :: OSI Approved :: BSD License',
                  'Natural Language :: English',
