@@ -3,7 +3,7 @@ BicycleParameters Data File Information
 =======================================
 
 bicycles/<bicycle name>/Parameters/<bicycle name>Benchmark.txt
-==========================================================
+==============================================================
 ``<bicycle name>Benchmark.txt`` contains the complete parameter set needed to
 analyze the Whipple bicycle model linearized about the upright configuration.
 Each line should have one of the 24 benchmark parameters in the following
@@ -56,8 +56,8 @@ These parameters are assumed to equal zero if not given.
 - ``IHyy`` : y moment of inertia of the handlebar/fork [kg*m**2]
 - ``IHyz`` : yz product of inertia of the handlebar/fork [kg*m**2]
 
-bicycles/<shortname>/RawData/<bicycle name>Measured.txt
-=====================================================
+bicycles/<bicycle name>/RawData/<bicycle name>Measured.txt
+==========================================================
 ``<Shortname>Measured.txt`` contains the raw measurement data for a bicycle.
 The file should have one variable on each line in the following format::
 
@@ -222,7 +222,7 @@ riders/<rider name>/Parameters/
 ===============================
 
 <rider name><bicycle name>Benchmark.txt
--------------------------------------
+---------------------------------------
 This file contains the inertial parameters for a rigid rider configured to sit
 on a particular bicycle expressed with reference to the benchmark reference
 frame and the rider's center of mass. You can provide these values or let the
@@ -242,7 +242,7 @@ program generate them.
 ``yB``, ``IBxy``, and ``IByz`` are optional due to the assumed symmetry of the rider.
 
 Combined/<rider name><bicycle name>Benchmark.txt
------------------------------------------------
+------------------------------------------------
 This file contains the geometric and inertial benchmark parameters for a rider
 seated on a bicycle. The rider is assumed to be rigidly attached to the bicycle
 frame. These parameters are the same as the ones stored in
@@ -253,7 +253,7 @@ riders/<rider name>/RawData/
 ============================
 
 <rider name><bicycle name>YeadonCFG.txt
--------------------------------------
+---------------------------------------
 This is an input file to set the configuration of the joint angles for the
 `yeadon package`_. All values should be set to zero except the ``sommersault``
 value. The ``sommersault`` value is pi minus the hunch angle of the rider on
@@ -262,7 +262,7 @@ rider's torso mid line. It is essentially the angle at which the rider is
 leaned forward.
 
 <rider name><bicycle name>YeadonCFG.txt
--------------------------------------
+---------------------------------------
 This is the yeadon_ measurement input file for the yeadon package. It contains
 all of the geometric measurements of the rider. See the `yeadon documentation`_
 for more details.
