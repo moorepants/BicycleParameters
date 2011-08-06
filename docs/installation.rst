@@ -25,6 +25,11 @@ These are required to bulid the documentation:
 
 Installation
 ============
+
+The easiest method to download and install is with ``pip``::
+
+  $pip install BicycleParameters
+
 There are currently two options for getting the source code:
 
 1. Clone the source code with Git: ``git clone
