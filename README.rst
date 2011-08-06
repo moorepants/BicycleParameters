@@ -66,4 +66,4 @@ Example Code
 Documentation
 =============
 Please refer to the `online documentation
-<http://packages.python.org/bicycleparameters>`_ for more information.
+<http://packages.python.org/BicycleParameters>`_ for more information.
