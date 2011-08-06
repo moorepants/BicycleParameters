@@ -13,8 +13,8 @@ Required
 - `Scipy 0.9.0 <http://www.scipy.org/>`_
 - `Numpy 1.5.1 <http://numpy.scipy.org/>`_
 - `Matplotlib 0.99.3 <http://matplotlib.sourceforge.net/>`_
-- `Uncertainties 1.7.3 <http://packages.python.org/uncertainties/>`_
-- `yeadon 0.8 <https://github.com/fitze/yeadon>`_
+- `Uncertainties 1.7.3 <http://pypi.python.org/pypi/uncertainties/>`_
+- `yeadon 0.8 <http://pypi.python.org/pypi/yeadon/>`_
 
 Optional
 --------
