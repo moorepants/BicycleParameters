@@ -18,6 +18,5 @@ setup(
                  'License :: OSI Approved :: BSD License',
                  'Natural Language :: English',
                  'Topic :: Scientific/Engineering',
-                 'Topic :: Scientific/Engineering :: Human Machine Interfaces',
                  'Topic :: Scientific/Engineering :: Physics']
 )
