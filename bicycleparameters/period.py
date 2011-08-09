@@ -96,7 +96,9 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
 
     pathToRawDataParts = pathParts(directory)
     pathToRawDataParts.pop()
-    pathToBicycleDir = os.path.join(pathToRawDataParts[0], pathToRawDataParts[1])
+    pathToBicycleDir = os.path.join(pathToRawDataParts[0],
+                                    pathToRawDataParts[1],
+                                    pathToRawDataParts[2])
     pathToPlotDir = os.path.join(pathToBicycleDir, 'Plots', 'PendulumFit')
 
     # make sure there is a place to save the plots
@@ -270,10 +272,10 @@ def get_period(data, sampleRate, pathToPlotFile):
     T = 1. / fd
 
     # plot the data and save it to file
-    fig = plt.figure()
-    plot_osfit(x, y, lscurve, p1, rsq, T, m=np.max(x), fig=fig)
-    plt.savefig(pathToPlotFile)
-    plt.close()
+    #fig = plt.figure()
+    #plot_osfit(x, y, lscurve, p1, rsq, T, m=np.max(x), fig=fig)
+    #plt.savefig(pathToPlotFile)
+    #plt.close()
 
     # return the period
     return T
@@ -445,8 +447,8 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
     '''
     # figure properties
     figwidth = 8. # in inches
-    goldenMean = (np.sqrt(5)-1.0)/2.0
-    figsize = [figwidth, figwidth*goldenMean]
+    goldenMean = (np.sqrt(5) - 1.0) / 2.0
+    figsize = [figwidth, figwidth * goldenMean]
     params = {#'backend': 'ps',
         'axes.labelsize': 8,
         'axes.titlesize': 8,
@@ -477,7 +479,7 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
     period = '$T={0} s$'.format(T)
     plt.title(equation + '\n' + rsquare + ', ' + period)
     plt.legend(['Measured', 'Fit'])
-    if m:
+    if m is not None:
         plt.xlim((0, m))
     else:
         pass
