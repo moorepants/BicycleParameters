@@ -187,7 +187,7 @@ def write_periods_to_file(pathToRawFile, mp):
     Parameters
     ----------
     pathToRawFile : string
-        The path to the *Measured.txt file
+        The path to the <bicycle name>Measured.txt file
     mp : dictionary
         The measured parameters dictionary. Should contain complete period
         data.

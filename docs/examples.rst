@@ -114,8 +114,8 @@ Loading bicycle data
 ====================
 The easiest way to load a bicycle is::
 
-  >>>import bicycleparameters as bp
-  >>>bicycle = bp.Bicycle('Stratos')
+  >>> import bicycleparameters as bp
+  >>> bicycle = bp.Bicycle('Stratos')
 
 This will create an instance of the Bicycle class in the variable bicycle based
 off of input data from the ``./bicycles/Stratos/`` directory. The program first
@@ -129,7 +129,7 @@ calculate the periods. If no data is there, then you get an error.
 
 There are other loading options::
 
-  >>>bicycle = bp.Bicycle('Stratos', pathToData='<some path to the data directory>', forceRawCalc=True, forcePeriodCalc=True)
+  >>> bicycle = bp.Bicycle('Stratos', pathToData='<some path to the data directory>', forceRawCalc=True, forcePeriodCalc=True)
 
 The ``pathToData`` option allows you specify a directory other than the current
 directory as your data directory. The ``forceRawCalc`` forces the program to
@@ -144,27 +144,27 @@ Exploring bicycle parameter data
 
 The bicycle has a name::
 
-  >>>bicycle.bicycleName
+  >>> bicycle.bicycleName
   'Stratos'
 
 and a directory where its data is stored::
 
-  >>>bicycle.direcotory
+  >>> bicycle.direcotory
   './bicycles/Stratos'
 
 The benchmark bicycle parameters are the fundamental parameter set that is used
 behind the scenes for calculations. To access them type::
 
-  >>>bPar = bicycle.parameters['Benchmark']
-  >>>bPar['xB']
+  >>> bPar = bicycle.parameters['Benchmark']
+  >>> bPar['xB']
   0.32631503794489763+/-0.0032538862692938642
 
 The program automatically calculates the uncertainties in the parameters based
 on the raw measurements or the uncertainties provided in the parameter files.
 If you'd like to work with the pure values you can remove them::
 
-  >>>bParPure = bp.remove_uncertainties(bPar)
-  >>>bParPure['xB']
+  >>> bParPure = bp.remove_uncertainties(bPar)
+  >>> bParPure['xB']
   0.32631503794489763
 
 That goes the same for all values with uncertainties. Check out the
@@ -174,19 +174,19 @@ more ways to manipulate the quantities.
 If the bicycle was calculated from raw data measurements you can access them
 by::
 
-  >>>bicycle.parameters['Measurements']
+  >>> bicycle.parameters['Measurements']
 
 All parameter sets are stored in the parameter dictionary of the bicycle
 instance.
 
 To modify a parameter type::
 
-  >>>bicycle.parameters['Benchmark']['mB] = 50.
+  >>> bicycle.parameters['Benchmark']['mB] = 50.
 
 You can regenerate the parameter sets from the raw data stored in the bicycle's
 directory by calling::
 
-  >>>bicycle.calculate_from_measured()
+  >>> bicycle.calculate_from_measured()
 
 Basic Analysis
 ==============
@@ -195,21 +195,21 @@ model which has been linearized about the upright configuration.
 
 The canonical matrices for the equations of motion can be computed::
 
-  >>>M, C1, K0, K2 = bicycle.canonical()
-  >>>M
+  >>> M, C1, K0, K2 = bicycle.canonical()
+  >>> M
   array([[4.87735569387+/-0.0239343413077, 0.407911475492+/-0.00852495589396],
         [0.407911475492+/-0.00852495589396,
          0.203245633856+/-0.00235820505536]], dtype=object)
-  >>>C1
+  >>> C1
   array([[0.0, 4.85200252888+/-0.0242948940194],
         [-0.488808930325+/-0.00358710467251,
          0.751423298199+/-0.0118190412791]], dtype=object)
-  >>>K0
+  >>> K0
   array([[-8.1786550655+/-0.0281976329402,
           -0.709791925937+/-0.013158888468],
          [-0.709791925937+/-0.013158888468,
           -0.206338069868+/-0.00571395841832]], dtype=object)
-  >>>K2
+  >>> K2
   array([[0.0,
           8.39212115462+/-0.0313979563061],
          [0.0,
@@ -218,8 +218,8 @@ The canonical matrices for the equations of motion can be computed::
 as well as the state and input matrices for state space form at a particular
 speed::
 
-  >>>A, B = bicycle.state_space(1.34)
-  >>>A
+  >>> A, B = bicycle.state_space(1.34)
+  >>> A
   array([[-0.323894489886+/-0.00578005141184,
           -1.10401174487+/-0.00684136323415, 16.324961319+/-0.039204516678,
           -2.30677907291+/-0.00824125009025],
@@ -227,7 +227,7 @@ speed::
           1.49533216875+/-0.153839831788, 7.71036924174+/-0.170699435465],
          [1.0, 0.0, 0.0, 0.0],
          [0.0, 1.0, 0.0, 0.0]], dtype=object)
-  >>>B
+  >>> B
   array([[0.246385378456+/-0.00169761878443,
           -0.494492409794+/-0.00770906162244],
          [-0.494492409794+/-0.00770906162244, 5.91259504914+/-0.0401866728435],
@@ -236,11 +236,11 @@ speed::
 
 You can calculate the eigenvalues and eigenvectors at any speed by calling::
 
-   >>>w, v = bicycle.eig(4.28) # the speed should be in meters/second
-   >>>w # eigenvalues
+   >>> w, v = bicycle.eig(4.28) # the speed should be in meters/second
+   >>> w # eigenvalues
    array([[-6.83490195+0.j        ,  0.46085314+2.77336727j,
             0.46085314-2.77336727j, -1.58257375+0.j        ]])
-   >>>v # eigenvectors
+   >>> v # eigenvectors
    array([[[ 0.04283049+0.j        ,  0.50596715+0.33334818j,
              0.50596715-0.33334818j,  0.55478588+0.j        ],
            [ 0.98853840+0.j        ,  0.72150298+0.j        ,
@@ -258,7 +258,7 @@ The moment of inertia of the steer assembly (handlebar, fork and/or front
 wheel) can be computed either about the center of mass or a point on the steer
 axis, both with reference to a frame aligned with the steer axis::
 
-  >>>bicycle.steer_assembly_moment_of_inertia(aboutSteerAxis=True)
+  >>> bicycle.steer_assembly_moment_of_inertia(aboutSteerAxis=True)
   array([[0.539931205836+/-0.00362870864185, 0.0,
           0.00921422347873+/-0.00191753741975],
          [0.0, 0.578940852064+/-0.00311525776442, 0.0],
@@ -272,23 +272,23 @@ You can plot the geometry of the bicycle and include the mass centers of the
 various bodies, the inertia ellipsoids and the torsional pendulum axes from the
 raw measurement data::
 
-  >>>bicycle.plot_bicycle_geometry()
+  >>> bicycle.plot_bicycle_geometry()
 
 .. image:: bicycleGeometry.png
 
 For visualization of the linear analysis you can plot the root loci of the
 real and imaginary parts of the eigenvalues as a function of speed::
 
-  >>>import numpy as np
-  >>>speeds = np.linspace(0., 10., num=100)
-  >>>bicycle.plot_eigenvalues_vs_speed(speeds)
+  >>> import numpy as np
+  >>> speeds = np.linspace(0., 10., num=100)
+  >>> bicycle.plot_eigenvalues_vs_speed(speeds)
 
 .. image:: eigenvaluesVsSpeed.png
 
 You can also compare the eigenvalues of two or more bicycles::
 
-  >>>yellowrev = bp.Bicycle('Yellowrev')
-  >>>bp.plot_eigenvalues([bicycle, yellowrev], speeds)
+  >>> yellowrev = bp.Bicycle('Yellowrev')
+  >>> bp.plot_eigenvalues([bicycle, yellowrev], speeds)
 
 .. image:: eigCompare.png
 
@@ -311,23 +311,23 @@ Adding a Rider
 --------------
 To add a rider key in::
 
-  >>>bicycle.add_rider('Jason')
+  >>> bicycle.add_rider('Jason')
 
 The program first looks for a parameter for for Jason sitting on the Stratos
 and if it can't find one, it looks for the raw data for Jason and computes the
 inertial parameters. You can force calculation from raw data with::
 
-  >>>bicycle.add_rider('Jason', reCalc=True)
+  >>> bicycle.add_rider('Jason', reCalc=True)
 
 Exploring the rider
 -------------------
 The bicycle has a few new attributes now that it has a rider::
 
-  >>>bicycle.hasRider
+  >>> bicycle.hasRider
   True
-  >>>bicycle.riderName
+  >>> bicycle.riderName
   'Jason'
-  >>>bicycle.riderPar # inertial parmeters of the rider
+  >>> bicycle.riderPar # inertial parmeters of the rider
   {'Benchmark': {'IBxx': 7.8188533619237681,
                  'IBxz': -0.035425693766513083,
                  'IByy': 8.2729669089020437,
@@ -336,13 +336,13 @@ The bicycle has a few new attributes now that it has a rider::
                  'xB': 0.46614935153554904,
                  'yB': 2.1457815736317352e-07,
                  'zB': -1.0385521459829261}}
-  >>>bicycle.human # this is a yeadon.human object representing the Jason
+  >>> bicycle.human # this is a yeadon.human object representing the Jason
   <yeadon.human.human instance at 0x2b19dd0>
 
 The bicycle parameters now reflect that a rigid rider has been added to the
 bicycle frame::
 
-  >>>bicycle.parameters['Benchmark']['mB']
+  >>> bicycle.parameters['Benchmark']['mB']
   86.37292086643515+/-0.02
 
 At this point, the uncertainties don't necessarily offer much information for
@@ -361,13 +361,13 @@ Plots
 The bicycle geometry plot now reflects that there is a rider on the bicycle and
 displays a simplified depiction::
 
-  >>>bicycle.plot_bicycle_geometry()
+  >>> bicycle.plot_bicycle_geometry()
 
 .. image:: bicycleRiderGeometry.png
 
 The eigenvalue plot also relfects the changes::
 
-  >>>bicycle.plot_eigenvalues_vs_speed(speeds)
+  >>> bicycle.plot_eigenvalues_vs_speed(speeds)
 
 .. image:: bicycleRiderEig.png
 
@@ -378,6 +378,6 @@ you can output a three dimensional picture of the Yeadon model configured to be
 seated on the bicycle. This is a bit buggy due to the nature of visual python,
 but is useful none-the-less.::
 
-  >>>bicycle.add_rider('Jason', draw=True)
+  >>> bicycle.add_rider('Jason', draw=True)
 
 .. image:: human.png

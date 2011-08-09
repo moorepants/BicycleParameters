@@ -28,7 +28,7 @@ Installation
 
 The easiest method to download and install is with ``pip``::
 
-  $pip install BicycleParameters
+  $ pip install BicycleParameters
 
 There are currently two options for getting the source code:
 
@@ -40,9 +40,9 @@ There are currently two options for getting the source code:
 
 Once you have the source code navigate to the directory and run::
 
-  >>>python setup.py install
+  >>> python setup.py install
 
 This will install the software into your system and you should be able to
 import it with::
 
-  >>>import bicycleparameters
+  >>> import bicycleparameters

@@ -1,8 +1,9 @@
 from distutils.core import setup
+import bicycleparameters as bp
 
 setup(
     name='BicycleParameters',
-    version='0.1.0',
+    version=bp.__version__,
     author='Jason Keith Moore',
     author_email='moorepants@gmail.com',
     packages=['bicycleparameters', 'bicycleparameters.test'],

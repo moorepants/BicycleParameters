@@ -1,10 +1,10 @@
 test Package
 ============
 
-:mod:`test_BicycleParameters` Module
+:mod:`test_bicycleparameters` Module
 ------------------------------------
 
-.. automodule:: bicycleparameters.test.test_BicycleParameters
+.. automodule:: bicycleparameters.test.test_bicycleparameters
     :members:
     :undoc-members:
     :show-inheritance:

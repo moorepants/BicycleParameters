@@ -20,7 +20,7 @@ Table of Contents
    installation.rst
    examples.rst
    data.rst
-   modules.rst
+   bicycleparameters.rst
 
 * :ref:`genindex`
 * :ref:`modindex`

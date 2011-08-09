@@ -106,10 +106,10 @@ def center_of_mass(slopes, intercepts):
 
     Returns
     -------
-        x : float
-            The abscissa of the center of mass.
-        y : float
-            The ordinate of the center of mass.
+    x : float
+        The abscissa of the center of mass.
+    y : float
+        The ordinate of the center of mass.
 
     '''
     num = range(len(slopes))
