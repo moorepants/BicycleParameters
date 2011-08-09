@@ -435,7 +435,7 @@ class Bicycle(object):
                             measuredPar, draw)
             else:
                 pathToParFile = os.path.join(pathToRider, 'Parameters',
-                    rider + self.bicycleName + 'Benchmark.txt')
+                    riderName + self.bicycleName + 'Benchmark.txt')
                 try:
                     # load the parameter file
                     riderPar = io.load_parameter_text_file(pathToParFile)

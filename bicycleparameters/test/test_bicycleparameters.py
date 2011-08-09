@@ -1,7 +1,7 @@
-import bicycleparameters as bp
+from bicycleparameters import io
 
 def test_filename_to_dict():
-    out = bp.filename_to_dict('BrowserFrameCompoundFirst1.mat')
+    out = io.filename_to_dict('BrowserFrameCompoundFirst1.mat')
     ans = {'angleOrder': 'First',
            'bicycle': 'Browser',
            'part': 'Frame',

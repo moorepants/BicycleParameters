@@ -1,9 +1,8 @@
-# import all the classes and functions from the bicycleparametes module
+# import all the important classes and functions from the bicycleparametes module
 from main import Bicycle
 from plot import plot_eigenvalues
 
-# these are the modules that are imported when 'from bicycleparameters import
-# *'
+# the modules that are imported when 'from bicycleparameters import *'
 __all__ = ['main',
            'geometry',
            'io',
