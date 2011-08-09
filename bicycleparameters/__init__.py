@@ -1,9 +1,18 @@
 # import all the classes and functions from the bicycleparametes module
-from bicycleparameters import *
+from main import Bicycle
+from plot import plot_eigenvalues
 
-# remove the bicycleparameters and inertia modules because we already imported
-# all the stuff from it
-del bicycleparameters, inertia
+# these are the modules that are imported when 'from bicycleparameters import
+# *'
+__all__ = ['main',
+           'geometry',
+           'io',
+           'period',
+           'rider',
+           'bicycle',
+           'com',
+           'inertia',
+           'plot']
 
 # specify the version for the package
 __version_info__ = (0, 1, 0)

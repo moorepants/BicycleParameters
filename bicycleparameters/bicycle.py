@@ -1,132 +1,10 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 
 import numpy as np
 from scipy.optimize import newton
 from uncertainties import umath, ufloat, unumpy
 
-def sort_modes(evals, evecs):
-    '''Sort eigenvalues and eigenvectors into weave, capsize, caster modes.
-
-    Parameters
-    ----------
-    evals : ndarray, shape (n, 4)
-        eigenvalues
-    evecs : ndarray, shape (n, 4, 4)
-        eigenvectors
-
-    Returns
-    -------
-    weave['evals'] : ndarray, shape (n, 2)
-        The eigen value pair associated with the weave mode.
-    weave['evecs'] : ndarray, shape (n, 4, 2)
-        The associated eigenvectors of the weave mode.
-    capsize['evals'] : ndarray, shape (n,)
-        The real eigenvalue associated with the capsize mode.
-    capsize['evecs'] : ndarray, shape(n, 4, 1)
-        The associated eigenvectors of the capsize mode.
-    caster['evals'] : ndarray, shape (n,)
-        The real eigenvalue associated with the caster mode.
-    caster['evecs'] : ndarray, shape(n, 4, 1)
-        The associated eigenvectors of the caster mode.
-
-    Notes
-    -----
-    This only works on the standard bicycle eigenvalues, not necessarily on any
-    general eigenvalues for the bike model (e.g. there isn't always a distinct
-    weave, capsize and caster). Some type of check using the derivative of the
-    curves could make it more robust.
-
-    '''
-    evalsorg = np.zeros_like(evals)
-    evecsorg = np.zeros_like(evecs)
-    # set the first row to be the same
-    evalsorg[0] = evals[0]
-    evecsorg[0] = evecs[0]
-    # for each speed
-    for i, speed in enumerate(evals):
-        if i == evals.shape[0] - 1:
-            break
-        # for each current eigenvalue
-        used = []
-        for j, e in enumerate(speed):
-            try:
-                x, y = np.real(evalsorg[i, j].nominal_value), np.imag(evalsorg[i, j].nominal_value)
-            except:
-                x, y = np.real(evalsorg[i, j]), np.imag(evalsorg[i, j])
-            # for each eigenvalue at the next speed
-            dist = np.zeros(4)
-            for k, eignext in enumerate(evals[i + 1]):
-                try:
-                    xn, yn = np.real(eignext.nominal_value), np.imag(eignext.nominal_value)
-                except:
-                    xn, yn = np.real(eignext), np.imag(eignext)
-                # distance between points in the real/imag plane
-                dist[k] = np.abs(((xn - x)**2 + (yn - y)**2)**0.5)
-            if np.argmin(dist) in used:
-                # set the already used indice higher
-                dist[np.argmin(dist)] = np.max(dist) + 1.
-            else:
-                pass
-            evalsorg[i + 1, j] = evals[i + 1, np.argmin(dist)]
-            evecsorg[i + 1, :, j] = evecs[i + 1, :, np.argmin(dist)]
-            # keep track of the indices we've used
-            used.append(np.argmin(dist))
-    weave = {'evals' : evalsorg[:, 2:], 'evecs' : evecsorg[:, :, 2:]}
-    capsize = {'evals' : evalsorg[:, 1], 'evecs' : evecsorg[:, :, 1]}
-    caster = {'evals' : evalsorg[:, 0], 'evecs' : evecsorg[:, :, 0]}
-    return weave, capsize, caster
-
-def trail(rF, lam, fo):
-    '''Calculate the trail and mechanical trail.
-
-    Parameters
-    ----------
-    rF : float
-        The front wheel radius
-    lam : float
-        The steer axis tilt (pi/2 - headtube angle). The angle between the
-        headtube and a vertical line.
-    fo : float
-        The fork offset
-
-    Returns
-    -------
-    c: float
-        Trail
-    cm: float
-        Mechanical Trail
-
-    '''
-
-    # trail
-    c = (rF * umath.sin(lam) - fo) / umath.cos(lam)
-    # mechanical trail
-    cm = c * umath.cos(lam)
-    return c, cm
-
-def lambda_from_abc(rF, rR, a, b, c):
-    '''Returns the steer axis tilt, lamba, for the parameter set based on the
-    offsets from the steer axis.
-
-    '''
-    def lam_equality(lam, rF, rR, a, b, c):
-        return umath.sin(lam) - (rF - rR + c * umath.cos(lam)) / (a + b)
-    guess = umath.atan(c / (a + b)) # guess based on equal wheel radii
-
-    # The following assumes that the uncertainty calculated for the guess is
-    # the same as the uncertainty for the true solution. This is not true! and
-    # will surely breakdown the further the guess is away from the true
-    # solution. There may be a way to calculate the correct uncertainity, but
-    # that needs to be figured out. I guess I could use least squares and do it
-    # the same way as get_period.
-
-    args = (rF.nominal_value, rR.nominal_value, a.nominal_value,
-            b.nominal_value, c.nominal_value)
-
-    lam = newton(lam_equality, guess.nominal_value, args=args)
-    return ufloat((lam, guess.std_dev()))
-
-def abMatrix(M, C1, K0, K2, v, g):
+def ab_matrix(M, C1, K0, K2, v, g):
     '''Calculate the A and B matrices for the Whipple bicycle model linearized
     about the upright configuration.
 
@@ -266,3 +144,141 @@ def benchmark_par_to_canonical(p):
     C1 = np.array([[C1pp, C1pd], [C1dp, C1dd]])
 
     return M, C1, K0, K2
+
+def lambda_from_abc(rF, rR, a, b, c):
+    '''Returns the steer axis tilt, lamba, for the parameter set based on the
+    offsets from the steer axis.
+
+    Parameters
+    ----------
+    rF : float or ufloat
+        Front wheel radius.
+    rR : float or ufloat
+        Rear wheel radius.
+    a : float or ufloat
+        The rear wheel offset. The minimum distance from the steer axis to the
+        center of the rear wheel.
+    b : float or ufloat
+        The front wheel offset. The minimum distance from the steer axis to the
+        center of the front wheel.
+    c : float or ufloat
+        The steer axis distance. The distance along the steer axis between the
+        intersection of the front and rear wheel offset lines.
+
+    '''
+    def lam_equality(lam, rF, rR, a, b, c):
+        return umath.sin(lam) - (rF - rR + c * umath.cos(lam)) / (a + b)
+    guess = umath.atan(c / (a + b)) # guess based on equal wheel radii
+
+    # The following assumes that the uncertainty calculated for the guess is
+    # the same as the uncertainty for the true solution. This is not true! and
+    # will surely breakdown the further the guess is away from the true
+    # solution. There may be a way to calculate the correct uncertainity, but
+    # that needs to be figured out. I guess I could use least squares and do it
+    # the same way as get_period.
+
+    args = (rF.nominal_value, rR.nominal_value, a.nominal_value,
+            b.nominal_value, c.nominal_value)
+
+    lam = newton(lam_equality, guess.nominal_value, args=args)
+    return ufloat((lam, guess.std_dev()))
+
+def sort_modes(evals, evecs):
+    '''Sort eigenvalues and eigenvectors into weave, capsize, caster modes.
+
+    Parameters
+    ----------
+    evals : ndarray, shape (n, 4)
+        eigenvalues
+    evecs : ndarray, shape (n, 4, 4)
+        eigenvectors
+
+    Returns
+    -------
+    weave['evals'] : ndarray, shape (n, 2)
+        The eigen value pair associated with the weave mode.
+    weave['evecs'] : ndarray, shape (n, 4, 2)
+        The associated eigenvectors of the weave mode.
+    capsize['evals'] : ndarray, shape (n,)
+        The real eigenvalue associated with the capsize mode.
+    capsize['evecs'] : ndarray, shape(n, 4, 1)
+        The associated eigenvectors of the capsize mode.
+    caster['evals'] : ndarray, shape (n,)
+        The real eigenvalue associated with the caster mode.
+    caster['evecs'] : ndarray, shape(n, 4, 1)
+        The associated eigenvectors of the caster mode.
+
+    Notes
+    -----
+    This only works on the standard bicycle eigenvalues, not necessarily on any
+    general eigenvalues for the bike model (e.g. there isn't always a distinct
+    weave, capsize and caster). Some type of check using the derivative of the
+    curves could make it more robust.
+
+    '''
+    evalsorg = np.zeros_like(evals)
+    evecsorg = np.zeros_like(evecs)
+    # set the first row to be the same
+    evalsorg[0] = evals[0]
+    evecsorg[0] = evecs[0]
+    # for each speed
+    for i, speed in enumerate(evals):
+        if i == evals.shape[0] - 1:
+            break
+        # for each current eigenvalue
+        used = []
+        for j, e in enumerate(speed):
+            try:
+                x, y = np.real(evalsorg[i, j].nominal_value), np.imag(evalsorg[i, j].nominal_value)
+            except:
+                x, y = np.real(evalsorg[i, j]), np.imag(evalsorg[i, j])
+            # for each eigenvalue at the next speed
+            dist = np.zeros(4)
+            for k, eignext in enumerate(evals[i + 1]):
+                try:
+                    xn, yn = np.real(eignext.nominal_value), np.imag(eignext.nominal_value)
+                except:
+                    xn, yn = np.real(eignext), np.imag(eignext)
+                # distance between points in the real/imag plane
+                dist[k] = np.abs(((xn - x)**2 + (yn - y)**2)**0.5)
+            if np.argmin(dist) in used:
+                # set the already used indice higher
+                dist[np.argmin(dist)] = np.max(dist) + 1.
+            else:
+                pass
+            evalsorg[i + 1, j] = evals[i + 1, np.argmin(dist)]
+            evecsorg[i + 1, :, j] = evecs[i + 1, :, np.argmin(dist)]
+            # keep track of the indices we've used
+            used.append(np.argmin(dist))
+    weave = {'evals' : evalsorg[:, 2:], 'evecs' : evecsorg[:, :, 2:]}
+    capsize = {'evals' : evalsorg[:, 1], 'evecs' : evecsorg[:, :, 1]}
+    caster = {'evals' : evalsorg[:, 0], 'evecs' : evecsorg[:, :, 0]}
+    return weave, capsize, caster
+
+def trail(rF, lam, fo):
+    '''Calculate the trail and mechanical trail.
+
+    Parameters
+    ----------
+    rF : float
+        The front wheel radius
+    lam : float
+        The steer axis tilt (pi/2 - headtube angle). The angle between the
+        headtube and a vertical line.
+    fo : float
+        The fork offset
+
+    Returns
+    -------
+    c: float
+        Trail
+    cm: float
+        Mechanical Trail
+
+    '''
+
+    # trail
+    c = (rF * umath.sin(lam) - fo) / umath.cos(lam)
+    # mechanical trail
+    cm = c * umath.cos(lam)
+    return c, cm

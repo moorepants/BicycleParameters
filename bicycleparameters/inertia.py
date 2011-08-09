@@ -1,40 +1,117 @@
 #!/usr/bin/env python
 
 from math import pi
-from uncertainties import unumpy, umath
+from uncertainties import unumpy, umath, UFloat
 import numpy as np
 
-def rotate_inertia_tensor(I, angle):
-    '''Returns inertia tensor rotated through angle. Only for 2D'''
-    ca = umath.cos(angle)
-    sa = umath.sin(angle)
-    C    =  np.array([[ca, 0., -sa],
-                      [0., 1., 0.],
-                      [sa, 0., ca]])
-    Irot =  np.dot(C, np.dot(I, C.T))
-    return Irot
-
-def principal_axes(I):
-    '''Returns the principal moments of inertia and the orientation.
+def combine_bike_rider(bicyclePar, riderPar):
+    """
+    Combines the inertia of the bicycle frame with the
+    inertia of a rider.
 
     Parameters
     ----------
-    I : ndarray, shape(3,3)
-        An inertia tensor.
+    bicyclePar : dictionary
+        The benchmark parameter set of a bicycle.
+    riderPar : dictionary
+        The rider's mass, center of mass, and inertia expressed in the
+        benchmark bicycle reference frame.
 
     Returns
     -------
-    Ip : ndarray, shape(3,)
-        The principal moments of inertia. This is sorted smallest to largest.
-    C : ndarray, shape(3,3)
-        The rotation matrix.
+    bicyclePar : dictionary
+        The benchmark bicycle parameters with a rigid rider added to the
+        bicycle frame.
+
+    """
+
+    # list the masses of the rider and bicycle
+    masses = np.array([riderPar['mB'], bicyclePar['mB']])
+    # list the centers of mass of the rider and bicycle
+    coordinates = np.array([[riderPar['xB'], bicyclePar['xB']],
+                            [riderPar['yB'], 0.],
+                            [riderPar['zB'], bicyclePar['zB']]])
+    # calculate the new mass and center of mass
+    mT, cT = total_com(coordinates, masses)
+    # get inertia tensors for the bicycle and rider
+    IRider = part_inertia_tensor(riderPar, 'B')
+    IBicycle = part_inertia_tensor(bicyclePar, 'B')
+    # calculate the distance from the center of mass of each body to the
+    # center of mass of the combined body
+    dRider = np.array([riderPar['xB'] - cT[0],
+                       riderPar['yB'] - cT[1],
+                       riderPar['zB'] - cT[2]])
+    dBicycle = np.array([bicyclePar['xB'] - cT[0],
+                         0.,
+                         bicyclePar['zB'] - cT[2]])
+    # calculate the total inertia about the total body center of mass
+    I = (parallel_axis(IRider, riderPar['mB'], dRider) +
+         parallel_axis(IBicycle, bicyclePar['mB'], dBicycle))
+    # assign new inertia back to bike
+    bicyclePar['xB'] = cT[0]
+    bicyclePar['zB'] = cT[2]
+    bicyclePar['yB'] = 0.0
+    bicyclePar['mB'] = mT
+    bicyclePar['IBxx'] = I[0, 0]
+    bicyclePar['IBxz'] = I[0, 2]
+    bicyclePar['IByy'] = I[1, 1]
+    bicyclePar['IBzz'] = I[2, 2]
+
+    return bicyclePar
+
+def compound_pendulum_inertia(m, g, l, T):
+    '''Returns the moment of inertia for an object hung as a compound
+    pendulum.
+
+    Parameters
+    ----------
+    m : float
+        Mass of the pendulum.
+    g : float
+        Acceration due to gravity.
+    l : float
+        Length of the pendulum.
+    T : float
+        The period of oscillation.
+
+    Returns
+    -------
+    I : float
+        Moment of interia of the pendulum.
 
     '''
-    Ip, C = np.linalg.eig(I)
-    indices = np.argsort(Ip)
-    Ip = Ip[indices]
-    C = C.T[indices]
-    return Ip, C
+
+    I = (T / 2. / pi)**2. * m * g * l - m * l**2.
+
+    return I
+
+
+def inertia_components(jay, beta):
+    '''Returns the 2D orthogonal inertia tensor.
+
+    When at least three moments of inertia and their axes orientations are
+    known relative to a common inertial frame of a planar object, the orthoganl
+    moments of inertia relative the frame are computed.
+
+    Parameters
+    ----------
+    jay : ndarray, shape(n,)
+        An array of at least three moments of inertia. (n >= 3)
+    beta : ndarray, shape(n,)
+        An array of orientation angles corresponding to the moments of inertia
+        in jay.
+
+    Returns
+    -------
+    eye : ndarray, shape(3,)
+        Ixx, Ixz, Izz
+
+    '''
+    sb = unumpy.sin(beta)
+    cb = unumpy.cos(beta)
+    betaMat = unumpy.matrix(np.vstack((cb**2, -2 * sb * cb, sb**2)).T)
+    eye = np.squeeze(np.asarray(np.dot(betaMat.I, jay)))
+    return eye
 
 def parallel_axis(Ic, m, d):
     '''Returns the moment of inertia of a body about a different point.
@@ -65,32 +142,75 @@ def parallel_axis(Ic, m, d):
     dMat[2] = np.array([-a * c, -b * c, a**2 + b**2])
     return Ic + m * dMat
 
-def inertia_components(jay, beta):
-    '''Returns the 2D orthogonal inertia tensor.
-
-    When at least three moments of inertia and their axes orientations are
-    known relative to a common inertial frame of a planar object, the orthoganl
-    moments of inertia relative the frame are computed.
+def part_inertia_tensor(par, part):
+    '''Returns an inertia tensor for a particular part for the benchmark
+    parameter set.
 
     Parameters
     ----------
-    jay : ndarray, shape(n,)
-        An array of at least three moments of inertia. (n >= 3)
-    beta : ndarray, shape(n,)
-        An array of orientation angles corresponding to the moments of inertia
-        in jay.
+    par : dictionary
+        Complete Benchmark parameter set.
+    part : string
+        Either 'B', 'H', 'F', 'R', 'G', 'S'
 
     Returns
     -------
-    eye : ndarray, shape(3,)
-        Ixx, Ixz, Izz
+    I : ndarray, shape(3,3)
+        Inertia tensor for the part.
 
     '''
-    sb = unumpy.sin(beta)
-    cb = unumpy.cos(beta)
-    betaMat = unumpy.matrix(np.vstack((cb**2, -2 * sb * cb, sb**2)).T)
-    eye = np.squeeze(np.asarray(np.dot(betaMat.I, jay)))
-    return eye
+    if isinstance(par['mB'], UFloat):
+        dtype=object
+    else:
+        dtype='float64'
+    I = np.zeros((3, 3), dtype=dtype)
+    # front or rear wheel
+    if part == 'F' or part == 'R':
+        axes = np.array([['xx', None, None],
+                         [None, 'yy', None],
+                         [None, None, 'xx']])
+    # all other parts
+    else:
+        axes = np.array([['xx', None, 'xz'],
+                         [None, 'yy', None],
+                         ['xz', None, 'zz']])
+    for i, row in enumerate(axes):
+        for j, col in enumerate(row):
+            if col != None:
+                I[i, j] = par['I' + part + col]
+    return I
+
+def principal_axes(I):
+    '''Returns the principal moments of inertia and the orientation.
+
+    Parameters
+    ----------
+    I : ndarray, shape(3,3)
+        An inertia tensor.
+
+    Returns
+    -------
+    Ip : ndarray, shape(3,)
+        The principal moments of inertia. This is sorted smallest to largest.
+    C : ndarray, shape(3,3)
+        The rotation matrix.
+
+    '''
+    Ip, C = np.linalg.eig(I)
+    indices = np.argsort(Ip)
+    Ip = Ip[indices]
+    C = C.T[indices]
+    return Ip, C
+
+def rotate_inertia_tensor(I, angle):
+    '''Returns inertia tensor rotated through angle. Only for 2D'''
+    ca = umath.cos(angle)
+    sa = umath.sin(angle)
+    C    =  np.array([[ca, 0., -sa],
+                      [0., 1., 0.],
+                      [sa, 0., ca]])
+    Irot =  np.dot(C, np.dot(I, C.T))
+    return Irot
 
 def tor_inertia(k, T):
     '''Calculate the moment of inertia for an ideal torsional pendulm
@@ -110,31 +230,46 @@ def tor_inertia(k, T):
 
     return I
 
-def compound_pendulum_inertia(m, g, l, T):
-    '''Returns the moment of inertia for an object hung as a compound
-    pendulum.
+def torsional_pendulum_stiffness(I, T):
+    '''Calculate the stiffness of a torsional pendulum with a known moment of
+    inertia.
 
     Parameters
     ----------
-    m : float
-        Mass of the pendulum.
-    g : float
-        Acceration due to gravity.
-    l : float
-        Length of the pendulum.
-    T : float
-        The period of oscillation.
+    I : moment of inertia
+    T : period
 
     Returns
     -------
-    I : float
-        Moment of interia of the pendulum.
+    k : stiffness
 
     '''
+    k = 4. * I * pi**2 / T**2
+    return k
 
-    I = (T / 2. / pi)**2. * m * g * l - m * l**2.
+def total_com(coordinates, masses):
+    '''Returns the center of mass of a group of objects if the indivdual
+    centers of mass and mass is provided.
 
-    return I
+    coordinates : ndarray, shape(3,n)
+        The rows are the x, y and z coordinates, respectively and the columns
+        are for each object.
+    masses : ndarray, shape(3,)
+        An array of the masses of multiple objects, the order should correspond
+        to the columns of coordinates.
+
+    Returns
+    -------
+    mT : float
+        Total mass of the objects.
+    cT : ndarray, shape(3,)
+        The x, y, and z coordinates of the total center of mass.
+
+    '''
+    products = masses * coordinates
+    mT = np.sum(masses)
+    cT = np.sum(products, axis=1) / mT
+    return mT, cT
 
 def tube_inertia(l, m, ro, ri):
     '''Calculate the moment of inertia for a tube (or rod) where the x axis is
@@ -165,26 +300,3 @@ def tube_inertia(l, m, ro, ri):
     Iz = Iy
     return Ix, Iy, Iz
 
-def total_com(coordinates, masses):
-    '''Returns the center of mass of a group of objects if the indivdual
-    centers of mass and mass is provided.
-
-    coordinates : ndarray, shape(3,n)
-        The rows are the x, y and z coordinates, respectively and the columns
-        are for each object.
-    masses : ndarray, shape(3,)
-        An array of the masses of multiple objects, the order should correspond
-        to the columns of coordinates.
-
-    Returns
-    -------
-    mT : float
-        Total mass of the objects.
-    cT : ndarray, shape(3,)
-        The x, y, and z coordinates of the total center of mass.
-
-    '''
-    products = masses * coordinates
-    mT = np.sum(masses)
-    cT = np.sum(products, axis=1) / mT
-    return mT, cT
