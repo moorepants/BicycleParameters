@@ -67,3 +67,22 @@ Documentation
 =============
 Please refer to the `online documentation
 <http://packages.python.org/BicycleParameters>`_ for more information.
+
+Release Notes
+=============
+
+0.1.1
+=====
+
+- changed the default directory to .
+- added pip install notes
+- fixed urls in setup.py and the readme
+- added version number to the package
+- removed the human machine classifier
+- reduced the size of the images in the docs
+- broke bicycleparameters.py into several modules
+- updated the documentation
+
+0.1.0
+=====
+Initial release.
