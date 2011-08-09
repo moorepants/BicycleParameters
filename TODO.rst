@@ -10,3 +10,4 @@
 - Add the abilty for in the GyroBike computations.
 - Add a load_parameters method to the Bicycle class.
 - Add lots of tests for the code.
+- Figure out why the pendulum plots are not working
