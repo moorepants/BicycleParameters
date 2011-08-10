@@ -184,21 +184,27 @@ def fit_goodness(ym, yp):
 
     Parameters
     ----------
-    ym : vector of measured values
-    yp : vector of predicted values
+    ym : ndarray, shape(n,)
+        The vector of measured values.
+    yp : ndarry, shape(n,)
+        The vector of predicted values.
 
     Returns
     -------
-    rsq: r squared value of the fit
-    SSE: error sum of squares
-    SST: total sum of squares
-    SSR: regression sum of squares
+    rsq : float
+        The r squared value of the fit.
+    SSE : float
+        The error sum of squares.
+    SST : float
+        The total sum of squares.
+    SSR : float
+        The regression sum of squares.
 
     '''
     SSR = sum((yp - np.mean(ym))**2)
     SST = sum((ym - np.mean(ym))**2)
     SSE = SST - SSR
-    rsq = SSR/SST
+    rsq = SSR / SST
     return rsq, SSE, SST, SSR
 
 def get_period(data, sampleRate, pathToPlotFile):

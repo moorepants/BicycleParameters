@@ -163,7 +163,7 @@ The program automatically calculates the uncertainties in the parameters based
 on the raw measurements or the uncertainties provided in the parameter files.
 If you'd like to work with the pure values you can remove them::
 
-  >>> bParPure = bp.remove_uncertainties(bPar)
+  >>> bParPure = bp.io.remove_uncertainties(bPar)
   >>> bParPure['xB']
   0.32631503794489763
 
