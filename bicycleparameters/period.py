@@ -9,6 +9,7 @@ from scipy.optimize import leastsq
 import matplotlib.pyplot as plt
 from uncertainties import ufloat
 
+# local modules
 from io import load_pendulum_mat_file
 
 def average_rectified_sections(data):
@@ -272,10 +273,10 @@ def get_period(data, sampleRate, pathToPlotFile):
     T = 1. / fd
 
     # plot the data and save it to file
-    #fig = plt.figure()
-    #plot_osfit(x, y, lscurve, p1, rsq, T, m=np.max(x), fig=fig)
-    #plt.savefig(pathToPlotFile)
-    #plt.close()
+    fig = plt.figure()
+    plot_osfit(x, y, lscurve, p1, rsq, T, m=np.max(x), fig=fig)
+    plt.savefig(pathToPlotFile)
+    plt.close()
 
     # return the period
     return T
@@ -456,7 +457,7 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
         'legend.fontsize': 8,
         'xtick.labelsize': 6,
         'ytick.labelsize': 6,
-        #'text.usetex': True,
+        'text.usetex': True,
         #'figure.figsize': figsize
         }
     if fig:

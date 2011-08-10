@@ -4,6 +4,9 @@ from math import pi
 from uncertainties import unumpy, umath, UFloat
 import numpy as np
 
+# local modules
+from com import total_com
+
 def combine_bike_rider(bicyclePar, riderPar):
     """
     Combines the inertia of the bicycle frame with the
@@ -84,7 +87,6 @@ def compound_pendulum_inertia(m, g, l, T):
     I = (T / 2. / pi)**2. * m * g * l - m * l**2.
 
     return I
-
 
 def inertia_components(jay, beta):
     '''Returns the 2D orthogonal inertia tensor.
@@ -247,30 +249,6 @@ def torsional_pendulum_stiffness(I, T):
     k = 4. * I * pi**2 / T**2
     return k
 
-def total_com(coordinates, masses):
-    '''Returns the center of mass of a group of objects if the indivdual
-    centers of mass and mass is provided.
-
-    coordinates : ndarray, shape(3,n)
-        The rows are the x, y and z coordinates, respectively and the columns
-        are for each object.
-    masses : ndarray, shape(3,)
-        An array of the masses of multiple objects, the order should correspond
-        to the columns of coordinates.
-
-    Returns
-    -------
-    mT : float
-        Total mass of the objects.
-    cT : ndarray, shape(3,)
-        The x, y, and z coordinates of the total center of mass.
-
-    '''
-    products = masses * coordinates
-    mT = np.sum(masses)
-    cT = np.sum(products, axis=1) / mT
-    return mT, cT
-
 def tube_inertia(l, m, ro, ri):
     '''Calculate the moment of inertia for a tube (or rod) where the x axis is
     aligned with the tube's axis.
@@ -299,4 +277,3 @@ def tube_inertia(l, m, ro, ri):
     Iy = m / 12. * (3 * ro**2 + 3 * ri**2 + l**2)
     Iz = Iy
     return Ix, Iy, Iz
-

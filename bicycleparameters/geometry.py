@@ -79,6 +79,45 @@ def calculate_abc_geometry(h, d):
     c = umath.sqrt(-(a - b)**2 + (d + .5 * (d2 + d3)))
     return a, b, c
 
+def calculate_l1_l2(h6, h7, d5, d6, l):
+    '''Returns the distance along (l2) and perpendicular (l1) to the steer axis from the
+    front wheel center to the handlebar reference point.
+
+    Parameters
+    ----------
+    h6 : float
+        Distance from the table to the top of the front axle.
+    h7 : float
+        Distance from the table to the top of the handlebar reference circle.
+    d5 : float
+        Diameter of the front axle.
+    d6 : float
+        Diameter of the handlebar reference circle.
+    l : float
+        Outer distance from the front axle to the handlebar reference circle.
+
+    Returns
+    -------
+    l1 : float
+        The distance from the front wheel center to the handlebar reference
+        center perpendicular to the steer axis. The positive sense is if the
+        handlebar reference point is more forward than the front wheel center
+        relative to the steer axis normal.
+    l2 : float
+       The distance from the front wheel center to the handlebar reference
+       center parallel to the steer axis. The positive sense is if the
+       handlebar reference point is above the front wheel center with reference
+       to the steer axis.
+
+    '''
+    r5 = d5 / 2.
+    r6 = d6 / 2.
+    l1 = h7 - h6 + r5 - r6
+    l0 = l - r5 - r6
+    gamma = umath.asin(l1 / l0)
+    l2 = l0 * umath.cos(gamma)
+    return l1, l2
+
 def calc_two_link_angles(L1, L2, D):
     '''Solves a simple case of the two-link revolute joint inverse
     kinematics problem. Both output angles are positive. The simple case
@@ -106,6 +145,28 @@ def calc_two_link_angles(L1, L2, D):
     theta2 = theta1 + np.arcsin( L1 / L2 * np.sin( theta1 ) )
 
     return theta1, theta2
+
+def fwheel_to_handlebar_ref(lam, l1, l2):
+    '''Returns the distance along the benchmark coordinates from the front
+    wheel center to the handlebar reference center.
+
+    Parameters
+    ----------
+    lam : float
+        Steer axis tilt.
+    l1, l2 : float
+        The distance from the front wheel center to the handlebar refernce
+        center perpendicular to and along the steer axis.
+
+    Returns
+    -------
+    u1, u2 : float
+
+    '''
+
+    u1 = l2 * umath.sin(lam) - l1 * umath.cos(lam)
+    u2 = u1 / umath.tan(lam) + l1 / umath.sin(lam)
+    return u1, u2
 
 def fundamental_geometry_plot_data(par):
     '''Returns the coordinates for line end points of the bicycle fundamental

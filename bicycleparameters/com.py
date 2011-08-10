@@ -4,44 +4,8 @@ from math import pi
 import numpy as np
 from uncertainties import umath, unumpy
 
-def calculate_l1_l2(h6, h7, d5, d6, l):
-    '''Returns the distance along (l2) and perpendicular (l1) to the steer axis from the
-    front wheel center to the handlebar reference point.
-
-    Parameters
-    ----------
-    h6 : float
-        Distance from the table to the top of the front axle.
-    h7 : float
-        Distance from the table to the top of the handlebar reference circle.
-    d5 : float
-        Diameter of the front axle.
-    d6 : float
-        Diameter of the handlebar reference circle.
-    l : float
-        Outer distance from the front axle to the handlebar reference circle.
-
-    Returns
-    -------
-    l1 : float
-        The distance from the front wheel center to the handlebar reference
-        center perpendicular to the steer axis. The positive sense is if the
-        handlebar reference point is more forward than the front wheel center
-        relative to the steer axis normal.
-    l2 : float
-       The distance from the front wheel center to the handlebar reference
-       center parallel to the steer axis. The positive sense is if the
-       handlebar reference point is above the front wheel center with reference
-       to the steer axis.
-
-    '''
-    r5 = d5 / 2.
-    r6 = d6 / 2.
-    l1 = h7 - h6 + r5 - r6
-    l0 = l - r5 - r6
-    gamma = umath.asin(l1 / l0)
-    l2 = l0 * umath.cos(gamma)
-    return l1, l2
+# local modules
+from geometry import calculate_l1_l2, fwheel_to_handlebar_ref
 
 def cartesian(arrays, out=None):
     """
@@ -193,28 +157,6 @@ def com_line(alpha, a, par, part, l1, l2):
 
     return m, b, beta
 
-def fwheel_to_handlebar_ref(lam, l1, l2):
-    '''Returns the distance along the benchmark coordinates from the front
-    wheel center to the handlebar reference center.
-
-    Parameters
-    ----------
-    lam : float
-        Steer axis tilt.
-    l1, l2 : float
-        The distance from the front wheel center to the handlebar refernce
-        center perpendicular to and along the steer axis.
-
-    Returns
-    -------
-    u1, u2 : float
-
-    '''
-
-    u1 = l2 * umath.sin(lam) - l1 * umath.cos(lam)
-    u2 = u1 / umath.tan(lam) + l1 / umath.sin(lam)
-    return u1, u2
-
 def part_com_lines(mp, par, forkIsSplit):
     '''Returns the slopes and intercepts for all of the center of mass lines
     for each part.
@@ -264,3 +206,27 @@ def part_com_lines(mp, par, forkIsSplit):
         betas[part].append(beta)
 
     return slopes, intercepts, betas
+
+def total_com(coordinates, masses):
+    '''Returns the center of mass of a group of objects if the indivdual
+    centers of mass and mass is provided.
+
+    coordinates : ndarray, shape(3,n)
+        The rows are the x, y and z coordinates, respectively and the columns
+        are for each object.
+    masses : ndarray, shape(3,)
+        An array of the masses of multiple objects, the order should correspond
+        to the columns of coordinates.
+
+    Returns
+    -------
+    mT : float
+        Total mass of the objects.
+    cT : ndarray, shape(3,)
+        The x, y, and z coordinates of the total center of mass.
+
+    '''
+    products = masses * coordinates
+    mT = np.sum(masses)
+    cT = np.sum(products, axis=1) / mT
+    return mT, cT

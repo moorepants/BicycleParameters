@@ -948,7 +948,7 @@ def calculate_benchmark_from_measured(mp):
                                 [0., 0.],
                                 [par['zS'], par['zG']]])
         masses = np.array([par['mS'], par['mG']])
-        mH, cH = com.total_com(coordinates, masses)
+        mH, cH = inertia.total_com(coordinates, masses)
         par['mH'] = mH
         par['xH'] = cH[0]
         par['zH'] = cH[2]
