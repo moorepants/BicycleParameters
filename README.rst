@@ -71,8 +71,14 @@ Please refer to the `online documentation
 Release Notes
 =============
 
+0.1.2
+-----
+
+- Fixed the tex related bug for the pendulum fit plots
+- Fixed some import bugs affecting the split fork/handlebar calcs
+
 0.1.1
-=====
+-----
 
 - changed the default directory to .
 - added pip install notes
@@ -84,5 +90,5 @@ Release Notes
 - updated the documentation
 
 0.1.0
-=====
+-----
 Initial release.
