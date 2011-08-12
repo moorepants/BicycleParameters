@@ -755,12 +755,16 @@ class Bicycle(object):
         except AttributeError:
             speeds = np.array([speeds])
 
+        par = io.remove_uncertainties(self.parameters['Benchmark'])
+
+        M, C1, K0, K2 = bicycle.benchmark_par_to_canonical(par)
+
         m, n = 4, speeds.shape[0]
         evals = np.zeros((n, m), dtype='complex128')
         evecs = np.zeros((n, m, m), dtype='complex128')
         for i, speed in enumerate(speeds):
-            A, B = self.state_space(speed)
-            w, v = np.linalg.eig(unumpy.nominal_values(A))
+            A, B = bicycle.ab_matrix(M, C1, K0, K2, speed, par['g'])
+            w, v = np.linalg.eig(A)
             evals[i] = w
             evecs[i] = v
 

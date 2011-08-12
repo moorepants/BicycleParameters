@@ -43,9 +43,11 @@ def ab_matrix(M, C1, K0, K2, v, g):
     a12 = -(g * K0 + v**2 * K2)
     a21 = np.eye(2)
     a22 = np.zeros((2, 2))
-    A = np.vstack((np.dot(unumpy.ulinalg.inv(M), np.hstack((a11, a12))),
+    invM = (1. / (M[0, 0] * M[1, 1] - M[0, 1] * M[1, 0]) *
+           np.array([[M[1, 1], -M[0, 1]], [-M[1, 0], M[0, 0]]], dtype=M.dtype))
+    A = np.vstack((np.dot(invM, np.hstack((a11, a12))),
                    np.hstack((a21, a22))))
-    B = np.vstack((unumpy.ulinalg.inv(M), np.zeros((2, 2))))
+    B = np.vstack((invM, np.zeros((2, 2))))
 
     return A, B
 
