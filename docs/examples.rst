@@ -66,7 +66,7 @@ directory. ``Photos`` is an optional directory.
 
 RawData directory
 ~~~~~~~~~~~~~~~~~
-You can supply raw measurement data two forms:
+You can supply raw measurement data in two forms:
 
  1. A file containing all the manual measurements (including the oscillation
     periods for each rigid body). Refer to :ref:`bicycle-measured-input` for

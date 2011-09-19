@@ -35,8 +35,10 @@ There are currently two options for getting the source code:
 1. Clone the source code with Git: ``git clone
    git://github.com/moorepants/BicycleParameters.git``
 2. `Download the source from Github`__.
+3. Dowload the source from pypi__.
 
 .. __: https://github.com/moorepants/BicycleParameters
+.. __: http://pypi.python.org/pypi/BicycleParameters
 
 Once you have the source code navigate to the directory and run::
 

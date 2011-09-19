@@ -28,18 +28,19 @@ These are required to bulid the documentation:
 
 Installation
 ============
-
 The easiest method to download and install is with ``pip``::
 
   $ pip install BicycleParameters
 
-There are currently two options for getting the source code:
+There are other options for getting the source code:
 
 1. Clone the source code with Git: ``git clone
    git://github.com/moorepants/BicycleParameters.git``
 2. `Download the source from Github`__.
+3. Dowload the source from pypi__.
 
 .. __: https://github.com/moorepants/BicycleParameters
+.. __: http://pypi.python.org/pypi/BicycleParameters
 
 Once you have the source code navigate to the directory and run::
 
@@ -70,6 +71,11 @@ Please refer to the `online documentation
 
 Release Notes
 =============
+
+0.1.3
+-----
+- Speed increase for the eigenvalue calculations.
+- Added measurements for the human configuration on some bikes.
 
 0.1.2
 -----
