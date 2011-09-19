@@ -8,3 +8,4 @@ These are the instructions for updating the package.
 6. Git tag for the new version.
 7. python setup.py regsiter sdist upload
 8. Upload the Documentation files.
+9. Upload the basic data files if you've edited them.
