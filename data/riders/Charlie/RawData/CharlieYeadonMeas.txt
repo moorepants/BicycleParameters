@@ -1,3 +1,9 @@
+# Notes on Charlies measurements:
+# - Measured on September 28th, 2011
+# - Used the body calipers and the circumference tape
+# - We measured the acromium level at the base of the neck instead of the top
+# of the acromium (mostly the same as what we did for previous people).
+# - We measured the width of Ls4 to the outside of the shoulders.
 measurementconversionfactor=0.01
 Ls1L=20.0
 La2L=25.2
@@ -70,6 +76,8 @@ Lj8L=13.9
 Lk8L=15.2
 Lj9L=19.6
 Lk9L=21.3
+# The following mass included the clothes, helmet and shoes worn during the bicycle
+# experiments.
 totalmass=78.745
 Lj1p=57.4
 Lk1p=59.9
