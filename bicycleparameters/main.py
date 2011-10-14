@@ -40,10 +40,11 @@ class Bicycle(object):
             else:
                 raise ValueError
         except:
-            a = "Are you nuts?! Make a directory called {0} ".format(bicycleName)
-            b = "with basic data for your bicycle in {0}. ".format(pathToData)
-            c = "Then I can actually created a bicycle object."
-            print a + b + c
+            mes = """Are you nuts?! Make a directory called '{0}' with basic data
+for your bicycle in this directory: '{1}'. Then I can actually
+create a bicycle object. You may either need to change to the
+correct directory or reset the pathToData argument.""".format(bicycleName, pathToData)
+            print mes
             return None
 
     def __init__(self, bicycleName, pathToData='.', forceRawCalc=False,
