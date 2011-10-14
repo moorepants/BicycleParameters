@@ -11,7 +11,7 @@
 # CONVERSION FACTOR to convert measurements INTO meters
 # (set to 1 if measurements are in meters, 0.001 if measurements are in mm,
 # 0.0254 if measurements are in inches)
-measurementconversionfactor = .1
+measurementconversionfactor = .01
 #
 # DENSITY CORRECTION
 # the mass of the human can be set to a measured mass (by scaling the densities
@@ -45,7 +45,7 @@ Ls8L=28.9
 Ls0p=102.1
 Ls1p=90.9
 Ls2p=85.8
-Ls3p=95.1
+Ls3p=96.5
 Ls5p=41
 Ls6p=53.5
 Ls7p=58.1
@@ -56,7 +56,7 @@ Ls7p=58.1
 Ls0w=34.8
 Ls1w=31.8
 Ls2w=28.6
-Ls3w=30.2
+Ls3w=31.0
 Ls4w=36.1
 #
 # depth: the presence of the shoulder joint at Ls4, the shoulder joint centre, 
