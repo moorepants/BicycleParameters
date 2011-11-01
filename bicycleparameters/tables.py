@@ -33,7 +33,8 @@ class Table():
         for bicycle in self.bicycles:
             allVariables += bicycle.parameters[self.source].keys()
         # remove duplicates and sort
-        self.allVariables = sorted(list(set(allVariables)))
+        self.allVariables = sorted(list(set(allVariables)),
+                key=lambda x: x.lower())
 
     def generate_table_data(self):
         """Generates a list of data for a table."""
