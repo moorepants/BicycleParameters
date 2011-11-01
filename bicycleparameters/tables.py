@@ -138,11 +138,14 @@ def uround(value):
     This doesn't work for weird cases like large uncertainties.
     '''
     try:
-        # grab the nominal value and the uncertainty
+    # grab the nominal value and the uncertainty
         nom = value.nominal_value
+    except AttributeError:
+        s = str(value)
+    else:
         uncert = value.std_dev()
         # convert the uncertainty to a string
-        s = str(uncert)
+        s = '%.14f' % uncert
         # find the first non-zero character
         for j, number in enumerate(s):
             if number == '0' or number == '.':
@@ -150,14 +153,13 @@ def uround(value):
             else:
                 digit = j
                 break
-        newUncert = round(uncert, digit-1)
-        newNom = round(nom, len(str(newUncert)) - 2)
-        newValue = ufloat((newNom, newUncert))
-        diff = len(str(newUncert)) - len(str(newNom))
+        newUncert = round(uncert, digit - 1)
+        newUncertStr = ('%.' + str(digit - 1) + 'f') % newUncert
+        newNom = round(nom, len(newUncertStr) - 2)
+        newNomStr = ('%.' + str(digit - 1) + 'f') % newNom
+        diff = len(newUncertStr) - len(newNomStr)
         if diff > 0:
-            s = str(newNom) + int(diff)*'0' + '+/-' +str(newUncert)
+            s = newNomStr + int(diff) * '0' + '+/-' + newUncertStr
         else:
-            s = str(newValue)
-    except:
-        s = str(value)
+            s = newNomStr + '+/-' + newUncertStr
     return s
