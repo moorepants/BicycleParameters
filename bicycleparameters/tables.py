@@ -1,51 +1,9 @@
 from math import ceil
 
-def to_latex(var):
-    """Returns a latex representation for a given variable string name.
-
-    Parameters
-    ----------
-    var : string
-        One of the variable names used in the bicycleparameters package.
-
-    Returns
-    -------
-    latex : string
-        A string formatting for pretty LaTeX math print.
-
-    """
-
-    latexMap = {'f': 'f',
-                'w': 'w',
-                'gamma': '\gamma',
-                'g': 'g',
-                'lcs': 'l_{cs}',
-                'hbb': 'h_{bb}',
-                'lsp': 'l_{sp}',
-                'lst': 'l_{st}',
-                'lamst': '\lambda_{st}',
-                'whb': 'w_{hb}',
-                'LhbF': 'l_{hbF}',
-                'LhbR': 'l_{hbR}',
-                'd': 'd',
-                'l': 'l'}
-    try:
-        latex = latexMap[var]
-    except KeyError:
-        if var.startswith('alpha'):
-            latex = r'\alpha_{' + var[-2:] + '}'
-        elif var.startswith('a') and len(var) == 3:
-            latex = 'a_{' + var[-2:] + '}'
-        elif var.startswith('T'):
-            latex = 'T^' + var[1] + '_{' + var[-2:] + '}'
-        elif len(var) == 2:
-            latex = var[0] + '_' + var[1]
-        else:
-            raise
-
-    return latex
-
 class Table():
+    """A class for generating tables of the measurment and parameter data
+    associated with a bicycle. """
+
     def __init__(self, source, latex, *bicycles):
         """Sets the basic attributes of the table.
 
@@ -102,19 +60,40 @@ class Table():
 
         self.tableData = table
 
-    def create_rst_table(self):
+    def create_rst_table(self, fileName=None):
+        """Returns a reStructuredText version of the table.
+
+        Parameters
+        ----------
+        fileName : string
+            If a path to a file is given, the table will be written to that
+            file.
+
+        Returns
+        -------
+        rstTable : string
+            reStructuredText version of the table.
+
+        """
+
+        table = self.tableData
 
         # add the math directive if using latex
         if self.latex:
-            for i, row in enumerate(self.tableData):
+            for i, row in enumerate(table):
                 self.tableData[i][0] = ':math:`' + row[0] + '`'
+
+        # add a sub header
+        table.insert(0, ['Variable'])
+        for i, bicycle in enumerate(self.bicycles):
+            table[0] += [':math:`v`', ':math:`\sigma`']
 
         # find the longest string in each column
         largest = [0] # the top left is empty
         for bicycle in self.bicycles:
             l = int(ceil(len(bicycle.bicycleName) / 2.0))
             largest += [l, l]
-        for row in self.tableData:
+        for row in table:
             colSize = [len(string) for string in row]
             for i, pair in enumerate(zip(colSize, largest)):
                 if pair[0] > pair[1]:
@@ -133,14 +112,16 @@ class Table():
                     largest[2 * i + 2] + 4 - len(bicycle.bicycleName))
         rstTable += '|\n'
 
-        for j, row in enumerate(self.tableData[1:]):
+        for j, row in enumerate(table):
             if j == 0:
                 dash = '='
             else:
                 dash = '-'
+
             line = ''
             for i in range(len(row)):
                 line += '+' + dash * (largest[i] + 2)
+
             line += '+\n|'
             for i, item in enumerate(row):
                 line += ' ' + item + ' ' * (largest[i] - len(item)) + ' |'
@@ -151,18 +132,75 @@ class Table():
            rstTable += '+' + dash * (num + 2)
         rstTable += '+'
 
+        if fileName is not None:
+            f = open(fileName, 'w')
+            f.write(rstTable)
+            f.close()
+
         return rstTable
 
+def to_latex(var):
+    """Returns a latex representation for a given variable string name.
+
+    Parameters
+    ----------
+    var : string
+        One of the variable names used in the bicycleparameters package.
+
+    Returns
+    -------
+    latex : string
+        A string formatting for pretty LaTeX math print.
+
+    """
+
+    latexMap = {'f': 'f',
+                'w': 'w',
+                'gamma': '\gamma',
+                'g': 'g',
+                'lcs': 'l_{cs}',
+                'hbb': 'h_{bb}',
+                'lsp': 'l_{sp}',
+                'lst': 'l_{st}',
+                'lamst': '\lambda_{st}',
+                'whb': 'w_{hb}',
+                'LhbF': 'l_{hbF}',
+                'LhbR': 'l_{hbR}',
+                'd': 'd',
+                'l': 'l',
+                'c': 'c',
+                'lam': '\lambda'}
+    try:
+        latex = latexMap[var]
+    except KeyError:
+        if var.startswith('alpha'):
+            latex = r'\alpha_{' + var[-2:] + '}'
+        elif var.startswith('a') and len(var) == 3:
+            latex = 'a_{' + var[-2:] + '}'
+        elif var.startswith('T'):
+            latex = 'T^' + var[1] + '_{' + var[-2:] + '}'
+        elif len(var) == 2:
+            latex = var[0] + '_' + var[1]
+        elif var.startswith('I'):
+            latex = var[0] + '_{' + var[1:] + '}'
+        else:
+            raise
+
+    return latex
+
 def uround(value):
-    '''Round values according to their uncertainity
+    '''Returns a string representation of a value with an uncertainity which
+    has been rounded to significant digits based on the uncertainty value.
 
     Parameters:
     -----------
-    value: float with uncertainty
+    value : ufloat
+        A single ufloat.
 
     Returns:
     --------
-    s: string that is properly rounded
+    s : string
+        A rounded string representation of `value`.
 
     2.4563752289999+/-0.0003797273827
 
@@ -170,7 +208,8 @@ def uround(value):
 
     2.4564+/-0.0004
 
-    This doesn't work for weird cases like large uncertainties.
+    This probably doesn't work for weird cases like large uncertainties.
+
     '''
     try:
     # grab the nominal value and the uncertainty
