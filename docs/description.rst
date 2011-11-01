@@ -1,6 +1,7 @@
 ===========
 Description
 ===========
+
 This is code based off of the work done to measure the physical parameters of a
 bicycle and rider at both the `UCD Sports Biomechanics Lab`_ and the `TU Delft
 Bicycle Dynamics Lab`_. Physical parameters include but are not limited to the
@@ -27,6 +28,7 @@ Parameter Manipulation
 - Generates the rider parameter set from human measurements based on the Yeadon
   model configured to sit on the bicycle.
 - Plots a descriptive drawing of the bicycle and/or rider.
+- Generates publication quality tables of parameters.
 
 Basic Linear Analysis
 ---------------------
@@ -37,8 +39,7 @@ Basic Linear Analysis
   about the upright configuration.
 - Calculates the eigenvalues for the Whipple bicycle model linearized about the
   upright configuration.
-- Plots the eigenvalue root loci as a function of speed, both in the complex
-  plane and as eigenvalue vs speed.
+- Plots the eigenvalue root loci as a function of speed as eigenvalue vs speed.
 
 Refer to :ref:`usage` for examples of the features.
 
@@ -48,7 +49,6 @@ Upcoming Features
 - Converts benchmark parameters to other parametrizations.
 - Calculates the transfer functions of the open loop system.
 - Plots Bode diagrams of the open loop transfer functions.
-- Generates publication quality tables of parameters using LaTeX
 
 Example Code
 ============

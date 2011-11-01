@@ -73,6 +73,14 @@ bicycleparameters Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`tables` Module
+-------------------
+
+.. automodule:: bicycleparameters.tables
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Subpackages
 -----------
 

@@ -86,7 +86,10 @@ class Table():
         # add a sub header
         table.insert(0, ['Variable'])
         for i, bicycle in enumerate(self.bicycles):
-            table[0] += [':math:`v`', ':math:`\sigma`']
+            if self.latex:
+                table[0] += [':math:`v`', ':math:`\sigma`']
+            else:
+                table[0] += ['v', 'sigma']
 
         # find the longest string in each column
         largest = [0] # the top left is empty
