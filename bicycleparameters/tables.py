@@ -1,11 +1,25 @@
-from uncertainties import ufloat
+from math import ceil
 
 def to_latex(var):
+    """Returns a latex representation for a given variable string name.
+
+    Parameters
+    ----------
+    var : string
+        One of the variable names used in the bicycleparameters package.
+
+    Returns
+    -------
+    latex : string
+        A string formatting for pretty LaTeX math print.
+
+    """
+
     latexMap = {'f': 'f',
                 'w': 'w',
                 'gamma': '\gamma',
                 'g': 'g',
-                'lcs': 'l_cs',
+                'lcs': 'l_{cs}',
                 'hbb': 'h_{bb}',
                 'lsp': 'l_{sp}',
                 'lst': 'l_{st}',
@@ -33,9 +47,25 @@ def to_latex(var):
 
 class Table():
     def __init__(self, source, latex, *bicycles):
+        """Sets the basic attributes of the table.
+
+        Parameters
+        ----------
+        source : string
+            One of the parameter types: `Measured` or `Benchmark` for now.
+        latex : boolean
+            If true, the variable names will be formatted with LaTeX.
+        bicycles : Bicycle
+            Bicycle objects of which their parameters should appear in the
+            generated table. The order of the bicycles determines the order in
+            the table.
+
+        """
         self.source = source
         self.bicycles = bicycles
         self.latex = latex
+        # go ahead and calculate the base data, which sets allVariables and
+        # tableData
         self.generate_variable_list()
         self.generate_table_data()
 
@@ -53,10 +83,12 @@ class Table():
         for var in self.allVariables:
             # add a new line
             table.append([])
+
             if self.latex:
                 table[-1].append(to_latex(var))
             else:
                 table[-1].append(var)
+
             for bicycle in self.bicycles:
                 try:
                     val, sig = uround(bicycle.parameters[self.source][var]).split('+/-')
@@ -67,18 +99,20 @@ class Table():
                     val = 'NA'
                     sig = 'NA'
                 table[-1] += [val, sig]
+
         self.tableData = table
 
     def create_rst_table(self):
 
+        # add the math directive if using latex
         if self.latex:
             for i, row in enumerate(self.tableData):
                 self.tableData[i][0] = ':math:`' + row[0] + '`'
 
         # find the longest string in each column
-        largest = [0]
+        largest = [0] # the top left is empty
         for bicycle in self.bicycles:
-            l = len(bicycle.bicycleName) / 2
+            l = int(ceil(len(bicycle.bicycleName) / 2.0))
             largest += [l, l]
         for row in self.tableData:
             colSize = [len(string) for string in row]
@@ -90,12 +124,13 @@ class Table():
         rstTable = '+' + '-' * (largest[0] + 2)
 
         for i, bicycle in enumerate(self.bicycles):
-            rstTable += '+' + '-' * (largest[i + 1] + largest[i + 2] + 5)
+            rstTable += '+' + '-' * (largest[2 * i + 1] + largest[2 * i + 2] + 5)
+
         rstTable += '+\n|' + ' ' * (largest[0] + 2)
 
         for i, bicycle in enumerate(self.bicycles):
-            rstTable += '| ' + bicycle.bicycleName + ' ' * (largest[i + 1] +
-                    largest[i + 2] + 4 - len(bicycle.bicycleName))
+            rstTable += '| ' + bicycle.bicycleName + ' ' * (largest[2 * i + 1] +
+                    largest[2 * i + 2] + 4 - len(bicycle.bicycleName))
         rstTable += '|\n'
 
         for j, row in enumerate(self.tableData[1:]):
