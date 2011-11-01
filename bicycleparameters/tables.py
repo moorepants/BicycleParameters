@@ -1,20 +1,8 @@
+from uncertainties import ufloat
+
 def to_latex(var):
-    latexMap = {'lF': 'l_F',
-                'lP': 'l_P',
-                'nF': 'n_F',
-                'lR': 'l_R',
-                'mF': 'm_F',
-                'mP': 'm_P',
-                'mB': 'm_H',
-                'mH': 'm_H',
-                'mR': 'm_R',
-                'mS': 'm_S',
-                'mG': 'm_G',
-                'f': 'f',
-                'dF': 'd_F',
-                'dP': 'd_P',
+    latexMap = {'f': 'f',
                 'w': 'w',
-                'dR': 'dR',
                 'gamma': '\gamma',
                 'g': 'g',
                 'lcs': 'l_cs',
@@ -25,102 +13,110 @@ def to_latex(var):
                 'whb': 'w_{hb}',
                 'LhbF': 'l_{hbF}',
                 'LhbR': 'l_{hbR}',
-                'h1': 'h_1',
-                'h2': 'h_2',
-                'h3': 'h_3',
-                'h4': 'h_4',
-                'h5': 'h_5',
-                'h6': 'h_6',
-                'h7': 'h_7',
-                'd1': 'd_1',
-                'd2': 'd_2',
-                'd3': 'd_3',
-                'd4': 'd_4',
-                'd5': 'd_5',
-                'd6': 'd_6',
                 'd': 'd',
-                'l': 'l',
-                'nR':'n_R'}
+                'l': 'l'}
     try:
         latex = latexMap[var]
     except KeyError:
         if var.startswith('alpha'):
             latex = r'\alpha_{' + var[-2:] + '}'
         elif var.startswith('a') and len(var) == 3:
-            latex = r'\a_{' + var[-2:] + '}'
+            latex = 'a_{' + var[-2:] + '}'
         elif var.startswith('T'):
             latex = 'T^' + var[1] + '_{' + var[-2:] + '}'
+        elif len(var) == 2:
+            latex = var[0] + '_' + var[1]
         else:
             raise
 
     return latex
 
-def generate_bicycle_raw_tables(*bicycles):
-    """Generates a table of values for the bicycles."""
+class Table():
+    def __init__(self, source, latex, *bicycles):
+        self.source = source
+        self.bicycles = bicycles
+        self.latex = latex
+        self.generate_variable_list()
+        self.generate_table_data()
 
-    # generate a complete list of the variables
-    allVariables = []
-    for bicycle in bicycles:
-        allVariables += bicycle.parameters['Measured'].keys()
-    # remove duplicates and sort
-    allVariables = sorted(list(set(allVariables)))
+    def generate_variable_list(self):
+        # generate a complete list of the variables
+        allVariables = []
+        for bicycle in self.bicycles:
+            allVariables += bicycle.parameters[self.source].keys()
+        # remove duplicates and sort
+        self.allVariables = sorted(list(set(allVariables)))
 
-    table = []
-    #table[-1] = [' '] + [bicycle.bicycleName for bicycle in bicycles]
-    largest = [0]
-    for bicycle in bicycles:
-        l = len(bicycle.bicycleName) / 2
-        largest += [l, l]
-    for var in allVariables:
-        # add a new line
-        table.append([])
-        table[-1].append(':math:`' + to_latex(var) + '`')
-        for bicycle in bicycles:
-            try:
-                val, sig = uround(bicycle.parameters['Measured'][var]).split('+/-')
-            except ValueError:
-                val = str(bicycle.parameters['Measured'][var])
-                sig = 'NA'
-            except KeyError:
-                val = 'NA'
-                sig = 'NA'
-            table[-1] += [val, sig]
-        colSize = [len(string) for string in table[-1]]
-        for i, pair in enumerate(zip(colSize, largest)):
-            if pair[0] > pair[1]:
-                largest[i] = pair[0]
+    def generate_table_data(self):
+        """Generates a list of data for a table."""
+        table = []
+        for var in self.allVariables:
+            # add a new line
+            table.append([])
+            if self.latex:
+                table[-1].append(to_latex(var))
+            else:
+                table[-1].append(var)
+            for bicycle in self.bicycles:
+                try:
+                    val, sig = uround(bicycle.parameters[self.source][var]).split('+/-')
+                except ValueError:
+                    val = str(bicycle.parameters[self.source][var])
+                    sig = 'NA'
+                except KeyError:
+                    val = 'NA'
+                    sig = 'NA'
+                table[-1] += [val, sig]
+        self.tableData = table
 
-    rstTable = '+' + '-' * (largest[0] + 2)
+    def create_rst_table(self):
 
-    for i, bicycle in enumerate(bicycles):
-        rstTable += '+' + '-' * (largest[i + 1] + largest[i + 2] + 5)
-    rstTable += '+\n|' + ' ' * (largest[0] + 2)
+        if self.latex:
+            for i, row in enumerate(self.tableData):
+                self.tableData[i][0] = ':math:`' + row[0] + '`'
 
-    for i, bicycle in enumerate(bicycles):
-        rstTable += '| ' + bicycle.bicycleName + ' ' * (largest[i + 1] +
-                largest[i + 2] + 4 - len(bicycle.bicycleName))
-    rstTable += '|\n'
+        # find the longest string in each column
+        largest = [0]
+        for bicycle in self.bicycles:
+            l = len(bicycle.bicycleName) / 2
+            largest += [l, l]
+        for row in self.tableData:
+            colSize = [len(string) for string in row]
+            for i, pair in enumerate(zip(colSize, largest)):
+                if pair[0] > pair[1]:
+                    largest[i] = pair[0]
 
-    for j, row in enumerate(table[1:]):
-        if j == 0:
-            dash = '='
-        else:
-            dash = '-'
-        line = ''
-        for i in range(len(row)):
-            line += '+' + dash * (largest[i] + 2)
-        line += '+\n|'
-        for i, item in enumerate(row):
-            line += ' ' + item + ' ' * (largest[i] - len(item)) + ' |'
-        line += '\n'
-        rstTable += line
+        # build the rst table
+        rstTable = '+' + '-' * (largest[0] + 2)
 
-    for num in largest:
-       rstTable += '+' + dash * (num + 2)
-    rstTable += '+'
+        for i, bicycle in enumerate(self.bicycles):
+            rstTable += '+' + '-' * (largest[i + 1] + largest[i + 2] + 5)
+        rstTable += '+\n|' + ' ' * (largest[0] + 2)
 
-    return rstTable
+        for i, bicycle in enumerate(self.bicycles):
+            rstTable += '| ' + bicycle.bicycleName + ' ' * (largest[i + 1] +
+                    largest[i + 2] + 4 - len(bicycle.bicycleName))
+        rstTable += '|\n'
 
+        for j, row in enumerate(self.tableData[1:]):
+            if j == 0:
+                dash = '='
+            else:
+                dash = '-'
+            line = ''
+            for i in range(len(row)):
+                line += '+' + dash * (largest[i] + 2)
+            line += '+\n|'
+            for i, item in enumerate(row):
+                line += ' ' + item + ' ' * (largest[i] - len(item)) + ' |'
+            line += '\n'
+            rstTable += line
+
+        for num in largest:
+           rstTable += '+' + dash * (num + 2)
+        rstTable += '+'
+
+        return rstTable
 
 def uround(value):
     '''Round values according to their uncertainity
