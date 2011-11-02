@@ -76,7 +76,7 @@ def calculate_abc_geometry(h, d):
     # get the perpendicular distances
     a = h1 + h2 - h3 + .5 * d1 - .5 * d2
     b = h4 - .5 * d3 - h5 + .5 * d4
-    c = umath.sqrt(-(a - b)**2 + (d + .5 * (d2 + d3)))
+    c = umath.sqrt(-(a - b)**2 + (d + .5 * (d2 + d3))**2)
     return a, b, c
 
 def calculate_l1_l2(h6, h7, d5, d6, l):
