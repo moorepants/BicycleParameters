@@ -923,6 +923,13 @@ def calculate_benchmark_from_measured(mp):
     par['mB'] = mp['mB']
     par['mF'] = mp['mF']
     par['mR'] = mp['mR']
+    try:
+        # we measured the mass of the flywheel plus the mass of the front
+        # wheel, mp['mD'], so to get the actual mass of the flywheel, subtract
+        # the mass of the front wheel
+        par['mD'] = mp['mD'] - mp['mF']
+    except KeyError:
+        pass
     if forkIsSplit:
         par['mS'] = mp['mS']
         par['mG'] = mp['mG']
@@ -949,7 +956,6 @@ def calculate_benchmark_from_measured(mp):
         par['xH'] = cH[0]
         par['zH'] = cH[2]
 
-
     # local accelation due to gravity
     par['g'] = mp['g']
 
@@ -958,6 +964,12 @@ def calculate_benchmark_from_measured(mp):
                                             mp['lF'], mp['TcF1'])
     par['IRyy'] = inertia.compound_pendulum_inertia(mp['mR'], mp['g'],
                                             mp['lR'], mp['TcR1'])
+    try:
+        # we measured the inertia of the front wheel with the flywheel inside
+        iFlywheelPlusFwheel = inertia.compound_pendulum_inertia(mp['mD'], mp['g'], mp['lF'], mp['TcD1'])
+        par['IDyy'] = iFlywheelPlusFwheel - par['IFyy']
+    except KeyError:
+        pass
 
     # calculate the y inertias for the frame and fork
     lB = (par['xB']**2 + (par['zB'] + par['rR'])**2)**(0.5)
@@ -993,6 +1005,10 @@ def calculate_benchmark_from_measured(mp):
     # calculate the wheel x/z inertias
     par['IFxx'] = inertia.tor_inertia(torStiff, mp['TtF1'])
     par['IRxx'] = inertia.tor_inertia(torStiff, mp['TtR1'])
+    try:
+        par['IDxx'] =  inertia.tor_inertia(torStiff, mp['TtD1']) - par['IFxx']
+    except KeyError:
+        pass
 
     pendulumInertias = {}
 
