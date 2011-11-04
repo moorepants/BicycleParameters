@@ -315,7 +315,12 @@ def get_period_key(matData, forkIsSplit):
     # set up the subscripting for the period key
     subscripts = {'Fwheel': 'F',
                   'Rwheel': 'R',
-                  'Frame': 'B'}
+                  'Frame': 'B',
+                  'Flywheel': 'D'}
+    # the Flywheel is for the gyro bike and it actually represents the front
+    # wheel and the flywheel as one rigid body. It was easier to measure the
+    # the inertia this way. So...the to get the actual flywheel inertia, one
+    # must subtract the inertia of the Fwheel, F, from the Flywheel, D.
     if forkIsSplit:
         subscripts['Fork'] = 'S'
         subscripts['Handlebar'] = 'G'
