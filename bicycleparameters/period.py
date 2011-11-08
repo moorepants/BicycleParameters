@@ -453,7 +453,7 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
 
     '''
     # figure properties
-    figwidth = 8. # in inches
+    figwidth = 4. # in inches
     goldenMean = (np.sqrt(5) - 1.0) / 2.0
     figsize = [figwidth, figwidth * goldenMean]
     params = {#'backend': 'ps',
