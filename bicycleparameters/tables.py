@@ -4,7 +4,7 @@ class Table():
     """A class for generating tables of the measurment and parameter data
     associated with a bicycle. """
 
-    def __init__(self, source, latex, *bicycles):
+    def __init__(self, source, latex, bicycles):
         """Sets the basic attributes of the table.
 
         Parameters
@@ -13,7 +13,7 @@ class Table():
             One of the parameter types: `Measured` or `Benchmark` for now.
         latex : boolean
             If true, the variable names will be formatted with LaTeX.
-        bicycles : Bicycle
+        bicycles : tuple or list of Bicycles
             Bicycle objects of which their parameters should appear in the
             generated table. The order of the bicycles determines the order in
             the table.

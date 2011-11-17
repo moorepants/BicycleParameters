@@ -121,35 +121,37 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     measuredPar = remove_uncertainties(measuredPar)
     benchmarkPar = remove_uncertainties(benchmarkPar)
 
-    # for simplicity of code
+    # for simplicity of code, unpack some variables
+    # yeadon configuration (joint angles)
     CFG = H.CFG
     # bottom bracket height
-    hbb = measuredPar['hbb'] #.295
+    hbb = measuredPar['hbb']
     # chain stay length
-    Lcs = measuredPar['lcs'] #.46
+    Lcs = measuredPar['lcs']
     # rear wheel radius
-    rR = benchmarkPar['rR'] #.342
+    rR = benchmarkPar['rR']
     # front wheel radius
-    rF = benchmarkPar['rF'] #.342
+    rF = benchmarkPar['rF']
     # seat post length
-    Lsp = measuredPar['lsp'] #.24
+    Lsp = measuredPar['lsp']
     # seat tube length
-    Lst = measuredPar['lst'] #.53
+    Lst = measuredPar['lst']
     # seat tube angle
-    lamst = measuredPar['lamst'] #68.5*np.pi/180
+    lamst = measuredPar['lamst']
     # handlebar width
-    whb = measuredPar['whb'] #43
+    whb = measuredPar['whb']
     # distance from rear wheel hub to hand
-    LhbR = measuredPar['LhbR'] #106
+    LhbR = measuredPar['LhbR']
     # distance from front wheel hub to hand
-    LhbF = measuredPar['LhbF'] #49
+    LhbF = measuredPar['LhbF']
     # wheelbase
     w = benchmarkPar['w']
 
     # intermediate quantities
     # distance between wheel centers
     D = np.sqrt(w**2 + (rR - rF)**2)
-    # projection into the plane of the bike
+    # length of the projection of the hub to handlebar vectors into the plane
+    # of the bike
     dhbR = np.sqrt(LhbR**2 - (whb / 2)**2)
     dhbF = np.sqrt(LhbF**2 - (whb / 2)**2)
     # angle with vertex at rear hub, from horizontal "down" to front hub
@@ -176,14 +178,15 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     vec_hb_in = np.array([[dhbR * np.cos(gamma - alpha)],
                           [0.],
                           [-rR - dhbR * np.sin(gamma - alpha)]])
-    # position of right hand with respect to rear wheel contact point
+    # desired position of right hand with respect to rear wheel contact point
     pos_handr = vec_hb_out + vec_hb_in
-    # position of left hand with respect to rear wheel contact point
+    # desired position of left hand with respect to rear wheel contact point
     pos_handl = -vec_hb_out + vec_hb_in
 
     # time to calculate the relevant quantities!
     # vector from seat to feet, ignoring out-of-plane distance
     vec_legs = -vec_seat
+    # move the yeadon origin to the bike seat
     # translation is done in bike's coordinate system
     H.translate_coord_sys(pos_seat)
     H.rotate_coord_sys((np.pi, 0., -np.pi /2.))
@@ -197,44 +200,44 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     pos_footr[1, 0] = H.K1.pos[1, 0]
 
     # find the distance from the hip joint to the desired position of the foot
-    DJ = np.linalg.norm( pos_footl - H.J1.pos)
-    DK = np.linalg.norm( pos_footr - H.K1.pos)
+    DJ = np.linalg.norm(pos_footl - H.J1.pos)
+    DK = np.linalg.norm(pos_footr - H.K1.pos)
     # find the distance from the should joint to the desired position of the
     # hands
-    DA = np.linalg.norm( pos_handl - H.A1.pos)
-    DB = np.linalg.norm( pos_handr - H.B1.pos)
+    DA = np.linalg.norm(pos_handl - H.A1.pos)
+    DB = np.linalg.norm(pos_handr - H.B1.pos)
 
-    # distance from knees to heel level
-    dj2 = np.linalg.norm( H.j[7].pos - H.J2.pos)
-    dk2 = np.linalg.norm( H.k[7].pos - H.K2.pos)
+    # distance from knees to arch level
+    dj2 = np.linalg.norm(H.j[7].pos - H.J2.pos)
+    dk2 = np.linalg.norm(H.k[7].pos - H.K2.pos)
 
     # distance from elbow to knuckle level
-    da2 = np.linalg.norm( H.a[6].pos - H.A2.pos)
-    db2 = np.linalg.norm( H.b[6].pos - H.B2.pos)
+    da2 = np.linalg.norm(H.a[6].pos - H.A2.pos)
+    db2 = np.linalg.norm(H.b[6].pos - H.B2.pos)
 
     # error-checking to make sure limbs are long enough for rider to sit
     # on the bike
-    if (H.J1.length + dj2 < DJ):
+    if (H.J1.length + dj2) < DJ:
         print "For the given measurements, the left leg is not " \
-              "long enough. Left leg length is",H.J1.length+dj2, \
+              "long enough. Left leg length is", H.J1.length + dj2, \
               "m, but distance from left hip joint to bottom bracket is", \
-              DJ,"m."
+              DJ, "m."
         raise Exception()
-    if (H.K1.length + dk2 < DK):
+    if (H.K1.length + dk2) < DK:
         print "For the given measurements, the right leg is not " \
-              "long enough. Right leg length is",H.K1.length+dk2, \
+              "long enough. Right leg length is", H.K1.length + dk2, \
               "m, but distance from right hip joint to bottom bracket is", \
-              DK,"m."
+              DK, "m."
         raise Exception()
-    if (H.A1.length + da2 < DA):
+    if (H.A1.length + da2) < DA:
         print "For the given configuration, the left arm is not " \
               "long enough. Left arm length is", H.A1.length + da2, \
-              "m, but distance from shoulder to left hand is",DA,"m."
+              "m, but distance from shoulder to left hand is", DA ,"m."
         raise Exception()
-    if (H.B1.length + db2 < DB):
+    if (H.B1.length + db2) < DB:
         print "For the given configuration, the right arm is not " \
-              "long enough. Right arm length is",H.B1.length+db2, \
-              "m, but distance from shoulder to right hand is",DB,"m."
+              "long enough. Right arm length is", H.B1.length + db2, \
+              "m, but distance from shoulder to right hand is", DB ,"m."
         raise Exception()
 
     # joint angle time
@@ -393,30 +396,41 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
 
     # assign configuration to human and check that the solution worked
     H.set_CFG_dict(CFG)
-    if (np.round(H.j[7].pos, 3) != np.round(pos_footl, 3)).any():
-        print "Left leg's actual position does not match its desired " \
-              "position near the bike's bottom bracket. Left leg actual " \
-              "position:\n", H.j[7].pos ,".\nLeft leg desired position:\n",\
-              pos_footl, ".\nLeft leg base to end distance:", \
-              np.linalg.norm(H.j[7].pos - H.J1.pos), ", Left leg D:", DJ
-    if (np.round(H.k[7].pos, 3) != np.round(pos_footr, 3)).any():
-        print "Right leg's actual position does not match its desired " \
-              "position near the bike's bottom bracket. Right leg actual " \
-              "position:\n", H.k[7].pos, ".\nRight leg desired position:\n",\
-              pos_footr, ".\nRight leg base to end distance:", \
-              np.linalg.norm(H.k[7].pos - H.K1.pos), ", Left leg D:", DK
-    if (np.round(H.a[6].pos, 3) != np.round(pos_handl, 3)).any():
-        print "Left arm's actual position does not match its desired " \
-              "position on the bike's handlebar. Left arm actual " \
-              "position:\n",H.A2.endpos,".\nLeft arm desired position:\n",\
-              pos_handl, "\nLeft arm base to end distance:", \
-              np.linalg.norm(H.A2.endpos - H.A1.pos),", Left arm D:", DA
-    if (np.round(H.b[6].pos, 3) != np.round(pos_handr, 3)).any():
-        print "Right arm's actual position does not match its desired " \
-              "position on the bike's handrebar. Right arm actual " \
-              "position:", H.B2.endpos ,".\nRight arm desired position:\n",\
-              pos_handr, ".\nRight arm base to end distance:", \
-              np.linalg.norm(H.B2.endpos - H.B1.pos), ", Right arm D:", DB
+
+    # make sure that the arms and legs actually went where they were supposed
+    # to within 3 decimal places
+    def limb_warning(limbName, desiredPos, actualPos,
+            desiredLen, actualLen, dc):
+        # round the values
+        desiredPos = np.round(desiredPos, dc)
+        actualPos = np.round(actualPos, dc)
+        desiredLen = np.round(desiredLen, dc)
+        actualLen = np.round(actualLen, dc)
+
+        message = '-' * 79 + '\n'
+        message += (limbName + "'s actual position does not match its " +
+                "desired position to {} decimal places.\n").format(str(decimal))
+        message += limbName +  " desired position:\n{}\n".format(desiredPos)
+        message += limbName +  " actual position:\n{}\n".format(actualPos)
+        message += limbName +  " desired base to end distance: {}\n".format(desiredLen)
+        message += limbName +  " actual base to end distance: {}\n".format(actualLen)
+        message += '-' * 79
+
+        if (actualPos != desiredPos).any():
+            print message
+
+    decimal = 3
+    limb_warning('Left leg', pos_footl, H.j[7].pos, DJ,
+            np.linalg.norm(H.j[7].pos - H.J1.pos), decimal)
+
+    limb_warning('Right leg', pos_footr, H.k[7].pos,
+            DK, np.linalg.norm(H.k[7].pos - H.K1.pos), decimal)
+
+    limb_warning('Left arm', pos_handl, H.a[6].pos,
+            DA, np.linalg.norm(H.a[6].pos - H.A1.pos), decimal)
+
+    limb_warning('Left arm', pos_handr, H.b[6].pos,
+            DB, np.linalg.norm(H.b[6].pos - H.B1.pos), decimal)
 
     # draw rider for fun, but possibly to check results aren't crazy
     if drawrider==True:
@@ -429,4 +443,3 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
         H.draw_vector('origin',H.A2.endpos,(0,0,1))
         H.draw_vector('origin',H.B2.endpos,(0,0,1))
     return H
-
