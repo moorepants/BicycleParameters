@@ -330,18 +330,9 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             iAssRot = inertia.rotate_inertia_tensor(I, par['lam'])
 
         if aboutSteerAxis:
-            # now find the inertia about the steer axis
-            pointOnAxis1 = np.array([par['w'] + par['c'],
-                                     0.,
-                                     0.])
-            pointOnAxis2 = pointOnAxis1 +\
-                           np.array([-umath.sin(par['lam']),
-                                     0.,
-                                     -umath.cos(par['lam'])])
-            pointsOnLine = np.array([pointOnAxis1, pointOnAxis2]).T
-
             # this is the distance from the assembly com to the steer axis
-            distance = geometry.point_to_line_distance(cAss, pointsOnLine)
+            distance = geometry.distance_to_steer_axis(par['w'], par['c'],
+                    par['lam'], cAss)
             print "handlebar cg distance", distance
 
             # now calculate the inertia about the steer axis of the rotated frame

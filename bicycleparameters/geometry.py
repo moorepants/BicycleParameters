@@ -208,6 +208,39 @@ def fundamental_geometry_plot_data(par):
 
     return x, z
 
+def distance_to_steer_axis(w, c, lam, point):
+    """Returns the minimal distance from the steer axis to the given point when
+    the bicycle is in the nominal configuration.
+
+    Parameters
+    ----------
+    w : float or ufloat
+        Wheelbase.
+    c : float or ufloat
+        Trail.
+    lam : float or ufloat
+        Steer axis tilt in radians.
+    point : narray, shape(3,)
+        A point that lies in the symmetry plane of the bicycle.
+
+    Returns
+    -------
+    d : float or ufloat
+        The minimal distance from the given point to the steer axis.
+
+    """
+    pointOnAxis1 = np.array([w + c,
+                             0.,
+                             0.])
+    pointOnAxis2 = pointOnAxis1 +\
+                   np.array([-umath.sin(lam),
+                             0.,
+                             -umath.cos(lam)])
+    pointsOnLine = np.array([pointOnAxis1, pointOnAxis2]).T
+
+    # this is the distance from the assembly com to the steer axis
+    return point_to_line_distance(point, pointsOnLine)
+
 def point_to_line_distance(point, pointsOnLine):
     '''Returns the minimal distance from a point to a line in three
     dimensional space.
