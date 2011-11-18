@@ -45,6 +45,14 @@ def calculate_benchmark_geometry(mp, par):
     # trail
     par['c'] = trail(par['rF'], par['lam'], forkOffset)[0]
 
+    # this will simply transfer the lateral force point through to the
+    # benchmark parameters
+    try:
+        par['xcl'] = mp['xcl']
+        par['zcl'] = mp['zcl']
+    except KeyError:
+        pass
+
     return par
 
 def calculate_abc_geometry(h, d):

@@ -186,6 +186,13 @@ A rider can be situated on the bicycle if other raw bicycle measurements are pro
   or right the handlebar grip (roughly where the center of the hand would fall)
   [m]
 
+Other
+-----
+
+You may see these values, ``xcl`` and ``zcl``, in the ``Rigid`` and ``Rigidcl``
+bicycles input files. They locate the lateral force point in the benchmark
+coordinates.
+
 Fork/Handlebar Separation
 -------------------------
 The measurement of the fork and the handlebar as two rigid bodies is also
