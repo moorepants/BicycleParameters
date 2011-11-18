@@ -46,7 +46,7 @@ def calculate_benchmark_geometry(mp, par):
     par['c'] = trail(par['rF'], par['lam'], forkOffset)[0]
 
     # this will simply transfer the lateral force point through to the
-    # benchmark parameters
+    # benchmark parameters, as they are in the benchmark coordinate system
     try:
         par['xcl'] = mp['xcl']
         par['zcl'] = mp['zcl']

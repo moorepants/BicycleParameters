@@ -191,7 +191,8 @@ Other
 
 You may see these values, ``xcl`` and ``zcl``, in the ``Rigid`` and ``Rigidcl``
 bicycles input files. They locate the lateral force point in the benchmark
-coordinates.
+coordinates. Also, ``ds1`` and ``ds3`` locate the accelerometer with respect to
+a point on the steer axis which is aligned with the handlebar center of mass.
 
 Fork/Handlebar Separation
 -------------------------
