@@ -30,8 +30,11 @@ class Table():
     def generate_variable_list(self):
         # generate a complete list of the variables
         allVariables = []
-        for bicycle in self.bicycles:
-            allVariables += bicycle.parameters[self.source].keys()
+        try:
+            for bicycle in self.bicycles:
+                allVariables += bicycle.parameters[self.source].keys()
+        except TypeError:
+            allVariables += self.bicycle.parameters[self.source].keys()
         # remove duplicates and sort
         self.allVariables = sorted(list(set(allVariables)),
                 key=lambda x: x.lower())
@@ -173,7 +176,11 @@ def to_latex(var):
                 'd': 'd',
                 'l': 'l',
                 'c': 'c',
-                'lam': '\lambda'}
+                'lam': '\lambda',
+                'xcl': 'x_{cl}',
+                'zcl': 'z_{cl}',
+                'ds1': 'd_{s1}',
+                'ds3': 'd_{s3}'}
     try:
         latex = latexMap[var]
     except KeyError:

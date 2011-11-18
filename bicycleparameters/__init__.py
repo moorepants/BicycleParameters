@@ -1,6 +1,7 @@
 # import all the important classes and functions from the bicycleparametes module
 from main import Bicycle
 from plot import plot_eigenvalues
+from tables import Table
 
 # the modules that are imported when 'from bicycleparameters import *'
 __all__ = ['main',
@@ -11,7 +12,8 @@ __all__ = ['main',
            'bicycle',
            'com',
            'inertia',
-           'plot']
+           'plot',
+           'tables']
 
 # specify the version for the package
 __version_info__ = (0, 1, 3)
