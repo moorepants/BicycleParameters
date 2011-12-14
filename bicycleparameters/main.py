@@ -219,8 +219,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             else:
                 print "There are no photos of your bicycle."
         except:
-            raise NotImplementedError("This works only works for linux with Eye
-            of Gnome installed.")
+            raise NotImplementedError("This works only works for linux with " +
+                    "Eye of Gnome installed.")
 
     def steer_assembly_moment_of_inertia(self, handlebar=True, fork=True,
             wheel=True, aboutSteerAxis=False, nominal=False):
@@ -476,6 +476,11 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         '''Returns a figure showing the basic bicycle geometry, the centers of
         mass and the moments of inertia.
 
+        Notes
+        -----
+        If the flywheel is defined, it's center of mass corresponds to the
+        front wheel and is not depicted in the plot.
+
         '''
         par = io.remove_uncertainties(self.parameters['Benchmark'])
         parts = get_parts_in_parameters(par)
@@ -504,7 +509,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                 Ip, C = inertia.principal_axes(I)
                 if part == 'R':
                     center = np.array([0., par['rR']])
-                elif part == 'F':
+                elif part in 'FD':
                     center = np.array([par['w'], par['rF']])
                 else:
                     center = np.array([par['x' + part], -par['z' + part]])
@@ -603,7 +608,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                             color=partColors['R'])
             plt.text(0. + sRad, par['rR'] + sRad, 'R')
             for j, part in enumerate([x for x in parts
-                                      if x != 'R' and x != 'F']):
+                                      if x not in 'RFD']):
                 xcom = par['x' + part]
                 zcom = par['z' + part]
                 ax = com_symbol(ax, (xcom, -zcom), sRad,

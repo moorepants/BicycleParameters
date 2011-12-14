@@ -153,12 +153,18 @@ def part_inertia_tensor(par, part):
     par : dictionary
         Complete Benchmark parameter set.
     part : string
-        Either 'B', 'H', 'F', 'R', 'G', 'S'
+        Either 'B', 'H', 'F', 'R', 'G', 'S', 'D'
 
     Returns
     -------
     I : ndarray, shape(3,3)
         Inertia tensor for the part.
+
+    Notes
+    -----
+    Parts G, S, and D are additional parts not included in the published paper
+    on the benchmark bicycle, they are only relavant if used. See the
+    documentation.
 
     '''
     if isinstance(par['mB'], UFloat):
@@ -167,7 +173,7 @@ def part_inertia_tensor(par, part):
         dtype='float64'
     I = np.zeros((3, 3), dtype=dtype)
     # front or rear wheel
-    if part == 'F' or part == 'R':
+    if part in 'FRD':
         axes = np.array([['xx', None, None],
                          [None, 'yy', None],
                          [None, None, 'xx']])
