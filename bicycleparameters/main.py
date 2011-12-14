@@ -213,10 +213,14 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         """
         photoDir = os.path.join(self.directory, 'Photos')
-        if os.path.isdir(photoDir):
-            os.system('eog ' + os.path.join(photoDir, '*.*'))
-        else:
-            print "There are no photos of your bicycle."
+        try:
+            if os.path.isdir(photoDir):
+                os.system('eog ' + os.path.join(photoDir, '*.*'))
+            else:
+                print "There are no photos of your bicycle."
+        except:
+            raise NotImplementedError("This works only works for linux with Eye
+            of Gnome installed.")
 
     def steer_assembly_moment_of_inertia(self, handlebar=True, fork=True,
             wheel=True, aboutSteerAxis=False, nominal=False):
@@ -251,9 +255,17 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         the 2 component is perpendicular to the steer axis (pointing to the
         right).
 
+        This function does not currently take into account the flywheel, D, if
+        it is defined, beware.
+
         """
         # load in the Benchmark parameter set
         par = self.parameters['Benchmark']
+
+        if 'mD' in par.keys():
+            print("You have a flywheel defined. Beware that it is ignored in "
+                + "the calculations and the results do not reflect that it is "
+                + "there.")
 
         # there should always be either an H (handlebar/fork) and sometimes
         # there is a G (handlebar) and S (fork) if the fork and handlebar were
@@ -636,7 +648,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
     def canonical(self):
         """
         Returns the canonical velocity and gravity independent matrices for the
-        Whipple bicycle model.
+        Whipple bicycle model linearized about the nominal configuration.
 
         Returns
         -------
@@ -671,6 +683,10 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             Steer torque.
         v
             Bicylce speed.
+
+        If you have a flywheel defined, body D, it will completely be ignored
+        in these results. These results are strictly for the Whipple bicycle
+        model.
 
         """
 
@@ -715,6 +731,10 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         The inputs are [roll torque,
                         steer torque]
 
+        If you have a flywheel defined, body D, it will completely be ignored
+        in these results. These results are strictly for the Whipple bicycle
+        model.
+
         """
 
         M, C1, K0, K2 = self.canonical()
@@ -726,7 +746,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         return A, B
 
     def eig(self, speeds):
-        '''Returns eigenvalues and eigenvectors of the benchmark bicycle.
+        '''Returns the eigenvalues and eigenvectors of the Whipple bicycle
+        model linearized about the nominal configuration.
 
         Parameters
         ----------
@@ -739,6 +760,12 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             eigenvalues
         evecs : ndarray, shape (n, 4, 4)
             eigenvectors
+
+        Notes
+        -----
+        If you have a flywheel defined, body D, it will completely be ignored
+        in these results. These results are strictly for the Whipple bicycle
+        model.
 
         '''
         # this allows you to enter a float
@@ -765,7 +792,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
     def plot_eigenvalues_vs_speed(self, speeds, fig=None, generic=False,
                                   color='black', show=True, largest=False,
                                   linestyle='-'):
-        '''Returns a plot of the eigenvalues versus speed for the current
+        """Returns a plot of the eigenvalues versus speed for the current
         benchmark parameters.
 
         Parameters
@@ -782,7 +809,13 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         largest : boolean
             If true, only the largest eigenvalue is plotted.
 
-        '''
+        Notes
+        -----
+        If you have a flywheel defined, body D, it will completely be ignored
+        in these results. These results are strictly for the Whipple bicycle
+        model.
+
+        """
 
         # sort the speeds in case they aren't
         speeds = np.sort(speeds)
