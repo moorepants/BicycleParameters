@@ -928,7 +928,7 @@ def get_parts_in_parameters(par):
     -------
     parts : list
         Unique list of parts that contain one or more of 'H', 'B', 'F', 'R',
-        'S', 'G'.
+        'S', 'G', 'D'.
 
     '''
     parts = [x[1] for x in par.keys() if x.startswith('m')]
