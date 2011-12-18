@@ -2,7 +2,8 @@
 
 import matplotlib.pyplot as plt
 
-def plot_eigenvalues(bikes, speeds, colors=None, linestyles=None, largest=False):
+def plot_eigenvalues(bikes, speeds, colors=None, linestyles=None,
+        largest=False, show=False):
     '''Returns a figure with the eigenvalues vs speed for multiple bicycles.
 
     Parameters
@@ -46,6 +47,7 @@ def plot_eigenvalues(bikes, speeds, colors=None, linestyles=None, largest=False)
         plt.legend()
         plt.axis('tight')
 
-    plt.show()
+    if show is True:
+        plt.show()
 
     return fig

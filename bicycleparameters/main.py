@@ -795,7 +795,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         return evals, evecs
 
     def plot_eigenvalues_vs_speed(self, speeds, fig=None, generic=False,
-                                  color='black', show=True, largest=False,
+                                  color='black', show=False, largest=False,
                                   linestyle='-'):
         """Returns a plot of the eigenvalues versus speed for the current
         benchmark parameters.
@@ -827,7 +827,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         # figure properties
         figwidth = 6. # in inches
-        goldenMean = (np.sqrt(5.)-1.) / 2.
+        goldenMean = (np.sqrt(5.0) - 1.0) / 2.0
         figsize = [figwidth, figwidth * goldenMean]
         params = {#'backend': 'ps',
             'axes.labelsize': 8,
@@ -842,7 +842,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         if not fig:
             fig = plt.figure(figsize=figsize)
 
-        plt.axes([0.125, 0.2, 0.95-0.125, 0.85-0.2])
+        plt.axes([0.125, 0.2, 0.95 - 0.125, 0.85 - 0.2])
 
         evals, evecs = self.eig(speeds)
 
