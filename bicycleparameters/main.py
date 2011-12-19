@@ -917,7 +917,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         return fig
 
-    def plot_bode(self, speed, u, y):
+    def plot_bode(self, speed, u, y, **kwargs):
         """Returns a Bode plot.
 
         Parameters
@@ -930,6 +930,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         y : integer
             An integer between 0 and 3 corresponding to the inputs roll rate,
             steer rate, roll angle and steer angle.
+        kwargs : keyword pairs
+            Any options that can be passed to dtk.bode.
 
         Returns
         -------
@@ -954,11 +956,55 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         outputNames = ['Roll Rate', 'Steer Rate', 'Roll Angle', 'Steer Angle']
         inputNames = ['Roll Torque', 'Steer Torque']
 
-        title = inputNames[u] + ' to ' + outputNames[y]
+        if 'title' not in kwargs.keys():
+            kwargs['title'] = inputNames[u] + ' to ' + outputNames[y]
 
-        bode = control.bode((A, B[:, u], C[y, :], D[y, u]), w, title=title)
+        bode = control.bode((A, B[:, u], C[y, :], D[y, u]), w, **kwargs)
 
         return bode
+
+    def compare_bode_speeds(self, speeds, u, y, fig=None):
+        """Returns a figure with the Bode plots of multiple bicycles.
+
+        Parameters
+        ---------
+        speeds : list
+            A list of speeds at which to evaluate the system.
+        u : integer
+            An integer between 0 and 1 corresponding to the inputs roll torque
+            and steer torque.
+        y : integer
+            An integer between 0 and 3 corresponding to the inputs roll rate,
+            steer rate, roll angle and steer angle.
+
+        Returns
+        -------
+        fig : matplotlib.Figure instance
+            The Bode plot.
+
+        Notes
+        -----
+        The phases are matched around zero degrees at with respect to the first
+        frequency.
+
+        """
+
+        if fig is None:
+            fig = plt.figure()
+
+        for speed in speeds:
+            self.plot_bode(speed, u, y, label=str(speed) + ' m/s', fig=fig)
+
+        # take care of phase misalignment
+        phaseLines = fig.ax2.lines
+        firstLine = phaseLines[0].get_ydata()
+        for line in phaseLines:
+            line.set_ydata(line.get_ydata() - firstLine[0])
+        for line in phaseLines[1:]:
+            firstValue = line.get_ydata()[0]
+            n = np.ceil(np.floor(abs(firstValue / 180.)) / 2.)
+            line.set_ydata(line.get_ydata() - np.sign(firstValue) * n * 360.)
+        return fig
 
 def get_parts_in_parameters(par):
     '''Returns a list of parts in a parameter dictionary.
