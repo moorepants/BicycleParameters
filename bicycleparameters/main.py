@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Wedge
 from uncertainties import umath, unumpy
+from dtk import control
 
 # local module imports
 import bicycle
@@ -915,6 +916,49 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             plt.show()
 
         return fig
+
+    def plot_bode(self, speed, u, y):
+        """Returns a Bode plot.
+
+        Parameters
+        ----------
+        speed : float
+            The speed at which to evaluate the system.
+        u : integer
+            An integer between 0 and 1 corresponding to the inputs roll torque
+            and steer torque.
+        y : integer
+            An integer between 0 and 3 corresponding to the inputs roll rate,
+            steer rate, roll angle and steer angle.
+
+        Returns
+        -------
+        mag : ndarray, shape(1000,)
+            The magnitude in dB of the frequency reponse.
+        phase : ndarray, shape(1000,)
+            The phase in degress of the frequency response.
+        fig : matplotlib figure
+            The Bode plot.
+
+        """
+
+        A, B = self.state_space(speed)
+
+        A = unumpy.nominal_values(A)
+        B = unumpy.nominal_values(B)
+        C = np.eye(A.shape[0])
+        D = np.zeros_like(B)
+
+        w = np.logspace(0, 2, 1000)
+
+        outputNames = ['Roll Rate', 'Steer Rate', 'Roll Angle', 'Steer Angle']
+        inputNames = ['Roll Torque', 'Steer Torque']
+
+        title = inputNames[u] + ' to ' + outputNames[y]
+
+        bode = control.bode((A, B[:, u], C[y, :], D[y, u]), w, title=title)
+
+        return bode
 
 def get_parts_in_parameters(par):
     '''Returns a list of parts in a parameter dictionary.
