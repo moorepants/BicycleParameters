@@ -39,10 +39,7 @@ def compare_bode_bicycles(bikes, speed, u, y, fig=None):
 
     # take care of phase misalignment
     phaseLines = fig.ax2.lines
-    firstLine = phaseLines[0].get_ydata()
     for line in phaseLines:
-        line.set_ydata(line.get_ydata() - firstLine[0])
-    for line in phaseLines[1:]:
         firstValue = line.get_ydata()[0]
         n = np.ceil(np.floor(abs(firstValue / 180.)) / 2.)
         line.set_ydata(line.get_ydata() - np.sign(firstValue) * n * 360.)
