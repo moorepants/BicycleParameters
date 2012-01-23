@@ -651,21 +651,24 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         return fig
 
-    def canonical(self):
+    def canonical(self, nominal=False):
         """
         Returns the canonical velocity and gravity independent matrices for the
         Whipple bicycle model linearized about the nominal configuration.
 
         Returns
         -------
-        M : ndarray, shape(2,2)
+        M : uarray, shape(2,2)
             Mass matrix.
-        C1 : ndarray, shape(2,2)
+        C1 : uarray, shape(2,2)
             Velocity independent damping matrix.
-        K0 : ndarray, shape(2,2)
+        K0 : uarray, shape(2,2)
             Gravity independent part of the stiffness matrix.
-        K2 : ndarray, shape(2,2)
+        K2 : uarray, shape(2,2)
             Velocity squared independent part of the stiffness matrix.
+        nominal : boolean, optional
+            The default is false and uarrays are returned with the calculated
+            uncertainties. If true ndarrays are returned without uncertainties.
 
         Notes
         -----
@@ -700,7 +703,15 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         M, C1, K0, K2 = bicycle.benchmark_par_to_canonical(par)
 
-        return M, C1, K0, K2
+        if nominal is True:
+            return (unumpy.nominal_values(M),
+                    unumpy.nominal_values(C1),
+                    unumpy.nominal_values(K0),
+                    unumpy.nominal_values(K2))
+        elif nominal is False:
+            return M, C1, K0, K2
+        else:
+            raise ValueError('nominal must be True or False')
 
     def state_space(self, speed):
         """
@@ -997,10 +1008,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         # take care of phase misalignment
         phaseLines = fig.ax2.lines
-        firstLine = phaseLines[0].get_ydata()
         for line in phaseLines:
-            line.set_ydata(line.get_ydata() - firstLine[0])
-        for line in phaseLines[1:]:
             firstValue = line.get_ydata()[0]
             n = np.ceil(np.floor(abs(firstValue / 180.)) / 2.)
             line.set_ydata(line.get_ydata() - np.sign(firstValue) * n * 360.)
