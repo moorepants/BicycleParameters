@@ -713,7 +713,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         else:
             raise ValueError('nominal must be True or False')
 
-    def state_space(self, speed):
+    def state_space(self, speed, nominal=False):
         """
         Returns the A and B matrices for the Whipple model linearized about
         the upright constant velocity configuration.
@@ -723,6 +723,9 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         ----------
         speed : float
             The speed of the bicycle.
+        nominal : boolean, optional
+            The default is false and uarrays are returned with the calculated
+            uncertainties. If true ndarrays are returned without uncertainties.
 
         Returns
         -------
@@ -760,7 +763,12 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         A, B = bicycle.ab_matrix(M, C1, K0, K2, speed, g)
 
-        return A, B
+        if nominal is True:
+            return (unumpy.nominal_values(A), unumpy.nominal_values(B))
+        elif nominal is False:
+            return A, B
+        else:
+            raise ValueError('nominal must be True or False')
 
     def eig(self, speeds):
         '''Returns the eigenvalues and eigenvectors of the Whipple bicycle
@@ -955,10 +963,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         """
 
-        A, B = self.state_space(speed)
+        A, B = self.state_space(speed, nominal=True)
 
-        A = unumpy.nominal_values(A)
-        B = unumpy.nominal_values(B)
         C = np.eye(A.shape[0])
         D = np.zeros_like(B)
 
