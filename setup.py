@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 import bicycleparameters as bp
 
 setup(
