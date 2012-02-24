@@ -201,8 +201,8 @@ def fit_goodness(ym, yp):
         The regression sum of squares.
 
     '''
-    SSR = sum((yp - np.mean(ym))**2)
-    SST = sum((ym - np.mean(ym))**2)
+    SSR = np.sum((yp - np.mean(ym))**2)
+    SST = np.sum((ym - np.mean(ym))**2)
     SSE = SST - SSR
     rsq = SSR / SST
     return rsq, SSE, SST, SSR

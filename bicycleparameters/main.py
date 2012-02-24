@@ -743,10 +743,10 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         where
 
-        The states are [roll rate,
-                        steer rate,
-                        roll angle,
-                        steer angle]
+        The states are [roll angle,
+                        steer angle,
+                        roll rate,
+                        steer rate]
 
         The inputs are [roll torque,
                         steer torque]
@@ -947,8 +947,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             An integer between 0 and 1 corresponding to the inputs roll torque
             and steer torque.
         y : integer
-            An integer between 0 and 3 corresponding to the inputs roll rate,
-            steer rate, roll angle and steer angle.
+            An integer between 0 and 3 corresponding to the inputs roll angle
+            steer angle, roll rate, steer rate.
         kwargs : keyword pairs
             Any options that can be passed to dtk.bode.
 
@@ -970,7 +970,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         w = np.logspace(0, 2, 1000)
 
-        outputNames = ['Roll Rate', 'Steer Rate', 'Roll Angle', 'Steer Angle']
+        outputNames = ['Roll Angle', 'Steer Angle', 'Roll Rate', 'Steer Rate']
         inputNames = ['Roll Torque', 'Steer Torque']
 
         if 'title' not in kwargs.keys():
@@ -991,8 +991,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             An integer between 0 and 1 corresponding to the inputs roll torque
             and steer torque.
         y : integer
-            An integer between 0 and 3 corresponding to the inputs roll rate,
-            steer rate, roll angle and steer angle.
+            An integer between 0 and 3 corresponding to the inputs roll angle,
+            steer angle, roll rate, steer rate.
 
         Returns
         -------

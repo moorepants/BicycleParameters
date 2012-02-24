@@ -30,24 +30,27 @@ def ab_matrix(M, C1, K0, K2, v, g):
     B : ndarray, shape(4,2)
         Input matrix.
 
-    The states are [roll rate,
-                    steer rate,
-                    roll angle,
-                    steer angle]
+    The states are [roll angle,
+                    steer angle,
+                    roll rate,
+                    steer rate]
     The inputs are [roll torque,
                     steer torque]
 
     '''
 
-    a11 = -v * C1
-    a12 = -(g * K0 + v**2 * K2)
-    a21 = np.eye(2)
-    a22 = np.zeros((2, 2))
     invM = (1. / (M[0, 0] * M[1, 1] - M[0, 1] * M[1, 0]) *
            np.array([[M[1, 1], -M[0, 1]], [-M[1, 0], M[0, 0]]], dtype=M.dtype))
-    A = np.vstack((np.dot(invM, np.hstack((a11, a12))),
-                   np.hstack((a21, a22))))
-    B = np.vstack((invM, np.zeros((2, 2))))
+
+    a11 = np.zeros((2, 2))
+    a12 = np.eye(2)
+    # stiffness based terms
+    a21 = -np.dot(invM, (g * K0 + v**2 * K2))
+    # damping based terms
+    a22 = -np.dot(invM, v * C1)
+
+    A = np.vstack((np.hstack((a11, a12)), np.hstack((a21, a22))))
+    B = np.vstack((np.zeros((2, 2)), invM))
 
     return A, B
 
