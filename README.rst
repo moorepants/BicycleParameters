@@ -18,6 +18,8 @@ Required
 - `Matplotlib 0.99.3 <http://matplotlib.sourceforge.net/>`_
 - `Uncertainties 1.7.3 <http://pypi.python.org/pypi/uncertainties/>`_
 - `yeadon 0.8 <http://pypi.python.org/pypi/yeadon/>`_
+- `DynamicistToolKit 0.1.0dev
+  <http://github.com/moorepants/DynamicistToolKit/>`_
 
 Optional
 --------
@@ -71,6 +73,22 @@ Please refer to the `online documentation
 
 Release Notes
 =============
+
+0.2.0
+-----
+- Commands using the state space form of the Whipple model have been reordered
+  to [roll angle, steer angle, roll rate, steer rate]
+- Added another rider's measurments.
+- Added a module for printing tables of data.
+- Added the Gyrobike and the ability to manage it's flywheel rigidbody.
+- Fixed a bug in `calculate_abc_geometry()` that gave incorrect geometry
+  values.
+- Better error checking when putting a rider on the bicycle.
+- Handles two additional points for the Davis Instrumented Bicycle.
+- Added a chiled sized person based on scaling Charlie's measurments.
+- Added Bode plot commands.
+- Added nominal output options for several methods.
+- Added a dependency to DynamicistToolKit
 
 0.1.3
 -----

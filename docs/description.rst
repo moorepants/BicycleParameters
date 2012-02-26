@@ -9,8 +9,9 @@ geometry, mass, mass location and mass distribution of the bicycle rider
 system. The code is structured around the Whipple bicycle model and
 fundamentally works with and produces the parameters presented in Meijaard 2007
 [Meijaard2007]_, due to the fact that these parameters have been widely adopted
-as a benchmark. More detail can be found in our papers and the website_ and in
-:ref:`references`.
+as a benchmark. But the software is also capable of generating parameter sets
+for more complex rider biomechanical models. More detail can be found in our
+papers and the website_ and in :ref:`references`.
 
 .. _UCD Sports Biomechanics Lab: http://biosport.ucdavis.edu
 .. _TU Delft Bicycle Dynamics Lab: http://bicycle.tudelft.edu
@@ -40,6 +41,7 @@ Basic Linear Analysis
 - Calculates the eigenvalues for the Whipple bicycle model linearized about the
   upright configuration.
 - Plots the eigenvalue root loci as a function of speed as eigenvalue vs speed.
+- Plots Bode diagrams of the open loop transfer functions.
 
 Refer to :ref:`usage` for examples of the features.
 
@@ -48,7 +50,6 @@ Upcoming Features
 
 - Converts benchmark parameters to other parametrizations.
 - Calculates the transfer functions of the open loop system.
-- Plots Bode diagrams of the open loop transfer functions.
 
 Example Code
 ============
@@ -67,7 +68,7 @@ Example Code
 
 References
 ==========
-The methods associated with this software were built on these previous works,
+The methods associated with this software were built upon these previous works,
 among others.
 
 .. [Moore2010] Moore, J. K., Hubbard, M., Peterson, D. L., Schwab, A. L., and Kooijman, J.

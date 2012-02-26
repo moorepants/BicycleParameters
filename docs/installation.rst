@@ -15,6 +15,8 @@ Required
 - `Matplotlib 0.99.3 <http://matplotlib.sourceforge.net/>`_
 - `Uncertainties 1.7.3 <http://pypi.python.org/pypi/uncertainties/>`_
 - `yeadon 0.8 <http://pypi.python.org/pypi/yeadon/>`_
+- `DynamicistToolKit 0.1.0dev
+  <http://github.com/moorepants/DynamicistToolKit/>`_
 
 Optional
 --------

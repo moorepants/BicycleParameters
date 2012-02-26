@@ -1,9 +1,8 @@
 from setuptools import setup
-import bicycleparameters as bp
 
 setup(
     name='BicycleParameters',
-    version=bp.__version__,
+    version='0.2.0',
     author='Jason Keith Moore',
     author_email='moorepants@gmail.com',
     packages=['bicycleparameters', 'bicycleparameters.test'],
