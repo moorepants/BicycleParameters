@@ -139,7 +139,14 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             stmt1 = "Looks like you've already got some parameters for %s, "
             stmt2 = "use forceRawCalc to recalculate."
             print (stmt1 + stmt2) % self.bicycleName
-            pass
+            # load the measured.txt file if it exists
+            pathToRawFile = os.path.join(rawDataDir,
+                    self.bicycleName + 'Measured.txt')
+            try:
+                self.parameters['Measured'] = \
+                        io.load_parameter_text_file(pathToRawFile)
+            except IOError:
+                pass
         else:
             print '''There is no data available. Create
             bicycles/{sn}/Parameters/{sn}Benchmark.txt and/or fill
