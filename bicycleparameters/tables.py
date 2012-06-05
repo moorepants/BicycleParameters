@@ -229,22 +229,25 @@ def uround(value):
         s = str(value)
     else:
         uncert = value.std_dev()
-        # convert the uncertainty to a string
-        s = '%.14f' % uncert
-        # find the first non-zero character
-        for j, number in enumerate(s):
-            if number == '0' or number == '.':
-                pass
-            else:
-                digit = j
-                break
-        newUncert = round(uncert, digit - 1)
-        newUncertStr = ('%.' + str(digit - 1) + 'f') % newUncert
-        newNom = round(nom, len(newUncertStr) - 2)
-        newNomStr = ('%.' + str(digit - 1) + 'f') % newNom
-        diff = len(newUncertStr) - len(newNomStr)
-        if diff > 0:
-            s = newNomStr + int(diff) * '0' + '+/-' + newUncertStr
+        if abs(nom) < 1e-15:
+            s = '0.0+/-0.0'
         else:
-            s = newNomStr + '+/-' + newUncertStr
+            # convert the uncertainty to a string
+            s = '%.14f' % uncert
+            # find the first non-zero character
+            for j, number in enumerate(s):
+                if number == '0' or number == '.':
+                    pass
+                else:
+                    digit = j
+                    break
+            newUncert = round(uncert, digit - 1)
+            newUncertStr = ('%.' + str(digit - 1) + 'f') % newUncert
+            newNom = round(nom, len(newUncertStr) - 2)
+            newNomStr = ('%.' + str(digit - 1) + 'f') % newNom
+            diff = len(newUncertStr) - len(newNomStr)
+            if diff > 0:
+                s = newNomStr + int(diff) * '0' + '+/-' + newUncertStr
+            else:
+                s = newNomStr + '+/-' + newUncertStr
     return s
