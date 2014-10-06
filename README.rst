@@ -75,15 +75,12 @@ Please refer to the `online documentation
 Release Notes
 =============
 
-0.3.0
+0.2.0
 -----
 
 - Updated core dependencies to a minimum from the Ubuntu 12.04 release.
 - Tested with DTK 0.1.0 to 0.3.5.
 - Added Travis support.
-
-0.2.0
------
 - Commands using the state space form of the Whipple model have been reordered
   to [roll angle, steer angle, roll rate, steer rate]
 - Added another rider's measurments.
@@ -100,6 +97,7 @@ Release Notes
 
 0.1.3
 -----
+
 - Speed increase for the eigenvalue calculations.
 - Added measurements for the human configuration on some bikes.
 
@@ -123,4 +121,5 @@ Release Notes
 
 0.1.0
 -----
-Initial release.
+
+- Initial release.
