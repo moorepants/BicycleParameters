@@ -1,0 +1,17 @@
+language: python
+python:
+  - "2.7"
+# Make sure the Ubuntu 12.04 system packages are installed for the tests.
+virtualenv:
+  system_site_packages: true
+before_install:
+  - pip uninstall -y numpy
+  - sudo apt-get install -y -qq python-setuptools python-numpy python-scipy python-matplotlib python-nose python-coverage
+  - pip install git+https://github.com/moorepants/DynamicistToolKit@master
+  - pip install uncertainties<2.0
+  - pip install yeadon<1.0
+  - pip freeze
+install:
+  - python setup.py install
+script: nosetests -v --with-coverage --cover-package=bicycleparameters
+after_success: coveralls
