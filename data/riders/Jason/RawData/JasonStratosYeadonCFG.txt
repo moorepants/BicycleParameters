@@ -1,21 +1,21 @@
-somersalt=0.455530935
-tilt=0.0
-twist=0.0
-PTsagittalFlexion=0.0
-PTfrontalFlexion=0.0
-TCspinalTorsion=0.0
-TClateralSpinalFlexion=0.0
-CA1elevation=0.0
-CA1abduction=0.0
-CA1rotation=0.0
-CB1elevation=0.0
-CB1abduction=0.0
-CB1rotation=0.0
-A1A2flexion=0.0
-B1B2flexion=0.0
-PJ1flexion=0.0
-PJ1abduction=0.0
-PK1flexion=0.0
-PK1abduction=0.0
-J1J2flexion=0.0
-K1K2flexion=0.0
+somersault: 0.455530935
+tilt: 0.0
+twist: 0.0
+PTsagittalFlexion: 0.0
+PTbending: 0.0
+TCspinalTorsion: 0.0
+TCsagittalSpinalFlexion: 0.0
+CA1extension: 0.0
+CA1adduction: 0.0
+CA1rotation: 0.0
+CB1extension: 0.0
+CB1abduction: 0.0
+CB1rotation: 0.0
+A1A2extension: 0.0
+B1B2extension: 0.0
+PJ1extension: 0.0
+PJ1adduction: 0.0
+PK1extension: 0.0
+PK1abduction: 0.0
+J1J2flexion: 0.0
+K1K2flexion: 0.0

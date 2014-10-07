@@ -7,7 +7,7 @@ def compare_bode_bicycles(bikes, speed, u, y, fig=None):
     """Returns a figure with the Bode plots of multiple bicycles.
 
     Parameters
-    ---------
+    ----------
     bikes : list
         A list of bicycleparameters.Bicycle instances.
     speed : float

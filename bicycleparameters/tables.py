@@ -203,13 +203,13 @@ def uround(value):
     '''Returns a string representation of a value with an uncertainity which
     has been rounded to significant digits based on the uncertainty value.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     value : ufloat
         A single ufloat.
 
-    Returns:
-    --------
+    Returns
+    -------
     s : string
         A rounded string representation of `value`.
 

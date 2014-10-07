@@ -275,6 +275,8 @@ files.
 riders/<rider name>/RawData/
 ============================
 
+**These files must follow the YAML format used in the `yeadon package`_.**
+
 <rider name><bicycle name>YeadonCFG.txt
 ---------------------------------------
 This is an input file to set the configuration of the joint angles for the

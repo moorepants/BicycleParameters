@@ -4,12 +4,14 @@ python:
 # Make sure the Ubuntu 12.04 system packages are installed for the tests.
 virtualenv:
   system_site_packages: true
+# Note that yeadon will not install without pyyaml installed first.
 before_install:
   - pip uninstall -y numpy
   - sudo apt-get install -y -qq python-setuptools python-numpy python-scipy python-matplotlib python-nose python-coverage
   - pip install git+https://github.com/moorepants/DynamicistToolKit@master
   - pip install "uncertainties<2.0"
-  - pip install "yeadon<1.0"
+  - pip install pyyaml
+  - pip install "yeadon>=1.1.0"
   - pip freeze
 install:
   - python setup.py install
