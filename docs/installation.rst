@@ -9,14 +9,14 @@ likely work with older versions.
 
 Required
 --------
-- `Python 2.7.1 <http://www.python.org/>`_
-- `Scipy 0.9.0 <http://www.scipy.org/>`_
-- `Numpy 1.5.1 <http://numpy.scipy.org/>`_
-- `Matplotlib 0.99.3 <http://matplotlib.sourceforge.net/>`_
-- `Uncertainties 1.7.3 <http://pypi.python.org/pypi/uncertainties/>`_
-- `yeadon 0.8 <http://pypi.python.org/pypi/yeadon/>`_
-- `DynamicistToolKit 0.1.0dev
-  <http://github.com/moorepants/DynamicistToolKit/>`_
+- `Python 2.7 <http://www.python.org/>`_
+- `Scipy >= 0.9.0 <http://www.scipy.org/>`_
+- `Numpy >= 1.6.1 <http://numpy.scipy.org/>`_
+- `Matplotlib >= 1.1.1 <http://matplotlib.sourceforge.net/>`_
+- `Uncertainties < 2.0 <http://pypi.python.org/pypi/uncertainties/>`_
+- `yeadon < 1.0 <http://pypi.python.org/pypi/yeadon/>`_
+- `DynamicistToolKit >= 0.1.0
+  <http://pypi.python.org/pypi/DynamicistToolKit/>`_
 
 Optional
 --------

@@ -660,8 +660,16 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
     def canonical(self, nominal=False):
         """
-        Returns the canonical velocity and gravity independent matrices for the
-        Whipple bicycle model linearized about the nominal configuration.
+        Returns the canonical velocity and gravity independent matrices for
+        the Whipple bicycle model linearized about the nominal
+        configuration.
+
+        Paramters
+        ---------
+        nominal : boolean, optional
+            The default is false and uarrays are returned with the
+            calculated uncertainties. If true ndarrays are returned without
+            uncertainties.
 
         Returns
         -------
@@ -673,9 +681,6 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             Gravity independent part of the stiffness matrix.
         K2 : uarray, shape(2,2)
             Velocity squared independent part of the stiffness matrix.
-        nominal : boolean, optional
-            The default is false and uarrays are returned with the calculated
-            uncertainties. If true ndarrays are returned without uncertainties.
 
         Notes
         -----
@@ -700,9 +705,9 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         v
             Bicylce speed.
 
-        If you have a flywheel defined, body D, it will completely be ignored
-        in these results. These results are strictly for the Whipple bicycle
-        model.
+        If you have a flywheel defined, body D, it will completely be
+        ignored in these results. These results are strictly for the Whipple
+        bicycle model.
 
         """
 

@@ -2,27 +2,26 @@
 Bicycle Parameters Module
 =========================
 
-A python program designed to produce and manipulate the basic parameters needed for
-the Whipple bicycle model.
+A python program designed to produce and manipulate the basic parameters needed
+for the Whipple bicycle model.
 
 Dependencies
 ============
-These are the versions that I tested the code with, but the code will most
-likely work with older versions.
 
 Required
 --------
-- `Python 2.7.1 <http://www.python.org/>`_
-- `Scipy 0.9.0 <http://www.scipy.org/>`_
-- `Numpy 1.5.1 <http://numpy.scipy.org/>`_
-- `Matplotlib 0.99.3 <http://matplotlib.sourceforge.net/>`_
-- `Uncertainties 1.7.3 <http://pypi.python.org/pypi/uncertainties/>`_
-- `yeadon 0.8 <http://pypi.python.org/pypi/yeadon/>`_
-- `DynamicistToolKit 0.1.0dev
-  <http://github.com/moorepants/DynamicistToolKit/>`_
+- `Python 2.7 <http://www.python.org/>`_
+- `Scipy >= 0.9.0 <http://www.scipy.org/>`_
+- `Numpy >= 1.6.1 <http://numpy.scipy.org/>`_
+- `Matplotlib >= 1.1.1 <http://matplotlib.sourceforge.net/>`_
+- `Uncertainties < 2.0 <http://pypi.python.org/pypi/uncertainties/>`_
+- `yeadon < 1.0 <http://pypi.python.org/pypi/yeadon/>`_
+- `DynamicistToolKit >= 0.1.0
+  <http://pypi.python.org/pypi/DynamicistToolKit>`_
 
 Optional
 --------
+
 These are required to bulid the documentation:
 
 - `Sphinx <http://sphinx.pocoo.org/>`_
@@ -30,6 +29,7 @@ These are required to bulid the documentation:
 
 Installation
 ============
+
 The easiest method to download and install is with ``pip``::
 
   $ pip install BicycleParameters
@@ -68,6 +68,7 @@ Example Code
 
 Documentation
 =============
+
 Please refer to the `online documentation
 <http://packages.python.org/BicycleParameters>`_ for more information.
 
@@ -76,6 +77,10 @@ Release Notes
 
 0.2.0
 -----
+
+- Updated core dependencies to a minimum from the Ubuntu 12.04 release.
+- Tested with DTK 0.1.0 to 0.3.5.
+- Added Travis support.
 - Commands using the state space form of the Whipple model have been reordered
   to [roll angle, steer angle, roll rate, steer rate]
 - Added another rider's measurments.
@@ -92,6 +97,7 @@ Release Notes
 
 0.1.3
 -----
+
 - Speed increase for the eigenvalue calculations.
 - Added measurements for the human configuration on some bikes.
 
@@ -115,4 +121,5 @@ Release Notes
 
 0.1.0
 -----
-Initial release.
+
+- Initial release.
