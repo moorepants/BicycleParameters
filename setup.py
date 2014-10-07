@@ -16,7 +16,7 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=['numpy>=1.6.1',
                       'scipy>=0.9.0',
-                      'matplotlib>=1.1.1',
+                      'matplotlib>=1.1.1rc',
                       'uncertainties<2.0',
                       'yeadon<1.0',
                       'DynamicistToolKit>=0.1.0'],
