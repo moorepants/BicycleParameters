@@ -7,7 +7,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Wedge
-from uncertainties import umath, unumpy
+from uncertainties import unumpy
 from dtk import control
 
 # local module imports

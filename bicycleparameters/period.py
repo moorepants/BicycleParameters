@@ -268,9 +268,9 @@ def get_period(data, sampleRate, pathToPlotFile):
     sigp = np.sqrt(U.diagonal())
 
     # natural frequency
-    wo = ufloat((p1[4], sigp[4]))
+    wo = ufloat(p1[4], sigp[4])
     # damping ratio
-    zeta = ufloat((p1[3], sigp[3]))
+    zeta = ufloat(p1[3], sigp[3])
     # damped natural frequency
     wd = (1. - zeta**2.)**(1. / 2.) * wo
     # damped natural frequency (hz)

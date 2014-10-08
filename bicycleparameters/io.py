@@ -3,7 +3,7 @@
 import re
 import os
 import numpy as np
-from uncertainties import ufloat
+from uncertainties import ufloat_fromstr
 from scipy.io import loadmat
 
 def filename_to_dict(filename):
@@ -63,7 +63,7 @@ def load_parameter_text_file(pathToFile):
                 valList = equality[1].strip().split(',')
                 # ['0.1 +/- 0.05 ', ' 0.09 +/- 0.05']
                 if '+/-' in equality[1]:
-                    values = [ufloat(x) for x in valList]
+                    values = [ufloat_fromstr(x) for x in valList]
                 else:
                     values = [float(x) for x in valList]
                 # store in dictionary

@@ -2,7 +2,7 @@
 
 import numpy as np
 from scipy.optimize import newton
-from uncertainties import umath, ufloat, unumpy
+from uncertainties import umath, ufloat
 
 def ab_matrix(M, C1, K0, K2, v, g):
     '''Calculate the A and B matrices for the Whipple bicycle model linearized
@@ -186,7 +186,7 @@ def lambda_from_abc(rF, rR, a, b, c):
             b.nominal_value, c.nominal_value)
 
     lam = newton(lam_equality, guess.nominal_value, args=args)
-    return ufloat((lam, guess.std_dev()))
+    return ufloat(lam, guess.std_dev)
 
 def sort_modes(evals, evecs):
     '''Sort eigenvalues and eigenvectors into weave, capsize, caster modes.
