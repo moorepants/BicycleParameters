@@ -228,7 +228,7 @@ def uround(value):
     except AttributeError:
         s = str(value)
     else:
-        uncert = value.std_dev()
+        uncert = value.std_dev
         if abs(nom) < 1e-15:
             s = '0.0+/-0.0'
         else:

@@ -13,7 +13,7 @@ Required
 - `Scipy >= 0.9.0 <http://www.scipy.org/>`_
 - `Numpy >= 1.6.1 <http://numpy.scipy.org/>`_
 - `Matplotlib >= 1.1.1 <http://matplotlib.sourceforge.net/>`_
-- `Uncertainties < 2.0 <http://pypi.python.org/pypi/uncertainties/>`_
+- `Uncertainties >= 2.0.0 <http://pypi.python.org/pypi/uncertainties/>`_
 - `yeadon >= 1.1.0 <http://pypi.python.org/pypi/yeadon/>`_
 - `DynamicistToolKit >= 0.1.0
   <http://pypi.python.org/pypi/DynamicistToolKit/>`_

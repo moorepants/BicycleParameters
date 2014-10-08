@@ -9,7 +9,7 @@ before_install:
   - pip uninstall -y numpy
   - sudo apt-get install -y -qq python-setuptools python-numpy python-scipy python-matplotlib python-nose python-coverage
   - pip install git+https://github.com/moorepants/DynamicistToolKit@master
-  - pip install "uncertainties<2.0"
+  - pip install "uncertainties>=2.0.0"
   - pip install pyyaml
   - pip install "yeadon>=1.1.0"
   - pip freeze
