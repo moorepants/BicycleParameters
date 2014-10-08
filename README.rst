@@ -98,6 +98,7 @@ Release Notes
 - Added Travis support.
 - The minimum yeadon version is bumped to 1.1.1 and code updated to reflect the
   new yeadon api.
+- The minimum version of uncertainties is bumped to 2.0.
 
 0.1.3
 -----
