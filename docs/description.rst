@@ -71,20 +71,10 @@ References
 The methods associated with this software were built upon these previous works,
 among others.
 
-.. [Moore2010] Moore, J. K., Hubbard, M., Peterson, D. L., Schwab, A. L., and Kooijman, J.
-   D. G. (2010). An accurate method of measuring and comparing a bicycle's
-   physical parameters. In Bicycle and Motorcycle Dynamics: Symposium on the
-   Dynamics and Control of Single Track Vehicles, Delft, Netherlands.
-
-.. [Moore2009] Moore, J. K., Kooijman, J. D. G., Hubbard, M., and Schwab, A. L. (2009). A
-   Method for Estimating Physical Properties of a Combined Bicycle and Rider.
-   In Proceedings of the ASME 2009 International Design Engineering Technical
-   Conferences & Computers and Information in Engineering Conference,
-   IDETC/CIE 2009, San Diego, CA, USA. ASME.
-
-.. [Kooijman2008] Kooijman, J. D. G., Schwab, A. L., and Meijaard, J. P. (2008). Experimental
-   validation of a model of an uncontrolled bicycle. Multibody System Dynamics,
-   19:115–132.
+.. [Roland1971] Roland J R ., R. D., and Massing , D. E. A digital computer simulation of
+   bicycle dynamics. Calspan Report YA-3063-K-1, Cornell Aeronautical
+   Laboratory, Inc., Buffalo, NY, 14221, Jun 1971. Prepared for Schwinn Bicycle
+   Company, Chicago, IL 60639.
 
 .. [Meijaard2007] Meijaard, J. P.; Papadopoulos, J. M.; Ruina, A. & Schwab, A.
    L. Linearized dynamics equations for the balance and steer of a bicycle: A
@@ -94,7 +84,25 @@ among others.
 .. [Kooijman2006] Kooijman, J. D. G. (2006). Experimental validation of a model for the motion
    of an uncontrolled bicycle. MSc thesis, Delft University of Technology.
 
-.. [Roland1971] Roland J R ., R. D., and Massing , D. E. A digital computer simulation of
-   bicycle dynamics. Calspan Report YA-3063-K-1, Cornell Aeronautical
-   Laboratory, Inc., Buffalo, NY, 14221, Jun 1971. Prepared for Schwinn Bicycle
-   Company, Chicago, IL 60639.
+.. [Kooijman2008] Kooijman, J. D. G., Schwab, A. L., and Meijaard, J. P. (2008). Experimental
+   validation of a model of an uncontrolled bicycle. Multibody System Dynamics,
+   19:115–132.
+
+.. [Moore2009] Moore, J. K., Kooijman, J. D. G., Hubbard, M., and Schwab, A. L. (2009). A
+   Method for Estimating Physical Properties of a Combined Bicycle and Rider.
+   In Proceedings of the ASME 2009 International Design Engineering Technical
+   Conferences & Computers and Information in Engineering Conference,
+   IDETC/CIE 2009, San Diego, CA, USA. ASME.
+
+.. [Moore2010] Moore, J. K., Hubbard, M., Peterson, D. L., Schwab, A. L., and Kooijman, J.
+   D. G. (2010). An accurate method of measuring and comparing a bicycle's
+   physical parameters. In Bicycle and Motorcycle Dynamics: Symposium on the
+   Dynamics and Control of Single Track Vehicles, Delft, Netherlands.
+
+.. [Moore2012] Moore, J. K. (2012). Human Control of a Bicycle. University of
+   California, Davis PhD Thesis. http://moorepants.github.io/dissertation
+
+.. [Dembia2014] Dembia C, Moore JK and Hubbard M. An object oriented
+   implementation of the Yeadon human inertia model [v1; ref status: awaiting
+   peer review, http://f1000r.es/4cr] F1000Research 2014, 3:223 (doi:
+   10.12688/f1000research.5292.1)
