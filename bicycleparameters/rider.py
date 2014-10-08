@@ -2,12 +2,68 @@
 
 import os
 import numpy as np
-from scipy.optimize import fmin
+from numpy import sin, cos, sqrt
+from scipy.optimize import fsolve
 import yeadon
 
 from io import remove_uncertainties
 from inertia import combine_bike_rider
-from geometry import calc_two_link_angles, vec_angle, vec_project
+
+
+def yeadon_vec_to_bicycle_vec(vector, measured_bicycle_par,
+                              benchmark_bicycle_par):
+    """
+    Parameters
+    ----------
+    vector : np.matrix, shape(3, 1)
+        A vector from the Yeadon origin to a point expressed in the Yeadon
+        reference frame.
+    measured_bicycle_par : dictionary
+        The raw bicycle measurements.
+    benchmark_bicycle_par : dictionary
+        The Meijaard 2007 et. al parameters for this bicycle.
+
+    Returns
+    -------
+    vector_wrt_bike : np.matrix, shape(3, 1)
+        The vector from the bicycle origin to the same point above expressed
+        in the bicycle reference frame.
+
+    """
+
+    # This is the rotation matrix that relates Yeadon's reference frame
+    # to the bicycle reference frame.
+    # vector_expressed_in_bike = rot_mat * vector_expressed_in_yeadon)
+    rot_mat = np.matrix([[0.0, -1.0, 0.0],
+                        [-1.0, 0.0, 0.0],
+                        [0.0, 0.0, -1.0]])
+
+    # The relevant bicycle parameters:
+    measuredPar = remove_uncertainties(measured_bicycle_par)
+    benchmarkPar = remove_uncertainties(benchmark_bicycle_par)
+    # bottom bracket height
+    hbb = measuredPar['hbb']
+    # chain stay length
+    lcs = measuredPar['lcs']
+    # rear wheel radius
+    rR = benchmarkPar['rR']
+    # seat post length
+    lsp = measuredPar['lsp']
+    # seat tube length
+    lst = measuredPar['lst']
+    # seat tube angle
+    lambdast = measuredPar['lamst']
+
+    # bicycle origin to yeadon origin expressed in bicycle frame
+    yeadon_origin_in_bike_frame = \
+        np.matrix([[np.sqrt(lcs**2 - (-hbb + rR)**2) + (-lsp - lst) * np.cos(lambdast)],  # bx
+                   [0.0],
+                   [-hbb + (-lsp - lst) * np.sin(lambdast)]])  # bz
+
+    vector_wrt_bike =  yeadon_origin_in_bike_frame + rot_mat * vector
+
+    return vector_wrt_bike
+
 
 def configure_rider(pathToRider, bicycle, bicyclePar, measuredPar, draw):
     """
@@ -50,18 +106,36 @@ def configure_rider(pathToRider, bicycle, bicyclePar, measuredPar, draw):
         pathToCFG = os.path.join(pathToRider, 'RawData',
                                  rider + bicycle + 'YeadonCFG.txt')
         # generate the human that has been configured to sit on the bicycle
+        # the human's inertial parameters are expressed in the Yeadon
+        # reference frame about the Yeadon origin.
         human = rider_on_bike(bicyclePar, measuredPar,
                               pathToYeadon, pathToCFG, draw)
+
+        # This is the rotation matrix that relates Yeadon's reference frame
+        # to the bicycle reference frame.
+        rot_mat = np.array([[0.0, -1.0, 0.0],
+                            [-1.0, 0.0, 0.0],
+                            [0.0, 0.0, -1.0]])
+
+        # This is the human's inertia expressed in the bicycle reference
+        # frame about the human's center of mass.
+        human_inertia_in_bike_frame = \
+            human.inertia_transformed(rotmat=rot_mat)
+
+        human_com_in_bike_frame = \
+            yeadon_vec_to_bicycle_vec(human.center_of_mass, measuredPar,
+                                      bicyclePar)
+
         # build a dictionary to store the inertial data
-        riderPar = {'IBxx': human.Inertia[0, 0],
-                    'IByy': human.Inertia[1, 1],
-                    'IBzz': human.Inertia[2, 2],
-                    'IBxz': human.Inertia[2, 0],
-                    'mB': human.Mass,
-                    'xB': human.COM[0][0],
-                    'yB': human.COM[1][0],
-                    'zB': human.COM[2][0]}
-    except: #except if this fails
+        riderPar = {'IBxx': human_inertia_in_bike_frame[0, 0],
+                    'IByy': human_inertia_in_bike_frame[1, 1],
+                    'IBzz': human_inertia_in_bike_frame[2, 2],
+                    'IBxz': human_inertia_in_bike_frame[2, 0],
+                    'mB': human.mass,
+                    'xB': human_com_in_bike_frame[0, 0],
+                    'yB': human_com_in_bike_frame[1, 0],
+                    'zB': human_com_in_bike_frame[2, 0]}
+    except:  # except if this fails
         # no rider was added
         print('Calculations in yeadon failed. No rider added.')
         # raise the error that caused things to fail
@@ -69,6 +143,7 @@ def configure_rider(pathToRider, bicycle, bicyclePar, measuredPar, draw):
     else:
         bicycleRiderPar = combine_bike_rider(bicyclePar, riderPar)
         return riderPar, human, bicycleRiderPar
+
 
 def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
                   drawrider):
@@ -96,13 +171,24 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
 
     Returns
     -------
-    H : yeadon.human
+    human : yeadon.Human
         Human object is returned with an updated configuration.
         The dictionary, taken from H.CFG, has the following key's values
-        updated: ``CA1elevation``, ``CA1abduction``, ``A1A2flexion``,
-        ``CB1elevation``, ``CB1abduction``, ``B1B2flexion``, ``PJ1elevation``,
-        ``PJ1abduction``, ``J1J2flexion``, ``PK1elevation``, ``PK1abduction``,
-        ``K1K2flexion``.
+        updated:
+
+            'PJ1extension'
+            'J1J2flexion'
+            'CA1extension'
+            'CA1adduction'
+            'CA1rotation'
+            'A1A2extension'
+            'somersault'
+            'PK1extension'
+            'K1K2flexion'
+            'CB1extension'
+            'CB1abduction'
+            'CB1rotation'
+            'B1B2extension'
 
     Notes
     -----
@@ -116,330 +202,160 @@ def rider_on_bike(benchmarkPar, measuredPar, yeadonMeas, yeadonCFG,
     """
 
     # create human using input measurements and configuration files
-    H = yeadon.human(yeadonMeas, yeadonCFG)
+    human = yeadon.Human(yeadonMeas, yeadonCFG)
 
+    # The relevant human measurments:
+    L_j3L = human.meas['Lj3L']
+    L_j5L = human.meas['Lj5L']
+    L_j6L = human.meas['Lj6L']
+    L_s4L = human.meas['Ls4L']
+    L_s4w = human.meas['Ls4w']
+    L_a2L = human.meas['La2L']
+    L_a4L = human.meas['La4L']
+    L_a5L = human.meas['La5L']
+    somersault = human.CFG['somersault']
+
+    # The relevant bicycle parameters:
     measuredPar = remove_uncertainties(measuredPar)
     benchmarkPar = remove_uncertainties(benchmarkPar)
-
-    # for simplicity of code, unpack some variables
-    # yeadon configuration (joint angles)
-    CFG = H.CFG
     # bottom bracket height
-    hbb = measuredPar['hbb']
+    h_bb = measuredPar['hbb']
     # chain stay length
-    Lcs = measuredPar['lcs']
+    l_cs = measuredPar['lcs']
     # rear wheel radius
-    rR = benchmarkPar['rR']
+    r_R = benchmarkPar['rR']
     # front wheel radius
-    rF = benchmarkPar['rF']
+    r_F = benchmarkPar['rF']
     # seat post length
-    Lsp = measuredPar['lsp']
+    l_sp = measuredPar['lsp']
     # seat tube length
-    Lst = measuredPar['lst']
+    l_st = measuredPar['lst']
     # seat tube angle
-    lamst = measuredPar['lamst']
+    lambda_st = measuredPar['lamst']
     # handlebar width
-    whb = measuredPar['whb']
+    w_hb = measuredPar['whb']
     # distance from rear wheel hub to hand
-    LhbR = measuredPar['LhbR']
+    L_hbR = measuredPar['LhbR']
     # distance from front wheel hub to hand
-    LhbF = measuredPar['LhbF']
+    L_hbF = measuredPar['LhbF']
     # wheelbase
     w = benchmarkPar['w']
 
-    # intermediate quantities
-    # distance between wheel centers
-    D = np.sqrt(w**2 + (rR - rF)**2)
-    # length of the projection of the hub to handlebar vectors into the plane
-    # of the bike
-    dhbR = np.sqrt(LhbR**2 - (whb / 2)**2)
-    dhbF = np.sqrt(LhbF**2 - (whb / 2)**2)
-    # angle with vertex at rear hub, from horizontal "down" to front hub
-    alpha = np.arcsin( (rR - rF) / D )
-    # angle at rear hub of the dhbR-dhbF-D triangle (side-side-side)
-    gamma = np.arccos( (dhbR**2 + D**2 - dhbF**2) / (2 * dhbR * D) )
-    # position of bottom bracket center with respect to rear wheel contact
-    # point
-    pos_bb = np.array([[np.sqrt(Lcs**2 - (rR - hbb)**2)],
-                       [0.],
-                       [-hbb]])
-    # vector from bottom bracket to seat
-    vec_seat = -(Lst + Lsp) * np.array([[np.cos(lamst)],
-                                        [0.],
-                                        [np.sin(lamst)]])
-    # position of seat with respect to rear wheel contact point
-    pos_seat = pos_bb + vec_seat
-    # vector (out of plane) from plane to right hand on the handlebars
-    vec_hb_out  = np.array([[0.],
-                            [whb / 2.],
-                            [0.]])
-    # vector (in plane) from rear wheel contact point to in-plane
-    # location of hands
-    vec_hb_in = np.array([[dhbR * np.cos(gamma - alpha)],
-                          [0.],
-                          [-rR - dhbR * np.sin(gamma - alpha)]])
-    # desired position of right hand with respect to rear wheel contact point
-    pos_handr = vec_hb_out + vec_hb_in
-    # desired position of left hand with respect to rear wheel contact point
-    pos_handl = -vec_hb_out + vec_hb_in
+    def zero(unknowns):
+        """For the derivation of these equations see:
 
-    # time to calculate the relevant quantities!
-    # vector from seat to feet, ignoring out-of-plane distance
-    vec_legs = -vec_seat
-    # move the yeadon origin to the bike seat
-    # translation is done in bike's coordinate system
-    H.translate_coord_sys(pos_seat)
-    H.rotate_coord_sys((np.pi, 0., -np.pi /2.))
-    # left foot
-    pos_footl = pos_bb.copy()
-    # set the y value at the same width as the hip
-    pos_footl[1, 0] = H.J1.pos[1, 0]
-    # right foot
-    pos_footr = pos_bb.copy()
-    # set the y value at the same width as the hip
-    pos_footr[1, 0] = H.K1.pos[1, 0]
-
-    # find the distance from the hip joint to the desired position of the foot
-    DJ = np.linalg.norm(pos_footl - H.J1.pos)
-    DK = np.linalg.norm(pos_footr - H.K1.pos)
-    # find the distance from the should joint to the desired position of the
-    # hands
-    DA = np.linalg.norm(pos_handl - H.A1.pos)
-    DB = np.linalg.norm(pos_handr - H.B1.pos)
-
-    # distance from knees to arch level
-    dj2 = np.linalg.norm(H.j[7].pos - H.J2.pos)
-    dk2 = np.linalg.norm(H.k[7].pos - H.K2.pos)
-
-    # distance from elbow to knuckle level
-    da2 = np.linalg.norm(H.a[6].pos - H.A2.pos)
-    db2 = np.linalg.norm(H.b[6].pos - H.B2.pos)
-
-    # error-checking to make sure limbs are long enough for rider to sit
-    # on the bike
-    if (H.J1.length + dj2) < DJ:
-        print "For the given measurements, the left leg is not " \
-              "long enough. Left leg length is", H.J1.length + dj2, \
-              "m, but distance from left hip joint to bottom bracket is", \
-              DJ, "m."
-        raise Exception()
-    if (H.K1.length + dk2) < DK:
-        print "For the given measurements, the right leg is not " \
-              "long enough. Right leg length is", H.K1.length + dk2, \
-              "m, but distance from right hip joint to bottom bracket is", \
-              DK, "m."
-        raise Exception()
-    if (H.A1.length + da2) < DA:
-        print "For the given configuration, the left arm is not " \
-              "long enough. Left arm length is", H.A1.length + da2, \
-              "m, but distance from shoulder to left hand is", DA ,"m."
-        raise Exception()
-    if (H.B1.length + db2) < DB:
-        print "For the given configuration, the right arm is not " \
-              "long enough. Right arm length is", H.B1.length + db2, \
-              "m, but distance from shoulder to right hand is", DB ,"m."
-        raise Exception()
-
-    # joint angle time
-    # legs first. torso cannot have twist
-    # left leg
-    tempangle, CFG['J1J2flexion'] =\
-        calc_two_link_angles(H.J1.length, dj2, DJ)
-    tempangle2 = vec_angle(np.array([[0,0,1]]).T, vec_legs)
-    CFG['PJ1flexion'] = tempangle + tempangle2 + CFG['somersalt']
-    # right leg
-    tempangle,CFG['K1K2flexion'] =\
-        calc_two_link_angles(H.K1.length, dk2, DK)
-    CFG['PK1flexion'] = tempangle + tempangle2 + CFG['somersalt']
-
-    # arms second. only somersalt can be specified, other torso
-    # configuration variables must be zero
-
-    def dist_hand_handle(angles, r_sh_hb, r_sh_h):
-        """
-        Returns the norm of the difference of the vector from the shoulder to
-        the hand to the vector from the shoulder to the handlebar (i.e. the
-        distance from the hand to the handlebar).
-
-        Parameters
-        ----------
-        angles : array_like, shape(2,)
-            The first angle is the elevation angle of the arm and the second is
-            the abduction angle, both relative to the chest using euler 1-2-3
-            angles.
-        r_sh_hb : numpy.matrix, shape(3,1)
-            The vector from the shoulder to the handlebar expressed in the
-            chest reference frame.
-        r_sh_h : numpy.matrix, shape(3,1)
-            The vector from the shoulder to the hand (elbow is bent) expressed
-            in the arm reference frame.
-
-        Returns
-        -------
-        distance : float
-            The distance from the handlebar point to the hand.
-
+           http://nbviewer.ipython.org/github/chrisdembia/yeadon/blob/v1.2.0/examples/bicyclerider/bicycle_example.ipynb
         """
 
-        # these are euler rotation functions
-        def x_rot(angle):
-            sa = np.sin(angle)
-            ca = np.cos(angle)
-            Rx = np.matrix([[1., 0. , 0.],
-                            [0., ca, sa],
-                            [0., -sa, ca]])
-            return Rx
+        PJ1extension = unknowns[0]
+        J1J2flexion = unknowns[1]
+        CA1extension = unknowns[2]
+        CA1adduction = unknowns[3]
+        CA1rotation = unknowns[4]
+        A1A2extension = unknowns[5]
+        alpha_y = unknowns[6]
+        alpha_z = unknowns[7]
+        beta_y = unknowns[8]
+        beta_z = unknowns[9]
 
-        def y_rot(angle):
-            sa = np.sin(angle)
-            ca = np.cos(angle)
-            Ry = np.matrix([[ca, 0. , -sa],
-                            [0., 1., 0.],
-                            [sa, 0., ca]])
-            return Ry
+        phi_J1 = PJ1extension
+        phi_J2 = J1J2flexion
+        phi_A1 = CA1extension
+        theta_A1 = CA1adduction
+        psi_A = CA1rotation
+        phi_A2 = A1A2extension
 
-        elevation = angles[0]
-        abduction = angles[1]
+        phi_P = somersault
 
-        # create the rotation matrix of A (arm) in C (chest)
-        R_A_C = y_rot(abduction) * x_rot(elevation)
+        zero = np.zeros(10)
 
-        # express the vector from the shoulder to the hand in the C (chest)
-        # refernce frame
-        r_sh_h = R_A_C.T * r_sh_h
+        zero[0] = (L_j3L*(-sin(phi_J1)*cos(phi_P) - sin(phi_P)*cos(phi_J1))
+                   + (-l_sp - l_st)*cos(lambda_st) + (-(-sin(phi_J1)*
+                   sin(phi_P) + cos(phi_J1)*cos(phi_P))*sin(phi_J2) +
+                   (-sin(phi_J1)*cos(phi_P) - sin(phi_P)*cos(phi_J1))*
+                   cos(phi_J2))*(-L_j3L + L_j5L + L_j6L))
 
-        return np.linalg.norm(r_sh_h - r_sh_hb)
+        zero[1] = (L_j3L*(-sin(phi_J1)*sin(phi_P) + cos(phi_J1)*cos(phi_P))
+                   + (-l_sp - l_st)*sin(lambda_st) + ((-sin(phi_J1)*
+                   sin(phi_P) + cos(phi_J1)*cos(phi_P))*cos(phi_J2) -
+                   (sin(phi_J1)*cos(phi_P) + sin(phi_P)*cos(phi_J1))*
+                   sin(phi_J2))*(-L_j3L + L_j5L + L_j6L))
 
-    # left arm
-    ##########
-    tempangle, CFG['A1A2flexion'] =\
-        calc_two_link_angles(H.A1.length, da2, DA)
+        zero[2] = -L_hbF + sqrt(alpha_y**2 + alpha_z**2 + 0.25*w_hb**2)
 
-    # this is the angle between the vector from the seat to the shoulder center
-    # and the vector from the shoulder center to the handlebar center
-    tempangle2 = vec_angle(vec_project(H.A1.pos - pos_seat, 1),
-                            vec_project(pos_handl - H.A1.pos, 1))
+        zero[3] = -L_hbR + sqrt(beta_y**2 + beta_z**2 + 0.25*w_hb**2)
 
-    # the somersault angle plus the angle between the z unit vector and the
-    # vector from the left shoulder to the left hand
-    tempangle2 = CFG['somersalt'] + vec_angle(np.array([[0, 0, 1]]).T,
-                                              pos_handl - H.A1.pos)
+        zero[4] = alpha_y - beta_y - w
 
-    # subtract the angle due to the arm not being straight
-    CFG['CA1elevation'] = tempangle2 - tempangle
+        zero[5] = alpha_z - beta_z + r_F - r_R
 
-    # the angle between the vector from the shoulder to the handlebar and its
-    # projection in the sagittal plane
-    CFG['CA1abduction'] = vec_angle(pos_handl - H.A1.pos,
-                                    vec_project(pos_handl - H.A1.pos, 1))
+        zero[6] = (-L_a2L*sin(theta_A1) + L_s4w/2 - 0.5*w_hb + (sin(phi_A2)*
+                   sin(psi_A)*cos(theta_A1) + sin(theta_A1)*cos(phi_A2))*
+                   (L_a2L - L_a4L - L_a5L))
 
-    # vector from the left shoulder to the left handlebar expressed in the
-    # benchmark coordinates
-    r_sh_hb = pos_handl - H.A1.pos
-    # express r_sh_hb in the chest frame
-    R_C_N = H.C.RotMat.T # transpose because Chris defined opposite my convention
-    r_sh_hb = R_C_N * r_sh_hb
-    # vector from the left shoulder to the hand (elbow bent) expressed in the
-    # chest frame
-    r_sh_h = np.mat([[0.],
-                     [-da2 * np.sin(CFG['A1A2flexion'])],
-                     [(-(H.A1.length + da2 *
-                      np.cos(CFG['A1A2flexion'])))]])
+        zero[7] = (-L_a2L*(-sin(phi_A1)*cos(phi_P)*cos(theta_A1) -
+                   sin(phi_P)*cos(phi_A1)*cos(theta_A1)) - L_s4L*sin(phi_P)
+                   - beta_y - sqrt(l_cs**2 - (-h_bb + r_R)**2) - (-l_sp -
+                   l_st)*cos(lambda_st) + (-(-(sin(phi_A1)*cos(psi_A) +
+                   sin(psi_A)*sin(theta_A1)*cos(phi_A1))*sin(phi_P) +
+                   (-sin(phi_A1)*sin(psi_A)*sin(theta_A1) + cos(phi_A1)*
+                   cos(psi_A))*cos(phi_P))*sin(phi_A2) + (-sin(phi_A1)*
+                   cos(phi_P)*cos(theta_A1) - sin(phi_P)*cos(phi_A1)*
+                   cos(theta_A1))*cos(phi_A2))*(L_a2L - L_a4L - L_a5L))
 
-    # chris defines his rotations relative to the arm coordinates but the
-    # dist_hand_handle function is relative to the chest coordinates, thus the
-    # negative guess
-    guess = np.array([-CFG['CA1elevation'], -CFG['CA1abduction']])
-    # home in on the exact solution
-    elevation, abduction = fmin(dist_hand_handle, guess,
-                                args=(r_sh_hb, r_sh_h), disp=False)
-    # set the angles
-    CFG['CA1elevation'], CFG['CA1abduction'] = -elevation, -abduction
+        zero[8] = (-L_a2L*(-sin(phi_A1)*sin(phi_P)*cos(theta_A1) +
+                   cos(phi_A1)*cos(phi_P)*cos(theta_A1)) + L_s4L*cos(phi_P)
+                   - beta_z + h_bb - r_R - (-l_sp - l_st)*sin(lambda_st) +
+                   (-((sin(phi_A1)*cos(psi_A) + sin(psi_A)*sin(theta_A1)*
+                   cos(phi_A1))*cos(phi_P) + (-sin(phi_A1)*sin(psi_A)*
+                   sin(theta_A1) + cos(phi_A1)*cos(psi_A))*sin(phi_P))*
+                   sin(phi_A2) + (-sin(phi_A1)*sin(phi_P)*cos(theta_A1) +
+                   cos(phi_A1)*cos(phi_P)*cos(theta_A1))*cos(phi_A2))*(L_a2L
+                   - L_a4L - L_a5L))
 
-    # right arm
-    ###########
-    tempangle, CFG['B1B2flexion'] =\
-        calc_two_link_angles(H.B1.length, db2, DB)
+        zero[9] = ((sin(phi_A1)*sin(psi_A) - sin(theta_A1)*cos(phi_A1)*
+                    cos(psi_A))*cos(phi_P) + (sin(phi_A1)*sin(theta_A1)*
+                    cos(psi_A) + sin(psi_A)*cos(phi_A1))*sin(phi_P))
 
-    tempangle2 = vec_angle(vec_project(H.B1.pos - pos_seat, 1),
-                           vec_project(pos_handr - H.B1.pos, 1))
+        return zero
 
-    tempangle2 = CFG['somersalt'] + vec_angle(np.array([[0,0,1]]).T,
-                                              pos_handr - H.B1.pos)
+    g_PJ1extension = -np.deg2rad(90.0)
+    g_J1J2flexion = np.deg2rad(75.0)
+    g_CA1extension = -np.deg2rad(15.0)
+    g_CA1adduction = np.deg2rad(2.0)
+    g_CA1rotation = np.deg2rad(2.0)
+    g_A1A2extension = -np.deg2rad(40.0)
+    g_alpha_y = L_hbF * np.cos(np.deg2rad(45.0))
+    g_alpha_z = L_hbF * np.sin(np.deg2rad(45.0))
+    g_beta_y = -L_hbR * np.cos(np.deg2rad(30.0))
+    g_beta_z = L_hbR * np.sin(np.deg2rad(30.0))
 
-    CFG['CB1elevation'] = tempangle2 - tempangle
-    CFG['CB1abduction'] = vec_angle(pos_handr - H.B1.pos,
-                                    vec_project(pos_handr - H.B1.pos, 1))
+    guess = [g_PJ1extension, g_J1J2flexion, g_CA1extension, g_CA1adduction,
+             g_CA1rotation, g_A1A2extension, g_alpha_y, g_alpha_z, g_beta_y,
+             g_beta_z]
 
-    # vector from the left shoulder to the left handlebar expressed in the
-    # benchmark coordinates
-    r_sh_hb = pos_handr - H.B1.pos
-    # express r_sh_hb in the chest frame
-    R_C_N = H.C.RotMat.T # transpose because Chris defined opposite my convention
-    r_sh_hb = R_C_N * r_sh_hb
-    # vector from the left shoulder to the hand (elbow bent) expressed in the
-    # chest frame
-    r_sh_h = np.mat([[0.],
-                     [-db2 * np.sin(CFG['B1B2flexion'])],
-                     [(-(H.B1.length + db2 *
-                      np.cos(CFG['B1B2flexion'])))]])
+    solution = fsolve(zero, guess)
 
-    # chris defines his rotations relative to the arm coordinates but the
-    # dist_hand_handle function is relative to the chest coordinates, thus the
-    # one negative guess
-    guess = np.array([-CFG['CB1elevation'], CFG['CB1abduction']])
-    # home in on the exact solution
-    elevation, abduction = fmin(dist_hand_handle, guess,
-                                args=(r_sh_hb, r_sh_h), disp=False)
-    # set the angles
-    CFG['CB1elevation'], CFG['CB1abduction'] = -elevation, abduction
+    cfg_dict = human.CFG.copy()
+    cfg_dict['PJ1extension'] = solution[0]
+    cfg_dict['J1J2flexion'] = solution[1]
+    cfg_dict['CA1extension'] = solution[2]
+    cfg_dict['CA1adduction'] = solution[3]
+    cfg_dict['CA1rotation'] = solution[4]
+    cfg_dict['A1A2extension'] = solution[5]
+    cfg_dict['somersault'] = somersault
+    cfg_dict['PK1extension'] = cfg_dict['PJ1extension']
+    cfg_dict['K1K2flexion'] = cfg_dict['J1J2flexion']
+    cfg_dict['CB1extension'] = cfg_dict['CA1extension']
+    cfg_dict['CB1abduction'] = -cfg_dict['CA1adduction']
+    cfg_dict['CB1rotation'] = -cfg_dict['CA1rotation']
+    cfg_dict['B1B2extension'] = cfg_dict['A1A2extension']
 
     # assign configuration to human and check that the solution worked
-    H.set_CFG_dict(CFG)
-
-    # make sure that the arms and legs actually went where they were supposed
-    # to within 3 decimal places
-    def limb_warning(limbName, desiredPos, actualPos,
-            desiredLen, actualLen, dc):
-        # round the values
-        desiredPos = np.round(desiredPos, dc)
-        actualPos = np.round(actualPos, dc)
-        desiredLen = np.round(desiredLen, dc)
-        actualLen = np.round(actualLen, dc)
-
-        message = '-' * 79 + '\n'
-        message += (limbName + "'s actual position does not match its " +
-                "desired position to {} decimal places.\n").format(str(decimal))
-        message += limbName +  " desired position:\n{}\n".format(desiredPos)
-        message += limbName +  " actual position:\n{}\n".format(actualPos)
-        message += limbName +  " desired base to end distance: {}\n".format(desiredLen)
-        message += limbName +  " actual base to end distance: {}\n".format(actualLen)
-        message += '-' * 79
-
-        if (actualPos != desiredPos).any():
-            print message
-
-    decimal = 3
-    limb_warning('Left leg', pos_footl, H.j[7].pos, DJ,
-            np.linalg.norm(H.j[7].pos - H.J1.pos), decimal)
-
-    limb_warning('Right leg', pos_footr, H.k[7].pos,
-            DK, np.linalg.norm(H.k[7].pos - H.K1.pos), decimal)
-
-    limb_warning('Left arm', pos_handl, H.a[6].pos,
-            DA, np.linalg.norm(H.a[6].pos - H.A1.pos), decimal)
-
-    limb_warning('Left arm', pos_handr, H.b[6].pos,
-            DB, np.linalg.norm(H.b[6].pos - H.B1.pos), decimal)
+    human.set_CFG_dict(cfg_dict)
 
     # draw rider for fun, but possibly to check results aren't crazy
-    if drawrider==True:
-        H.draw_visual(forward=(0,-1,0),up=(0,0,-1))
-        H.draw_vector('origin',pos_footl)
-        H.draw_vector('origin',pos_footr)
-        H.draw_vector('origin',pos_handl)
-        H.draw_vector('origin',pos_handr)
-        H.draw_vector('origin',H.A2.endpos)
-        H.draw_vector('origin',H.A2.endpos,(0,0,1))
-        H.draw_vector('origin',H.B2.endpos,(0,0,1))
-    return H
+    if drawrider:
+        human.draw()
+
+    return human

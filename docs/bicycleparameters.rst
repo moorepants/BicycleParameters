@@ -50,7 +50,7 @@ bicycleparameters Package
     :show-inheritance:
 
 :mod:`period` Module
----------------------
+--------------------
 
 .. automodule:: bicycleparameters.period
     :members:
@@ -74,7 +74,7 @@ bicycleparameters Package
     :show-inheritance:
 
 :mod:`tables` Module
--------------------
+--------------------
 
 .. automodule:: bicycleparameters.tables
     :members:

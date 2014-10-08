@@ -634,24 +634,38 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         # if there is a rider on the bike, make a simple stick figure
         if self.human:
             human = self.human
-            # K2: lower leg
-            plt.plot([human.k[7].pos[0, 0], human.K2.pos[0, 0]],
-                     [-human.k[7].endpos[2, 0], -human.K2.pos[2, 0]], 'k')
-            # K1: upper leg
-            plt.plot([human.K2.pos[0, 0], human.K1.pos[0, 0]],
-                     [-human.K2.pos[2, 0], -human.K1.pos[2, 0]], 'k')
+            mpar = self.parameters['Measured']
+            bpar = self.parameters['Benchmark']
+            # K2: lower leg, tip of foot to knee
+            start = rider.yeadon_vec_to_bicycle_vec(human.K2.end_pos, mpar, bpar)
+            end = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
+            plt.plot([start[0, 0], end[0, 0]],
+                     [-start[2, 0], -end[2, 0]], 'k')
+            # K1: upper leg, knee to hip
+            start = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
+            end = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
+            plt.plot([start[0, 0], end[0, 0]],
+                     [-start[2, 0], -end[2, 0]], 'k')
             # torso
-            plt.plot([human.K1.pos[0, 0], human.B1.pos[0, 0]],
-                     [-human.K1.pos[2, 0], -human.B1.pos[2, 0]], 'k')
+            start = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
+            end = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
+            plt.plot([start[0, 0], end[0, 0]],
+                     [-start[2, 0], -end[2, 0]], 'k')
             # B1: upper arm
-            plt.plot([human.B1.pos[0, 0], human.B2.pos[0, 0]],
-                     [-human.B1.pos[2, 0], -human.B2.pos[2, 0]], 'k')
-            # B2: lower arm
-            plt.plot([human.B2.pos[0, 0], human.b[6].pos[0, 0]],
-                     [-human.B2.pos[2, 0], -human.b[6].endpos[2, 0]], 'k')
+            start = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
+            end = rider.yeadon_vec_to_bicycle_vec(human.B2.pos, mpar, bpar)
+            plt.plot([start[0, 0], end[0, 0]],
+                     [-start[2, 0], -end[2, 0]], 'k')
+            # B2: lower arm, elbow to tip of fingers
+            start = rider.yeadon_vec_to_bicycle_vec(human.B2.pos, mpar, bpar)
+            end = rider.yeadon_vec_to_bicycle_vec(human.B2.end_pos, mpar, bpar)
+            plt.plot([start[0, 0], end[0, 0]],
+                     [-start[2, 0], -end[2, 0]], 'k')
             # C: chest/head
-            plt.plot([human.B1.pos[0, 0], human.C.endpos[0, 0]],
-                     [-human.B1.pos[2, 0], -human.C.endpos[2, 0]], 'k')
+            start = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
+            end = rider.yeadon_vec_to_bicycle_vec(human.C.end_pos, mpar, bpar)
+            plt.plot([start[0, 0], end[0, 0]],
+                     [-start[2, 0], -end[2, 0]], 'k')
 
         if show:
             fig.show()
@@ -664,8 +678,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         the Whipple bicycle model linearized about the nominal
         configuration.
 
-        Paramters
-        ---------
+        Parameters
+        ----------
         nominal : boolean, optional
             The default is false and uarrays are returned with the
             calculated uncertainties. If true ndarrays are returned without
@@ -839,8 +853,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         fig : matplotlib figure, optional
             A figure to plot to.
         generic : boolean
-            If true the lines will all be the same color and the modes will not
-            be labeled.
+            If true the lines will all be the same color and the modes will
+            not be labeled.
         color : matplotlib color
             If generic is true this will be the color of the plot lines.
         largest : boolean
@@ -848,9 +862,9 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         Notes
         -----
-        If you have a flywheel defined, body D, it will completely be ignored
-        in these results. These results are strictly for the Whipple bicycle
-        model.
+        If you have a flywheel defined, body D, it will completely be
+        ignored in these results. These results are strictly for the Whipple
+        bicycle model.
 
         """
 
@@ -996,7 +1010,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         """Returns a figure with the Bode plots of multiple bicycles.
 
         Parameters
-        ---------
+        ----------
         speeds : list
             A list of speeds at which to evaluate the system.
         u : integer

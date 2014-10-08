@@ -7,9 +7,9 @@ n = open('ChildYeadonMeasScaled.txt', 'w')
 
 for line in f:
     if line.startswith('L'):
-        var, val = line.strip().split('=')
+        var, val = line.strip().split(':')
         scaled = scale * float(val)
-        n.write(var + '=' + str(scaled) + '\n')
+        n.write(var + ': ' + str(scaled) + '\n')
     else:
         n.write(line)
 

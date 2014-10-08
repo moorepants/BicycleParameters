@@ -5,6 +5,9 @@ Bicycle Parameters Module
 A python program designed to produce and manipulate the basic parameters needed
 for the Whipple bicycle model.
 
+.. image:: https://travis-ci.org/moorepants/BicycleParameters.svg?branch=master
+   :target: https://travis-ci.org/moorepants/BicycleParameters
+
 Dependencies
 ============
 
@@ -15,7 +18,7 @@ Required
 - `Numpy >= 1.6.1 <http://numpy.scipy.org/>`_
 - `Matplotlib >= 1.1.1 <http://matplotlib.sourceforge.net/>`_
 - `Uncertainties < 2.0 <http://pypi.python.org/pypi/uncertainties/>`_
-- `yeadon < 1.0 <http://pypi.python.org/pypi/yeadon/>`_
+- `yeadon >= 1.1.0 <http://pypi.python.org/pypi/yeadon/>`_
 - `DynamicistToolKit >= 0.1.0
   <http://pypi.python.org/pypi/DynamicistToolKit>`_
 
@@ -78,9 +81,6 @@ Release Notes
 0.2.0
 -----
 
-- Updated core dependencies to a minimum from the Ubuntu 12.04 release.
-- Tested with DTK 0.1.0 to 0.3.5.
-- Added Travis support.
 - Commands using the state space form of the Whipple model have been reordered
   to [roll angle, steer angle, roll rate, steer rate]
 - Added another rider's measurments.
@@ -88,12 +88,16 @@ Release Notes
 - Added the Gyrobike and the ability to manage it's flywheel rigidbody.
 - Fixed a bug in `calculate_abc_geometry()` that gave incorrect geometry
   values.
-- Better error checking when putting a rider on the bicycle.
 - Handles two additional points for the Davis Instrumented Bicycle.
-- Added a chiled sized person based on scaling Charlie's measurments.
+- Added a child sized person based on scaling Charlie's measurments.
 - Added Bode plot commands.
 - Added nominal output options for several methods.
 - Added a dependency to DynamicistToolKit
+- Updated core dependencies to a minimum from the Ubuntu 12.04 release.
+- Tested with DTK 0.1.0 to 0.3.5.
+- Added Travis support.
+- The minimum yeadon version is bumped to 1.1.1 and code updated to reflect the
+  new yeadon api.
 
 0.1.3
 -----
