@@ -83,6 +83,14 @@ Documentation
 Please refer to the `online documentation
 <http://packages.python.org/BicycleParameters>`_ for more information.
 
+Grant Information
+=================
+
+This material is partially based upon work supported by the National Science
+Foundation under Grant No. 0928339. Any opinions, findings, and conclusions or
+recommendations expressed in this material are those of the authors and do not
+necessarily reflect the views of the National Science Foundation.
+
 Release Notes
 =============
 
