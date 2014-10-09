@@ -69,6 +69,14 @@ Example Code
     >>> speeds = np.linspace(0., 10., num=100)
     >>> rigid.plot_eigenvalues_vs_speed(speeds)
 
+Sample Data
+===========
+
+Some sample data is included in the repository but a full source with all the
+raw data files can be downloaded from here:
+
+http://dx.doi.org/10.6084/m9.figshare.1198429
+
 Documentation
 =============
 

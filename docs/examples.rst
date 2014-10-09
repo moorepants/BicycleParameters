@@ -104,11 +104,10 @@ for details about these input files.
 
 Example Data
 ------------
-Example data is available as a `bz2 tarball`_ or a `zip file`_ [~90mb].
 
-.. _bz2 tarball: http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/bicycleparameters-data.tar.bz2
+Example data is available here:
 
-.. _zip file: http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/bicycleparameters-data.zip
+http://dx.doi.org/10.6084/m9.figshare.1198429
 
 Loading bicycle data
 ====================

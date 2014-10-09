@@ -4,7 +4,6 @@
 BicycleParameters Data File Information
 =======================================
 
-
 .. _bicycle-parameter-input:
 
 bicycles/<bicycle name>/Parameters/<bicycle name>Benchmark.txt
@@ -66,8 +65,7 @@ These parameters are assumed to equal zero if not given.
 bicycles/<bicycle name>/RawData/<bicycle name>Measured.txt
 ==========================================================
 This documentation does not contain the complete details of acquiring the raw
-data. Please refer to [Moore2010]_ and our `website
-<http://biosport.ucdavis.edu/bicycle>`_ for more information.
+data. Please refer to [Moore2012]_ for more information.
 
 ``<bicycle name>Measured.txt`` contains the raw measurement data for a bicycle.
 The file should have one variable on each line in the following format::
@@ -161,14 +159,14 @@ with these dimensions:
   reversed [m]
 
 The details of how to take these measurements can be found in our `raw data
-sheet`_ and on our webpage_.
+sheet`_ and in [Moore2012]_.
 
 .. _raw data sheet: http://bit.ly/jIeKKB
-.. _webpage: http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement/frame-dimensions
 
 Rider Configuration Details
 ---------------------------
-A rider can be situated on the bicycle if other raw bicycle measurements are provided.
+A rider can be situated on the bicycle if other raw bicycle measurements are
+provided.
 
 - ``lsp`` : the length of the seat post (i.e. the length from the intersection
   of the top tube with the seat tube to the top of the seat along the axis of
