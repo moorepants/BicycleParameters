@@ -2,7 +2,7 @@
 
 from setuptools import setup, find_packages
 
-from bicycleparameters import __version__
+exec(open('bicycleparameters/version.py').read())
 
 setup(
     name='BicycleParameters',
