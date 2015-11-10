@@ -5,7 +5,7 @@ import numpy as np
 from uncertainties import umath, unumpy
 
 # local modules
-from geometry import calculate_l1_l2, fwheel_to_handlebar_ref
+from .geometry import calculate_l1_l2, fwheel_to_handlebar_ref
 
 def cartesian(arrays, out=None):
     """
@@ -152,7 +152,7 @@ def com_line(alpha, a, par, part, l1, l2):
         u1, u2 = fwheel_to_handlebar_ref(par['lam'], l1, l2)
         b = -a / umath.cos(beta) - (par['rF'] + u2) + (par['w'] - u1) * umath.tan(beta)
     else:
-        print part, "doesn't exist"
+        print(part, "doesn't exist")
         raise KeyError
 
     return m, b, beta

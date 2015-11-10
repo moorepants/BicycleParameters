@@ -11,13 +11,13 @@ from uncertainties import unumpy
 from dtk import control
 
 # local module imports
-import bicycle
-import inertia
-import com
-import io
-import geometry
-import period
-import rider
+from . import bicycle
+from . import inertia
+from . import com
+from . import io
+from . import geometry
+from . import period
+from . import rider
 #from plot import plot_eigenvalues
 
 class Bicycle(object):
@@ -45,7 +45,7 @@ class Bicycle(object):
 for your bicycle in this directory: '{1}'. Then I can actually
 create a bicycle object. You may either need to change to the
 correct directory or reset the pathToData argument.""".format(bicycleName, pathToData)
-            print mes
+            print(mes)
             return None
 
     def __init__(self, bicycleName, pathToData='.', forceRawCalc=False,
@@ -113,7 +113,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         isRawDataDir = 'RawData' in os.listdir(self.directory)
 
         if isRawDataDir:
-            print "Found the RawData directory:", rawDataDir
+            print("Found the RawData directory:", rawDataDir)
             isMeasuredFile = bicycleName + 'Measured.txt' in os.listdir(rawDataDir)
         else:
             isMeasuredFile = False
@@ -127,7 +127,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         conTwo = not forceRawCalc and not isBenchmark
 
         if conOne or conTwo:
-            print "Recalcuting the parameters."
+            print("Recalcuting the parameters.")
             par, extras = self.calculate_from_measured(
                     forcePeriodCalc=forcePeriodCalc)
             self.parameters['Benchmark'] = par
@@ -138,7 +138,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             # we already have what we need
             stmt1 = "Looks like you've already got some parameters for %s, "
             stmt2 = "use forceRawCalc to recalculate."
-            print (stmt1 + stmt2) % self.bicycleName
+            print((stmt1 + stmt2) % self.bicycleName)
             # load the measured.txt file if it exists
             pathToRawFile = os.path.join(rawDataDir,
                     self.bicycleName + 'Measured.txt')
@@ -148,10 +148,10 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             except IOError:
                 pass
         else:
-            print '''There is no data available. Create
+            print('''There is no data available. Create
             bicycles/{sn}/Parameters/{sn}Benchmark.txt and/or fill
             bicycle/{sn}/RawData/ with pendulum data mat files and the
-            {sn}Measured.txt file'''.format(sn=bicycleName)
+            {sn}Measured.txt file'''.format(sn=bicycleName))
 
     def __str__(self):
         if self.hasRider:
@@ -225,7 +225,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             if os.path.isdir(photoDir):
                 os.system('eog ' + os.path.join(photoDir, '*.*'))
             else:
-                print "There are no photos of your bicycle."
+                print("There are no photos of your bicycle.")
         except:
             raise NotImplementedError("This works only works for linux with " +
                     "Eye of Gnome installed.")
@@ -353,7 +353,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             # this is the distance from the assembly com to the steer axis
             distance = geometry.distance_to_steer_axis(par['w'], par['c'],
                     par['lam'], cAss)
-            print "handlebar cg distance", distance
+            print("handlebar cg distance", distance)
 
             # now calculate the inertia about the steer axis of the rotated frame
             iAss = inertia.parallel_axis(iAssRot, mAss, np.array([distance, 0., 0.]))
@@ -1168,7 +1168,7 @@ def calculate_benchmark_from_measured(mp):
     IPxx, IPyy, IPzz = inertia.tube_inertia(mp['lP'], mp['mP'],
                                             mp['dP'] / 2., 0.)
     torStiff = inertia.torsional_pendulum_stiffness(IPyy, mp['TtP1'])
-    #print "Torsional pendulum stiffness:", torStiff
+    #print("Torsional pendulum stiffness:", torStiff)
 
     # calculate the wheel x/z inertias
     par['IFxx'] = inertia.tor_inertia(torStiff, mp['TtF1'])
