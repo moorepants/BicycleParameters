@@ -38,8 +38,8 @@ badKeys = ['frontWheelPressure',
            'rearWheelPressure']
 
 # go through the dictionary of raw data and write it to the individual files
-for k, v in list(udata.items()):
-    print(k, v)
+for k, v in udata.items():
+    print k, v
     isPeriod = k.startswith('T')
     isBad = k in badKeys
     # don't add the periods
@@ -48,19 +48,19 @@ for k, v in list(udata.items()):
             if v.shape[0] == 3:
                 # v is a (3, 8) array
                 vn = v.T
-                print(k, "is a 3x8 array")
+                print k, "is a 3x8 array"
             else:
                 # v is a (8,) array
                 vn = v
-                print(k, "is a 8x array")
+                print k, "is a 8x array"
         except AttributeError:
             # v isn't an array
             vn = v
-            print(k, "is not an array")
+            print k, "is not an array"
         if k == 'lC' or k == 'mC' or k == 'dC':
             # these are not arrays, so make them one
             vn = ones(8, dtype='object') * v
-            print("Made", k, "into and array")
+            print "Made", k, "into and array"
             # rename k
             k = k[0] + 'P'
         for i, val in enumerate(vn):
@@ -81,8 +81,8 @@ for k, v in list(udata.items()):
             #print shortnames[i], line
             measuredFiles[i].write(line)
     else:
-        print("Did not add:", k)
-    print('\n')
+        print "Did not add:", k
+    print '\n'
 
 for openfile in measuredFiles:
     openfile.write('g = 9.81 +/- 0.01\n')

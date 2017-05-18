@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from uncertainties import ufloat
 
 # local modules
-from .io import load_pendulum_mat_file
+from io import load_pendulum_mat_file
 
 def average_rectified_sections(data):
     '''Returns a slice of an oscillating data vector based on the max and min
@@ -107,7 +107,7 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
         os.makedirs(pathToPlotDir)
 
     for f in filenames:
-        print("Calculating the period for:", f)
+        print "Calculating the period for:", f
         # load the pendulum data
         pathToMatFile = os.path.join(directory, f)
         matData = load_pendulum_mat_file(pathToMatFile)
@@ -120,7 +120,7 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
         period = get_period_from_truncated(matData['data'],
                                            sampleRate,
                                            pathToPlotFile)
-        print("The period is:", period, "\n")
+        print "The period is:", period, "\n"
         # either append the the period or if it isn't there yet, then
         # make a new list
         try:
@@ -129,7 +129,7 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
             periods[periodKey] = [period]
 
     # now average all the periods
-    for k, v in list(periods.items()):
+    for k, v in periods.items():
         if k.startswith('T'):
             periods[k] = np.mean(v)
 
@@ -161,7 +161,7 @@ def check_for_period(mp, forkIsSplit):
     # recalculation
     ncTSum = 0
     ntTSum = 0
-    for key in list(mp.keys()):
+    for key in mp.keys():
         # check for any periods in the keys
         if key[:2] == 'Tc':
             ncTSum += 1
@@ -349,7 +349,7 @@ def get_period_key(matData, forkIsSplit):
 
 def get_sample_rate(matData):
     '''Returns the sample rate for the data.'''
-    if 'ActualRate' in list(matData.keys()):
+    if 'ActualRate' in matData.keys():
         sampleRate = matData['ActualRate']
     else:
         sampleRate = matData['sampleRate']

@@ -79,7 +79,7 @@ def load_pendulum_mat_file(pathToFile):
     loadmat(pathToFile, mdict=pendDat)
     #clean up the matlab imports
     del(pendDat['__globals__'], pendDat['__header__'], pendDat['__version__'])
-    for k, v in list(pendDat.items()):
+    for k, v in pendDat.items():
         try:
             #change to an ascii string
             pendDat[k] = v[0].encode('ascii')
@@ -98,7 +98,7 @@ def load_pendulum_mat_file(pathToFile):
 def remove_uncertainties(dictionary):
     '''Returns a dictionary with the uncertainties removed.'''
     noUncert = {}
-    for k, v in list(dictionary.items()):
+    for k, v in dictionary.items():
         try:
             # this is the case if the value is a single uncertainty
             noUncert[k] = v.nominal_value
@@ -131,7 +131,7 @@ def write_parameter_text_file(pathToTxtFile, parDict):
     # make the Parameters directory if it doesn't exist
     head, tail = os.path.split(pathToTxtFile)
     if not os.path.isdir(head):
-        print("Created direcotry %s" % head)
+        print "Created direcotry %s" % head
         os.makedirs(head)
 
     try:
@@ -140,7 +140,7 @@ def write_parameter_text_file(pathToTxtFile, parDict):
         del f
         ans = None
         while ans !=  'y' and ans != 'n':
-            ans = input("%s exists already. Are you sure you want" \
+            ans = raw_input("%s exists already. Are you sure you want" \
                             " to overwrite it? (y or n)\n" % pathToTxtFile)
         if ans == 'y':
             f = open(pathToTxtFile, 'w')
@@ -153,10 +153,10 @@ def write_parameter_text_file(pathToTxtFile, parDict):
         for key in keys:
             f.write(key + ' = ' + str(parDict[key]) + '\n')
         f.close()
-        print("Parameters saved to %s" % pathToTxtFile)
+        print "Parameters saved to %s" % pathToTxtFile
         return True
     except UnboundLocalError:
-        print("%s was not saved." % pathToTxtFile)
+        print "%s was not saved." % pathToTxtFile
         return False
 
 def space_out_camel_case(s, output='string'):
@@ -202,7 +202,7 @@ def write_periods_to_file(pathToRawFile, mp):
             baseData += line
     f.close()
     # add the periods to the base data
-    periodKeys = [x for x in list(mp.keys()) if x.startswith('T')]
+    periodKeys = [x for x in mp.keys() if x.startswith('T')]
     periodKeys.sort()
     withPeriods = baseData
     for k in periodKeys:

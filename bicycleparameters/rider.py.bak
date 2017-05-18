@@ -6,8 +6,8 @@ from numpy import sin, cos, sqrt
 from scipy.optimize import fsolve
 import yeadon
 
-from .io import remove_uncertainties
-from .inertia import combine_bike_rider
+from io import remove_uncertainties
+from inertia import combine_bike_rider
 
 
 def yeadon_vec_to_bicycle_vec(vector, measured_bicycle_par,

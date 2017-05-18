@@ -1,1 +1,1 @@
-from test_bicycleparameters import *
+from .test_bicycleparameters import *
