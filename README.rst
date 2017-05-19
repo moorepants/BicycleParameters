@@ -13,9 +13,9 @@ Dependencies
 
 Required
 --------
-- `Python 2.7 (or >= 3.3) <http://www.python.org/>`_
-- `Scipy >= 0.9.0 <http://www.scipy.org/>`_
+- `Python 2.7 or >= 3.3 <http://www.python.org/>`_
 - `Numpy >= 1.6.1 <http://numpy.scipy.org/>`_
+- `Scipy >= 0.9.0 <http://www.scipy.org/>`_
 - `Matplotlib >= 1.1.1 <http://matplotlib.sourceforge.net/>`_
 - `Uncertainties >= 2.0.0 <http://pypi.python.org/pypi/uncertainties/>`_
 - `yeadon >= 1.1.0 <http://pypi.python.org/pypi/yeadon/>`_
@@ -94,7 +94,7 @@ necessarily reflect the views of the National Science Foundation.
 Release Notes
 =============
 
-dev
+1.0.0
 -----
 
 - Support Python 3

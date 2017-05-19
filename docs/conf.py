@@ -44,7 +44,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'BicycleParameters'
-copyright = u'2011, Jason Keith Moore'
+copyright = u'2011-2016, Jason Keith Moore'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
