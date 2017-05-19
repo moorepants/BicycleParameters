@@ -4,7 +4,7 @@ from math import pi
 import numpy as np
 from uncertainties import unumpy, umath
 
-from bicycle import trail, lambda_from_abc
+from .bicycle import trail, lambda_from_abc
 
 def calculate_benchmark_geometry(mp, par):
     '''Returns the wheelbase, steer axis tilt and the trail.

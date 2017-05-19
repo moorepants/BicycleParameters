@@ -13,7 +13,7 @@ Dependencies
 
 Required
 --------
-- `Python 2.7 <http://www.python.org/>`_
+- `Python 2.7 (or >= 3.3) <http://www.python.org/>`_
 - `Scipy >= 0.9.0 <http://www.scipy.org/>`_
 - `Numpy >= 1.6.1 <http://numpy.scipy.org/>`_
 - `Matplotlib >= 1.1.1 <http://matplotlib.sourceforge.net/>`_
@@ -25,7 +25,7 @@ Required
 Optional
 --------
 
-These are required to bulid the documentation:
+These are required to build the documentation:
 
 - `Sphinx <http://sphinx.pocoo.org/>`_
 - `Numpydoc <http://pypi.python.org/pypi/numpydoc>`_
@@ -42,7 +42,7 @@ There are other options for getting the source code:
 1. Clone the source code with Git: ``git clone
    git://github.com/moorepants/BicycleParameters.git``
 2. `Download the source from Github`__.
-3. Dowload the source from pypi__.
+3. Download the source from pypi__.
 
 .. __: https://github.com/moorepants/BicycleParameters
 .. __: http://pypi.python.org/pypi/BicycleParameters
@@ -94,6 +94,11 @@ necessarily reflect the views of the National Science Foundation.
 Release Notes
 =============
 
+dev
+-----
+
+- Support Python 3
+
 0.2.0
 -----
 
@@ -105,7 +110,7 @@ Release Notes
 - Fixed a bug in `calculate_abc_geometry()` that gave incorrect geometry
   values.
 - Handles two additional points for the Davis Instrumented Bicycle.
-- Added a child sized person based on scaling Charlie's measurments.
+- Added a child sized person based on scaling Charlie's measurements.
 - Added Bode plot commands.
 - Added nominal output options for several methods.
 - Added a dependency to DynamicistToolKit

@@ -131,7 +131,7 @@ def write_parameter_text_file(pathToTxtFile, parDict):
     # make the Parameters directory if it doesn't exist
     head, tail = os.path.split(pathToTxtFile)
     if not os.path.isdir(head):
-        print "Created direcotry %s" % head
+        print("Created direcotry %s" % head)
         os.makedirs(head)
 
     try:
@@ -153,10 +153,10 @@ def write_parameter_text_file(pathToTxtFile, parDict):
         for key in keys:
             f.write(key + ' = ' + str(parDict[key]) + '\n')
         f.close()
-        print "Parameters saved to %s" % pathToTxtFile
+        print("Parameters saved to %s" % pathToTxtFile)
         return True
     except UnboundLocalError:
-        print "%s was not saved." % pathToTxtFile
+        print("%s was not saved." % pathToTxtFile)
         return False
 
 def space_out_camel_case(s, output='string'):

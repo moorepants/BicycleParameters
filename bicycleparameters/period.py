@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from uncertainties import ufloat
 
 # local modules
-from io import load_pendulum_mat_file
+from .io import load_pendulum_mat_file
 
 def average_rectified_sections(data):
     '''Returns a slice of an oscillating data vector based on the max and min
@@ -107,7 +107,7 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
         os.makedirs(pathToPlotDir)
 
     for f in filenames:
-        print "Calculating the period for:", f
+        print("Calculating the period for:", f)
         # load the pendulum data
         pathToMatFile = os.path.join(directory, f)
         matData = load_pendulum_mat_file(pathToMatFile)
@@ -120,7 +120,7 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
         period = get_period_from_truncated(matData['data'],
                                            sampleRate,
                                            pathToPlotFile)
-        print "The period is:", period, "\n"
+        print("The period is:", period, "\n")
         # either append the the period or if it isn't there yet, then
         # make a new list
         try:
