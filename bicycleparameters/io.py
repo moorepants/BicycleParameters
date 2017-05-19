@@ -79,7 +79,7 @@ def load_pendulum_mat_file(pathToFile):
     loadmat(pathToFile, mdict=pendDat)
     #clean up the matlab imports
     del(pendDat['__globals__'], pendDat['__header__'], pendDat['__version__'])
-    for k, v in pendDat.items():
+    for k, v in list(pendDat.items()):
         try:
             #change to an ascii string
             pendDat[k] = v[0].encode('ascii')
@@ -98,7 +98,7 @@ def load_pendulum_mat_file(pathToFile):
 def remove_uncertainties(dictionary):
     '''Returns a dictionary with the uncertainties removed.'''
     noUncert = {}
-    for k, v in dictionary.items():
+    for k, v in list(dictionary.items()):
         try:
             # this is the case if the value is a single uncertainty
             noUncert[k] = v.nominal_value
@@ -140,7 +140,7 @@ def write_parameter_text_file(pathToTxtFile, parDict):
         del f
         ans = None
         while ans !=  'y' and ans != 'n':
-            ans = raw_input("%s exists already. Are you sure you want" \
+            ans = input("%s exists already. Are you sure you want" \
                             " to overwrite it? (y or n)\n" % pathToTxtFile)
         if ans == 'y':
             f = open(pathToTxtFile, 'w')
@@ -202,7 +202,7 @@ def write_periods_to_file(pathToRawFile, mp):
             baseData += line
     f.close()
     # add the periods to the base data
-    periodKeys = [x for x in mp.keys() if x.startswith('T')]
+    periodKeys = [x for x in list(mp.keys()) if x.startswith('T')]
     periodKeys.sort()
     withPeriods = baseData
     for k in periodKeys:

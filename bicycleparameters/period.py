@@ -129,7 +129,7 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
             periods[periodKey] = [period]
 
     # now average all the periods
-    for k, v in periods.items():
+    for k, v in list(periods.items()):
         if k.startswith('T'):
             periods[k] = np.mean(v)
 
@@ -161,7 +161,7 @@ def check_for_period(mp, forkIsSplit):
     # recalculation
     ncTSum = 0
     ntTSum = 0
-    for key in mp.keys():
+    for key in list(mp.keys()):
         # check for any periods in the keys
         if key[:2] == 'Tc':
             ncTSum += 1
@@ -349,7 +349,7 @@ def get_period_key(matData, forkIsSplit):
 
 def get_sample_rate(matData):
     '''Returns the sample rate for the data.'''
-    if 'ActualRate' in matData.keys():
+    if 'ActualRate' in list(matData.keys()):
         sampleRate = matData['ActualRate']
     else:
         sampleRate = matData['sampleRate']

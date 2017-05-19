@@ -26,14 +26,14 @@ def package_data(pathToData):
             pathToFolder = os.path.join(pathToBicycles, bike, folder)
             try:
                 filesInFolder = os.listdir(pathToFolder)
-                print "Searching", pathToFolder
+                print("Searching", pathToFolder)
             except OSError:
-                print "Did not find:", pathToFolder
+                print("Did not find:", pathToFolder)
             else:
                 for f in filesInFolder:
                     if rule(f, bike):
                         pathToFile = os.path.join(pathToFolder, f)
-                        print "Added:", pathToFile
+                        print("Added:", pathToFile)
                         tar.add(pathToFile,
                                 arcname=os.path.join('data', 'bicycles',
                                     pathToFile.split('bicycles')[1][1:]))
@@ -55,14 +55,14 @@ def package_data(pathToData):
             pathToFolder = os.path.join(pathToRiders, rider, folder)
             try:
                 filesInFolder = os.listdir(pathToFolder)
-                print "Searching", pathToFolder
+                print("Searching", pathToFolder)
             except OSError:
-                print "Did not find:", pathToFolder
+                print("Did not find:", pathToFolder)
             else:
                 for f in filesInFolder:
                     if rule(f, rider):
                         pathToFile = os.path.join(pathToFolder, f)
-                        print "Added:", pathToFile
+                        print("Added:", pathToFile)
                         tar.add(pathToFile, arcname=os.path.join('data', 'riders',
                             pathToFile.split('riders')[1][1:]))
                         zipFile.write(pathToFile,

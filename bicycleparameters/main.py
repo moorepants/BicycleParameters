@@ -35,8 +35,8 @@ class Bicycle(object):
         try:
             pathToBicycle = os.path.join(pathToData, 'bicycles', bicycleName)
             if os.path.isdir(pathToBicycle) == True:
-                print("We have foundeth a directory named: " +
-                      "{0}.".format(pathToBicycle))
+                print(("We have foundeth a directory named: " +
+                      "{0}.".format(pathToBicycle)))
                 return super(Bicycle, cls).__new__(cls)
             else:
                 raise ValueError
@@ -118,7 +118,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         else:
             isMeasuredFile = False
 
-        isBenchmark = 'Benchmark' in self.parameters.keys()
+        isBenchmark = 'Benchmark' in list(self.parameters.keys())
 
         # the user wants to force a recalc and the data is there
         conOne = forceRawCalc and isRawDataDir and isMeasuredFile
@@ -132,8 +132,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                     forcePeriodCalc=forcePeriodCalc)
             self.parameters['Benchmark'] = par
             self.extras = extras
-            print("The glory of the %s parameters are upon you!"
-                  % self.bicycleName)
+            print(("The glory of the %s parameters are upon you!"
+                  % self.bicycleName))
         elif not forceRawCalc and isBenchmark:
             # we already have what we need
             stmt1 = "Looks like you've already got some parameters for %s, "
@@ -182,18 +182,18 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                 os.makedirs(pathToCombDir)
             fileName = self.riderName + self.bicycleName
             # don't resave the measured parameters
-            psets = [x for x in self.riderPar.keys() if x != 'Measured']
+            psets = [x for x in list(self.riderPar.keys()) if x != 'Measured']
             parameters = self.riderPar
-            print(('This bicycle has a rider, {0}, so the data will be ' +
-                   'saved here: {1}').format(self.riderName, pathToParDir))
+            print((('This bicycle has a rider, {0}, so the data will be ' +
+                   'saved here: {1}').format(self.riderName, pathToParDir)))
         else:
             pathToParDir = os.path.join(self.directory, 'Parameters')
             fileName = self.bicycleName
             # don't resave the measured parameters
-            psets = [x for x in self.parameters.keys() if x != 'Measured']
+            psets = [x for x in list(self.parameters.keys()) if x != 'Measured']
             parameters = self.parameters
-            print(('This bicycle has no rider so the data will be ' +
-                   'saved here: {0}').format(pathToParDir))
+            print((('This bicycle has no rider so the data will be ' +
+                   'saved here: {0}').format(pathToParDir)))
 
         if filetype == 'text':
             for pset in psets:
@@ -270,10 +270,10 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         # load in the Benchmark parameter set
         par = self.parameters['Benchmark']
 
-        if 'mD' in par.keys():
-            print("You have a flywheel defined. Beware that it is ignored in "
+        if 'mD' in list(par.keys()):
+            print(("You have a flywheel defined. Beware that it is ignored in "
                 + "the calculations and the results do not reflect that it is "
-                + "there.")
+                + "there."))
 
         # there should always be either an H (handlebar/fork) and sometimes
         # there is a G (handlebar) and S (fork) if the fork and handlebar were
@@ -420,11 +420,11 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         # first check to see if a rider has already been added
         if self.hasRider == True:
-            print(("D'oh! This bicycle already has {0} as a " +
-                  "rider!").format(self.riderName))
+            print((("D'oh! This bicycle already has {0} as a " +
+                  "rider!").format(self.riderName)))
         else:
-            print("There is no rider on the bicycle, now adding " +
-                  "{0}.".format(riderName))
+            print(("There is no rider on the bicycle, now adding " +
+                  "{0}.".format(riderName)))
             pathToData = os.path.split(os.path.split(self.directory)[0])[0]
             # get the path to the rider's folder
             pathToRider = os.path.join(pathToData, 'riders', riderName)
@@ -438,9 +438,9 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                 try:
                     measuredPar = self.parameters['Measured']
                 except KeyError:
-                    print('The measured bicycle parameters need to be ' +
+                    print(('The measured bicycle parameters need to be ' +
                           'available, create your bicycle such that they ' +
-                          'are available.')
+                          'are available.'))
                     raise
                 riderPar, human, bicycleRiderPar =\
                     rider.configure_rider(pathToRider, bicycleName, bicyclePar,
@@ -453,21 +453,21 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                     riderPar = io.load_parameter_text_file(pathToParFile)
                 except IOError:
                     # file doesn't exist so run the calculations
-                    print("No parameter files found, calculating the human " +
-                          "configuration.")
+                    print(("No parameter files found, calculating the human " +
+                          "configuration."))
                     try:
                         measuredPar = self.parameters['Measured']
                     except KeyError:
-                        print('The measured bicycle parameters need to be ' +
+                        print(('The measured bicycle parameters need to be ' +
                               'available, create your bicycle such that they ' +
-                              'are available.')
+                              'are available.'))
                         raise
                     riderPar, human, bicycleRiderPar =\
                         rider.configure_rider(pathToRider, bicycleName,
                                 bicyclePar, measuredPar, draw)
                 else:
-                    print("Loaded the precalculated parameters from " +
-                          "{0}".format(pathToParFile))
+                    print(("Loaded the precalculated parameters from " +
+                          "{0}".format(pathToParFile)))
                     bicycleRiderPar = inertia.combine_bike_rider(bicyclePar, riderPar)
             # set the attributes
             self.riderPar['Benchmark'] = riderPar
@@ -575,7 +575,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         if pendulum:
             # plot the pendulum axes for the measured parts
-            for j, pair in enumerate(slopes.items()):
+            for j, pair in enumerate(list(slopes.items())):
                 part, slopeSet = pair
                 xcom, zcom = par['x' + part], par['z' + part]
                 for i, m in enumerate(slopeSet):
@@ -999,7 +999,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         outputNames = ['Roll Angle', 'Steer Angle', 'Roll Rate', 'Steer Rate']
         inputNames = ['Roll Torque', 'Steer Torque']
 
-        if 'title' not in kwargs.keys():
+        if 'title' not in list(kwargs.keys()):
             kwargs['title'] = inputNames[u] + ' to ' + outputNames[y]
 
         bode = control.bode((A, B[:, u], C[y, :], D[y, u]), w, **kwargs)
@@ -1061,7 +1061,7 @@ def get_parts_in_parameters(par):
         'S', 'G', 'D'.
 
     '''
-    parts = [x[1] for x in par.keys() if x.startswith('m')]
+    parts = [x[1] for x in list(par.keys()) if x.startswith('m')]
     return parts
 
 def calculate_benchmark_from_measured(mp):
@@ -1108,7 +1108,7 @@ def calculate_benchmark_from_measured(mp):
     slopes, intercepts, betas = com.part_com_lines(mp, par, forkIsSplit)
 
     # calculate the centers of mass
-    for part in slopes.keys():
+    for part in list(slopes.keys()):
         par['x' + part], par['z' + part] = com.center_of_mass(slopes[part],
             intercepts[part])
 
@@ -1181,7 +1181,7 @@ def calculate_benchmark_from_measured(mp):
     pendulumInertias = {}
 
     # calculate the in plane moments of inertia
-    for part, slopeSet in slopes.items():
+    for part, slopeSet in list(slopes.items()):
         # the number of orientations for this part
         numOrien = len(slopeSet)
         # intialize arrays to store the inertia values and orientation angles
@@ -1241,7 +1241,7 @@ def is_fork_split(mp):
     # this isn't that robust, for example if you had an S and no G then this
     # wouldn't catch it
     forkIsSplit = False
-    for key in mp.keys():
+    for key in list(mp.keys()):
         # if there is an 'S' then the fork is split in two parts
         if key[:1] == 'S' or key[1:2] == 'S':
             forkIsSplit = True

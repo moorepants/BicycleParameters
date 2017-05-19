@@ -27,7 +27,7 @@ def calculate_benchmark_geometry(mp, par):
     par['rR'] = mp['dR'] / 2./ pi / mp['nR']
 
     # calculate the frame/fork fundamental geometry
-    if 'w' in mp.keys(): # if there is a wheelbase
+    if 'w' in list(mp.keys()): # if there is a wheelbase
         # steer axis tilt in radians
         par['lam'] = pi / 180. * (90. - mp['gamma'])
         # wheelbase

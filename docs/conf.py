@@ -43,8 +43,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'BicycleParameters'
-copyright = u'2011, Jason Keith Moore'
+project = 'BicycleParameters'
+copyright = '2011, Jason Keith Moore'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -181,8 +181,8 @@ htmlhelp_basename = 'BicycleParametersdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'BicycleParameters.tex', u'BicycleParameters Documentation',
-   u'Jason Keith Moore', 'manual'),
+  ('index', 'BicycleParameters.tex', 'BicycleParameters Documentation',
+   'Jason Keith Moore', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -214,6 +214,6 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'bicycleparameters', u'BicycleParameters Documentation',
-     [u'Jason Keith Moore'], 1)
+    ('index', 'bicycleparameters', 'BicycleParameters Documentation',
+     ['Jason Keith Moore'], 1)
 ]

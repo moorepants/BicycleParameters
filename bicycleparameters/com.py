@@ -76,7 +76,7 @@ def center_of_mass(slopes, intercepts):
         The ordinate of the center of mass.
 
     '''
-    num = range(len(slopes))
+    num = list(range(len(slopes)))
     allComb = cartesian((num, num))
     comb = []
     # remove doubles
@@ -192,7 +192,7 @@ def part_com_lines(mp, par, forkIsSplit):
         betas = {'B':[], 'H':[]}
 
     # get the alpha keys and put them in order
-    listOfAlphaKeys = [x for x in mp.keys() if x.startswith('alpha')]
+    listOfAlphaKeys = [x for x in list(mp.keys()) if x.startswith('alpha')]
     listOfAlphaKeys.sort()
 
     # caluclate m, b and beta for each orientation
