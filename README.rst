@@ -5,6 +5,12 @@ Bicycle Parameters Module
 A python program designed to produce and manipulate the basic parameters needed
 for the Whipple bicycle model.
 
+.. image:: https://img.shields.io/pypi/v/BicycleParameters.svg
+   :target: https://pypi.org/project/BicycleParameters/
+
+.. image:: https://anaconda.org/moorepants/bicycleparameters/badges/version.svg
+   :target: https://anaconda.org/moorepants/bicycleparameters
+
 .. image:: https://travis-ci.org/moorepants/BicycleParameters.svg?branch=master
    :target: https://travis-ci.org/moorepants/BicycleParameters
 
