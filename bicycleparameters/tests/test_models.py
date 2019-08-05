@@ -1,5 +1,5 @@
 import numpy as np
-import pytest
+from nose.tools import assert_raises
 
 from ..parameter_sets import BenchmarkParameterSet
 from ..models import MinimalLinearWhippleCarvalloModel
@@ -52,7 +52,7 @@ def test_MinimalLinearWhippleCarvalloModel():
     assert C1.shape == (5, 2, 2)
     assert K0.shape == (5, 2, 2)
     assert K2.shape == (5, 2, 2)
-    with pytest.raises(ValueError):
+    with assert_raises(ValueError):
         model.form_benchmark_canonical_matrices(w=np.linspace(0.5, 1.5),
                                                 v=np.linspace(1, 3))
 
