@@ -196,8 +196,8 @@ class MinimalLinearWhippleCarvalloModel(object):
             return np.linalg.eig(A)
 
     def plot_eigenvalue_parts(self, ax=None, **parameter_overrides):
-        """Returns a Matplotlib axis of the real parts of the eigenvalues
-        plotted against the provided parameter."""
+        """Returns a Matplotlib axis of the real and imaginary parts of the
+        eigenvalues plotted against the provided parameter."""
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -240,11 +240,12 @@ class MinimalLinearWhippleCarvalloModel(object):
                 label=legend[5])
 
         # set labels and limits
-        ax.set_ylim((np.min(np.real(evals)),
-                    np.max(np.imag(evals))))
+        #ax.set_ylim((np.min(np.real(evals)),
+                    #np.max(np.imag(evals))))
         ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
 
         ax.set_xlim((speeds[0], speeds[-1]))
         ax.set_xlabel('Speed [m/s]')
+        #ax.legend()
 
         return ax

@@ -99,6 +99,15 @@ class ParameterSet(object):
         with open(fname, 'w') as f:
             yaml.dump(data, f)
 
+    def to_ini(self, fname):
+        """Writes parameters to file in the INI format. Metadata is not
+        included."""
+        text = ""
+        for k, v in self.parameters.items():
+            text += "{}={:1.16f}\n"
+        with open(fname, 'w') as f:
+            f.write(text)
+
 
 class BenchmarkParameterSet(ParameterSet):
     """Represents the parameters of the benchmark bicycle presented in
@@ -469,8 +478,6 @@ class PrincipalParameterSet(ParameterSet):
         ==========
         parameters : dictionary
             A dictionary mapping variable names to values.
-        includes_rider : boolean
-            True if body B is the combined rear frame and rider.
 
         """
         super().__init__(parameters)
@@ -605,7 +612,8 @@ class PrincipalParameterSet(ParameterSet):
         x = p['x{}'.format(b)]
         z = p['z{}'.format(b)]
         radius = max(p['w'], p['lP']) / 30
-        ax = _com_symbol(ax, (x, z), radius, color=self.body_colors[b])
+        ax = _com_symbol(ax, (x, z), radius,
+                         color=self.body_colors[b], label=b)
 
         self._finalize_plot(ax)
 
@@ -650,8 +658,10 @@ class PrincipalParameterSet(ParameterSet):
         kbb = p['k{}bb'.format(b)]
         alpha = p['alpha{}'.format(b)]  # angle between x and aa about y
 
+        linestyle = '--'
+
         c = patches.Circle((x, z), radius=kyy, fill=False,
-                           color=self.body_colors[b])
+                           color=self.body_colors[b], linestyle=linestyle)
         ax.add_patch(c)
 
         # NOTE : -alpha is required because we are mapping the xz axes to a new
@@ -659,13 +669,13 @@ class PrincipalParameterSet(ParameterSet):
         # screen
         ax.plot([x - kbb*np.cos(-alpha), x + kbb*np.cos(-alpha)],
                 [z - kbb*np.sin(-alpha), z + kbb*np.sin(-alpha)],
-                color=self.body_colors[b])
+                color=self.body_colors[b], linestyle=linestyle)
 
         ax.plot([x - kaa*np.cos(-alpha - np.pi/2),
                  x + kaa*np.cos(-alpha - np.pi/2)],
                 [z - kaa*np.sin(-alpha - np.pi/2),
                  z + kaa*np.sin(-alpha - np.pi/2)],
-                color=self.body_colors[b])
+                color=self.body_colors[b], linestyle=linestyle)
 
         self._finalize_plot(ax)
 
@@ -693,11 +703,46 @@ class PrincipalParameterSet(ParameterSet):
         print(width, height)
 
         ellipse = patches.Ellipse((p['x{}'.format(b)],
-                                  -p['z{}'.format(b)]), width, height,
+                                   p['z{}'.format(b)]), width, height,
                                   angle=-np.rad2deg(alpha), fill=False,
                                   color=self.body_colors[b])
         ax.add_patch(ellipse)
 
         self._finalize_plot(ax)
+
+        return ax
+
+    def plot_principal_inertia_ellipsoids(self, bodies=None, ax=None):
+        """Returns a Matplotlib axes with 2D representations of 3D solid
+        uniform ellipsoids that have the same inertia as the body.
+
+        Parameters
+        ==========
+        ax : AxesSubplot, optional
+            An axes to draw on, otherwise one is created.
+
+        """
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        if bodies is None:
+            bodies = self.body_labels
+
+        for b in bodies:
+            ax = self.plot_body_principal_inertia_ellipsoid(b, ax=ax)
+
+        return ax
+
+    def plot_all(self, ax=None):
+        """Returns matplotlib axes with the geometry and inertial
+        representations of all bodies of the bicycle parameter set."""
+
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        ax = self.plot_principal_radii_of_gyration(ax=ax)
+        ax = self.plot_principal_inertia_ellipsoids(ax=ax)
+        ax = self.plot_geometry(ax=ax)
+        ax = self.plot_mass_centers(ax=ax)
 
         return ax
