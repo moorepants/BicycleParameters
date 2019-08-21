@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib import patches
 
 from .geometry import fundamental_geometry_plot_data
+from .conversions import convert_principal_to_benchmark
 
 
 def _com_symbol(ax, center, radius, color='b', label=None):
@@ -411,6 +412,18 @@ class BenchmarkParameterSet(ParameterSet):
 
         return ax
 
+    def plot_all(self, ax=None):
+        """Returns matplotlib axes with the geometry and inertial
+        representations of all bodies of the bicycle parameter set."""
+
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        ax = self.plot_principal_radii_of_gyration(ax=ax)
+        ax = self.plot_principal_inertia_ellipsoids(ax=ax)
+        ax = self.plot_geometry(ax=ax)
+        ax = self.plot_mass_centers(ax=ax)
+
 
 class PrincipalParameterSet(ParameterSet):
     """Represents the parameters of the benchmark bicycle presented in
@@ -505,6 +518,10 @@ class PrincipalParameterSet(ParameterSet):
         pext['kFbb'] = p['kFaa']
 
         return pext
+
+    def to_benchmark(self):
+        b = convert_principal_to_benchmark(self.parameters)
+        return BenchmarkParameterSet(b, True)
 
     def plot_geometry(self, show_steer_axis=True, ax=None):
         """Returns a matplotlib axes with the simplest drawing of the bicycle's
@@ -742,6 +759,7 @@ class PrincipalParameterSet(ParameterSet):
 
         ax = self.plot_principal_radii_of_gyration(ax=ax)
         ax = self.plot_principal_inertia_ellipsoids(ax=ax)
+        ax = self.plot_person_diamond(ax=ax)
         ax = self.plot_geometry(ax=ax)
         ax = self.plot_mass_centers(ax=ax)
 

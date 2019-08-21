@@ -163,6 +163,9 @@ with open('parameter_sets/principal-extendedoptf.yml', 'r') as f:
 
 def test_PrincipalParameterSet(plot=False):
     pset = PrincipalParameterSet(principal_par_jasonbrowser_dict)
+    pset.plot_all()
+    bench_pset = pset.to_benchmark()
+    bench_pset.plot_all()
 
     pset = PrincipalParameterSet(principal_extendedoptf)
 
@@ -177,6 +180,7 @@ def test_PrincipalParameterSet(plot=False):
     ax = pset.plot_body_principal_inertia_ellipsoid('D', ax=ax)
     ax = pset.plot_body_principal_inertia_ellipsoid('P', ax=ax)
     ax = pset.plot_body_principal_inertia_ellipsoid('H', ax=ax)
+
 
     if plot:
         plt.show()
