@@ -298,8 +298,6 @@ class BenchmarkParameterSet(ParameterSet):
         p = self.parameters.copy()
         p.update(self._calc_derived_params())
 
-        b = body
-
         IH = self.form_inertia_tensor(body)
         # remove the Y row and column
         IH_xz_plane = np.delete(np.delete(IH, 1, axis=1), 1, axis=0)
@@ -308,14 +306,18 @@ class BenchmarkParameterSet(ParameterSet):
 
         idxs = np.argsort(evals)
 
+        # NOTE : min is first entry, max is second entry
         evals = evals[idxs]
         evecs = evecs[:, idxs]
 
-        angle_to_max = np.arctan2(evecs[1, 0], evecs[0, 0])
+        # NOTE : The negative sign on the z value ensures the sign of the
+        # rotation about the Y axis is correct, i.e. arctan2 is thinking you
+        # are rotating in XY plane about Z.
+        angle_to_max = np.arctan2(-evecs[1, 1], evecs[0, 1])
 
-        kmax = np.sqrt(evals[0] / p['m{}'.format(b)])
-        kmin = np.sqrt(evals[1] / p['m{}'.format(b)])
-        kyy = np.sqrt(p['I{}yy'.format(b)] / p['m{}'.format(b)])
+        kmin = np.sqrt(evals[0] / p['m{}'.format(body)])
+        kmax = np.sqrt(evals[1] / p['m{}'.format(body)])
+        kyy = np.sqrt(p['I{}yy'.format(body)] / p['m{}'.format(body)])
 
         return kmax, kmin, kyy, angle_to_max
 
@@ -383,8 +385,8 @@ class BenchmarkParameterSet(ParameterSet):
         width = np.sqrt(5/2*(-kaa**2 + kyy**2 + kbb**2))
         height = np.sqrt(5/2*(kaa**2 + kyy**2 - kbb**2))
 
-        ellipse = patches.Ellipse((p['x{}'.format(b)],
-                                  p['z{}'.format(b)]), width, height,
+        ellipse = patches.Ellipse((p['x{}'.format(b)], p['z{}'.format(b)]),
+                                  width, height,
                                   angle=-np.rad2deg(alpha), fill=False,
                                   color=self.body_colors[b])
         ax.add_patch(ellipse)
