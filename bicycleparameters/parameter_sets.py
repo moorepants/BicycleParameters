@@ -719,8 +719,6 @@ class PrincipalParameterSet(ParameterSet):
         width = np.sqrt(5/2*(-kaa**2 + kyy**2 + kbb**2))
         height = np.sqrt(5/2*(kaa**2 + kyy**2 - kbb**2))
 
-        print(width, height)
-
         ellipse = patches.Ellipse((p['x{}'.format(b)],
                                    p['z{}'.format(b)]), width, height,
                                   angle=-np.rad2deg(alpha), fill=False,
