@@ -161,11 +161,18 @@ with open('parameter_sets/principal-extendedoptf.yml', 'r') as f:
     principal_extendedoptf = yaml.load(f)
 
 
-def test_PrincipalParameterSet(plot=False):
-    pset = PrincipalParameterSet(principal_par_jasonbrowser_dict)
+def test_conversion(plot=False):
+    with open('parameter_sets/principal-browserjason.yml', 'r') as f:
+        par_dict = yaml.load(f)['values']
+    pset = PrincipalParameterSet(par_dict)
     pset.plot_all()
     bench_pset = pset.to_benchmark()
     bench_pset.plot_all()
+    if plot:
+        plt.show()
+
+
+def test_PrincipalParameterSet(plot=False):
 
     pset = PrincipalParameterSet(principal_extendedoptf)
 
