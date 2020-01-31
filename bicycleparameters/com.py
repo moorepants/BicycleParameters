@@ -211,10 +211,10 @@ def total_com(coordinates, masses):
     '''Returns the center of mass of a group of objects if the indivdual
     centers of mass and mass is provided.
 
-    coordinates : ndarray, shape(3,n)
+    coordinates : array_like, shape(3,n)
         The rows are the x, y and z coordinates, respectively and the columns
         are for each object.
-    masses : ndarray, shape(3,)
+    masses : array_like, shape(3,)
         An array of the masses of multiple objects, the order should correspond
         to the columns of coordinates.
 
@@ -226,7 +226,7 @@ def total_com(coordinates, masses):
         The x, y, and z coordinates of the total center of mass.
 
     '''
-    products = masses * coordinates
+    products = np.asarray(masses) * np.asarray(coordinates)
     mT = np.sum(masses)
     cT = np.sum(products, axis=1) / mT
     return mT, cT

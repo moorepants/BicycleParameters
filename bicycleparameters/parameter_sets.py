@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import patches
 
+from .com import total_com
 from .geometry import fundamental_geometry_plot_data
 from .conversions import convert_principal_to_benchmark
 
@@ -105,7 +106,7 @@ class ParameterSet(object):
         included."""
         text = ""
         for k, v in self.parameters.items():
-            text += "{}={:1.16f}\n"
+            text += "{}={:1.16f}\n".format(k, v)
         with open(fname, 'w') as f:
             f.write(text)
 
@@ -147,6 +148,8 @@ class BenchmarkParameterSet(ParameterSet):
         'zH': r'z-H',
     }
 
+    body_labels = ['B', 'F', 'H', 'R']
+
     def __init__(self, parameters, includes_rider):
         """Initializes a parameter set based on Meijaard2007.
 
@@ -161,7 +164,6 @@ class BenchmarkParameterSet(ParameterSet):
         super().__init__(parameters)
         self.parameters = parameters
         self.includes_rider = includes_rider
-        self.body_labels = ['B', 'F', 'H', 'R']
         self._generate_body_colors()
 
     def _calc_derived_params(self):
@@ -185,7 +187,20 @@ class BenchmarkParameterSet(ParameterSet):
 
     def form_mass_center_vector(self, body):
         """Returns a (3, 1) NumPy array representing the vector to the mass
-        center of the body."""
+        center of the body.
+
+        Parameters
+        ==========
+        body : string
+            One of 'B', 'F', 'H', 'R'.
+
+        Returns
+        =======
+        ndarray, shape(3, 1)
+            A vector containing the X, Y, and X coordinates of the mass center
+            of the body.
+
+        """
 
         p = self.parameters.copy()
         p.update(self._calc_derived_params())
@@ -195,6 +210,37 @@ class BenchmarkParameterSet(ParameterSet):
         z = p['z{}'.format(body)]
 
         return np.array([[x], [y], [z]])
+
+    def mass_center_of(self, *bodies):
+        """Returns the vector locating the center of mass of the collection of
+        bodies.
+
+        Parameters
+        ==========
+        bodies : iterable of strings
+
+        Returns
+        =======
+        com : ndarray, shape(3,)
+            Vector locating the center of mass of the bodies givien in
+            ``bodies``.
+
+        """
+        if len(bodies) == 1:
+            return self.form_mass_center_vector(bodies[0])
+
+        else:
+            coordinates = []
+            masses = []
+            for body in bodies:
+                masses.append(self.parameters['m{}'.format(body)])
+                coordinates.append(self.form_mass_center_vector(body).squeeze())
+
+            coordinates = np.array(coordinates).T
+
+            mass, com = total_com(coordinates, masses)
+
+            return com
 
     def form_inertia_tensor(self, body):
         """Returns the inertia tensor with respect to the benchmark coordinate

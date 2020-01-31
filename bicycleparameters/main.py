@@ -877,7 +877,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         figsize = [figwidth, figwidth * goldenMean]
         params = {#'backend': 'ps',
             'axes.labelsize': 8,
-            'text.fontsize': 10,
+            #'text.fontsize': 10,
             'legend.fontsize': 8,
             'xtick.labelsize': 6,
             'ytick.labelsize': 6,

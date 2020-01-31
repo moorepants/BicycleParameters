@@ -30,7 +30,13 @@ def test_BenchmarkParameterSet(plot=False):
     expected_tensor = np.array([[0.05892, 0.0, -0.00756],
                                 [0.0, 0.06, 0.0],
                                 [-0.00756, 0.0, 0.00708]])
-    np.testing.assert_allclose(expected_tensor, pset.form_inertia_tensor('H'))
+    np.testing.assert_allclose(pset.form_inertia_tensor('H'), expected_tensor)
+    expected_com = np.array([[0.9], [0.0], [-0.7]])
+    np.testing.assert_allclose(pset.form_mass_center_vector('H'), expected_com)
+    np.testing.assert_allclose(pset.form_mass_center_vector('H'), pset.mass_center_of('H'))
+    pset.mass_center_of('B', 'F', 'H', 'R')
+
+    pause
 
     pset = BenchmarkParameterSet(browser_par, False)
     pset = BenchmarkParameterSet(benchmark_pista, False)
