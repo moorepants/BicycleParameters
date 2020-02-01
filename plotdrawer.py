@@ -8,7 +8,7 @@ speeds = np.linspace(0, 10, num=100)
 def draw_plot():
     bike = bp.Bicycle('Benchmark', pathToData=os.getcwd()+'\\data')  # Alter Bicycle name
     #bike.add_rider('Jason', reCalc=True)
-    plot = bike.plot_eigenvalues_vs_speed(speeds)
+    plot = bike.plot_eigenvalues_vs_speed(speeds, show=False)
     plot.savefig(os.getcwd()+'\\assets\\eigen-plots\\defaults\\Benchmark.png')  # Alter png name
 draw_plot()
 
