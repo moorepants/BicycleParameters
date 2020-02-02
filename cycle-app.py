@@ -7,6 +7,8 @@ from dash.exceptions import PreventUpdate
 
 import os
 import bicycleparameters as bp
+import pandas as pd
+import numpy as np 
 
 ###!!!Must ensure that current working directory is set to directory immediatly containing '\data\'!!!###
 ###---------------------------------------------------------------------------------------------------###
@@ -27,7 +29,7 @@ OPTIONS=['Benchmark',
          'Silver',
          'Tms',
          'Yellow',
-         'Yellowrev']               
+         'Yellowrev']        
 
 app = dash.Dash(__name__)
 
@@ -37,8 +39,12 @@ app.layout = html.Div([
     dcc.Dropdown(id='bike-dropdown',
                  value='Benchmark',
                  options=[{'label': i, 'value': i} for i in OPTIONS]),
-    tbl.DataTable(id='table',
-                  columns=[{'name': 'test', 'id': 'testtable'}]),                 
+    tbl.DataTable(id='wheel-table',
+                  columns=[{'name': 'Front-Wheel', 'id': 'fW'},
+                           {'name': 'Rear-Wheel', 'id': 'rW'}],
+                  data=[{'fW': 10, 'rW': 20},
+                        {'fW': 80, "rW": 100}],
+                  editable=True),                 
     html.Button('Create Dummy Bicycle Plot!',
                 id='add-button',
                 type='button',
@@ -51,6 +57,11 @@ app.layout = html.Div([
                                 alt='A plot revealing the eigenvalues of the bicycle system as a function of speed.',
                                 id='eigen-plot')])
 ])
+'''
+    # Populates wheel-table with pandas dataframe
+@app.callback(Output('wheel-table', 'data'), [Input('bike-dropdown', 'value')])
+def populate_table(value):
+'''
 
     # Updates geometry-plot path with Dropdown value
 @app.callback(Output('geometry-plot', 'src'), [Input('bike-dropdown', 'value')])
