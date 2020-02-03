@@ -4,10 +4,10 @@ import pandas as pd
 import numpy as np 
 from bicycleparameters import parameter_sets as ps
 
-bike = bp.Bicycle('Benchmark', pathToData=os.getcwd()+'\\data')
+bike = bp.Bicycle('Browser', pathToData=os.getcwd()+'\\data')
 par = bike.parameters['Benchmark']
-parPure = bp.io.remove_uncertainties(par)
-print(parPure) # prints a dictionary of variable:value pairs
+#parPure = bp.io.remove_uncertainties(par)
+print(par) # prints a dictionary of variable:value pairs
 
 '''
 pset = ps.ParameterSet(par) # needs par_string(?)

@@ -14,16 +14,14 @@ from bicycleparameters import parameter_sets as ps
 ###!!!Must ensure that current working directory is set to directory immediatly containing '\data\'!!!###
 ###---------------------------------------------------------------------------------------------------###
 
-    # Initializes Benchmark and draws the geometry plot 
-def new_par():
-    bike = bp.Bicycle('Benchmark', pathToData=os.getcwd()+'\\data')
-    par = bike.parameters['Benchmark']
+    # Initializes Benchmark and retrieves its parameters
+def new_par(bike_name):
+    bike = bp.Bicycle(bike_name, pathToData=os.getcwd()+'\\data')
+    par = bike.parameters[bike_name]
     parPure = bp.io.remove_uncertainties(par)
     return parPure
 
-BENCHMARK = new_par()
-
-df = pd.DataFrame({'Component': ['Diameter', 'Mass'], 'Front-Wheel': [10, 5], 'Rear-Wheel': [20, 10]})   
+BENCHMARK = new_par('Benchmark')  
 
 OPTIONS=['Benchmark',
          'Browser',
@@ -45,9 +43,9 @@ app.layout = html.Div([
     dcc.Dropdown(id='bike-dropdown',
                  value='Benchmark',
                  options=[{'label': i, 'value': i} for i in OPTIONS]),
-    tbl.DataTable(id='wheel-table',
-                  columns=[{'name': i, 'id': i} for i in BENCHMARK],
-                  data=[BENCHMARK],
+    tbl.DataTable(id='par-table',
+                  columns=[],
+                  data=[],      
                   editable=True),                 
     html.Button('Create Dummy Bicycle Plot!',
                 id='add-button',
@@ -62,12 +60,22 @@ app.layout = html.Div([
                                 id='eigen-plot')])
 ])
 
-'''
-    # Populates wheel-table with pandas dataframe
-@app.callback(Output('wheel-table', 'data'), [Input('bike-dropdown', 'value')])
-def populate_table(value):
-    return  df.to_dict(orient='records')
-'''
+    # Populates par-table data with parameters
+@app.callback(Output('par-table', 'data'), [Input('bike-dropdown', 'value')])
+def populate_data(value):
+    bike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
+    par = bike.parameters['Benchmark']
+    parPure = bp.io.remove_uncertainties(par)
+    return [parPure]
+
+    # Populates par-table columns with proepr values
+@app.callback(Output('par-table', 'columns'), [Input('bike-dropdown', 'value')])
+def populate_columns(value):
+    bike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
+    par = bike.parameters['Benchmark']
+    columns = [{'name': i, 'id': i} for i in BENCHMARK]
+    return columns
+    
 
     # Updates geometry-plot path with Dropdown value
 @app.callback(Output('geometry-plot', 'src'), [Input('bike-dropdown', 'value')])
