@@ -9,15 +9,21 @@ import os
 import bicycleparameters as bp
 import pandas as pd
 import numpy as np 
+from bicycleparameters import parameter_sets as ps
 
 ###!!!Must ensure that current working directory is set to directory immediatly containing '\data\'!!!###
 ###---------------------------------------------------------------------------------------------------###
 
     # Initializes Benchmark and draws the geometry plot 
-def new_geo_plot():
+def new_par():
     bike = bp.Bicycle('Benchmark', pathToData=os.getcwd()+'\\data')
-    plot = bike.plot_bicycle_geometry()
-    plot.savefig(os.getcwd()+'\\assets\\geo-plots\\user-bikes\\dummy.png') # show=False
+    par = bike.parameters['Benchmark']
+    parPure = bp.io.remove_uncertainties(par)
+    return parPure
+
+BENCHMARK = new_par()
+
+df = pd.DataFrame({'Component': ['Diameter', 'Mass'], 'Front-Wheel': [10, 5], 'Rear-Wheel': [20, 10]})   
 
 OPTIONS=['Benchmark',
          'Browser',
@@ -29,7 +35,7 @@ OPTIONS=['Benchmark',
          'Silver',
          'Tms',
          'Yellow',
-         'Yellowrev']        
+         'Yellowrev']    
 
 app = dash.Dash(__name__)
 
@@ -40,10 +46,8 @@ app.layout = html.Div([
                  value='Benchmark',
                  options=[{'label': i, 'value': i} for i in OPTIONS]),
     tbl.DataTable(id='wheel-table',
-                  columns=[{'name': 'Front-Wheel', 'id': 'fW'},
-                           {'name': 'Rear-Wheel', 'id': 'rW'}],
-                  data=[{'fW': 10, 'rW': 20},
-                        {'fW': 80, "rW": 100}],
+                  columns=[{'name': i, 'id': i} for i in BENCHMARK],
+                  data=[BENCHMARK],
                   editable=True),                 
     html.Button('Create Dummy Bicycle Plot!',
                 id='add-button',
@@ -57,10 +61,12 @@ app.layout = html.Div([
                                 alt='A plot revealing the eigenvalues of the bicycle system as a function of speed.',
                                 id='eigen-plot')])
 ])
+
 '''
     # Populates wheel-table with pandas dataframe
 @app.callback(Output('wheel-table', 'data'), [Input('bike-dropdown', 'value')])
 def populate_table(value):
+    return  df.to_dict(orient='records')
 '''
 
     # Updates geometry-plot path with Dropdown value
