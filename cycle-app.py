@@ -14,14 +14,12 @@ from bicycleparameters import parameter_sets as ps
 ###!!!Must ensure that current working directory is set to directory immediatly containing '\data\'!!!###
 ###---------------------------------------------------------------------------------------------------###
 
-    # Initializes Benchmark and retrieves its parameters
+    # Initializes bike data as Bicycle and retrieves its parameters
 def new_par(bike_name):
     bike = bp.Bicycle(bike_name, pathToData=os.getcwd()+'\\data')
     par = bike.parameters[bike_name]
     parPure = bp.io.remove_uncertainties(par)
     return parPure
-
-BENCHMARK = new_par('Benchmark')  
 
 OPTIONS=['Benchmark',
          'Browser',
@@ -47,8 +45,8 @@ app.layout = html.Div([
                   columns=[],
                   data=[],      
                   editable=True),                 
-    html.Button('Create Dummy Bicycle Plot!',
-                id='add-button',
+    html.Button('Reset Table',
+                id='reset-button',
                 type='button',
                 n_clicks=0),
     html.Div(id='image-bin',
@@ -60,23 +58,25 @@ app.layout = html.Div([
                                 id='eigen-plot')])
 ])
 
+    # reset button
+# @app.callback use n_clicks state of some button to reset to the bike dropdown value in table
+
     # Populates par-table data with parameters
-@app.callback(Output('par-table', 'data'), [Input('bike-dropdown', 'value')])
-def populate_data(value):
+@app.callback(Output('par-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
+def populate_data(value, n_clicks):
     bike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
     par = bike.parameters['Benchmark']
     parPure = bp.io.remove_uncertainties(par)
     return [parPure]
 
-    # Populates par-table columns with proepr values
+    # Populates par-table columns with proper values
 @app.callback(Output('par-table', 'columns'), [Input('bike-dropdown', 'value')])
 def populate_columns(value):
     bike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
     par = bike.parameters['Benchmark']
-    columns = [{'name': i, 'id': i} for i in BENCHMARK]
+    columns = [{'name': i, 'id': i} for i in par]
     return columns
     
-
     # Updates geometry-plot path with Dropdown value
 @app.callback(Output('geometry-plot', 'src'), [Input('bike-dropdown', 'value')])
 def reveal_geo_plot(value):
@@ -94,19 +94,6 @@ def reveal_geo_plot(value):
         return '/assets/eigen-plots/defaults/'+image
     else: 
         return '/assets/eigen-plots/user-bikes/'+image
-
-'''
-    # Accesses /data/ and draws plot of user input, then adds user input to Dropdown list 
-@app.callback(Output('bike-dropdown', 'options'), [Input('add-button', 'n_clicks')], [State('bike-input', 'value')])
-def add_option(n_clicks, value):
-    if value == '':
-        raise PreventUpdate      
-    else:
-        #new_geo_plot()  # DEBUG # - refreshes page after this command is called, removing the added value from list
-        OPTIONS.append(value)  
-        OPTIONS.sort() # Find way to alphabetize this list
-        return [{'label': i, 'value': i} for i in OPTIONS]
-'''
 
 if __name__ == '__main__':
     app.run_server(debug=True)
