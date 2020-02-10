@@ -44,9 +44,15 @@ app.layout = html.Div([
     tbl.DataTable(id='par-table',
                   columns=[],
                   data=[],      
-                  editable=True),                 
+                  style_cell={},
+                  style_header={},
+                  editable=True),                                
     html.Button('Reset Table',
                 id='reset-button',
+                type='button',
+                n_clicks=0),
+    html.Button('Toggle Dark Mode',
+                id='dark-toggle',
                 type='button',
                 n_clicks=0),
     html.Div(id='image-bin',
@@ -58,10 +64,7 @@ app.layout = html.Div([
                                 id='eigen-plot')])
 ])
 
-    # reset button
-# @app.callback use n_clicks state of some button to reset to the bike dropdown value in table
-
-    # Populates par-table data with parameters
+    # Populates par-table data with parameters on new dropdown value/button press
 @app.callback(Output('par-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
 def populate_data(value, n_clicks):
     bike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
@@ -94,6 +97,22 @@ def reveal_geo_plot(value):
         return '/assets/eigen-plots/defaults/'+image
     else: 
         return '/assets/eigen-plots/user-bikes/'+image
+
+    # Toggles dark mode for cells of DataTable
+@app.callback(Output('par-table', 'style_cell'), [Input('dark-toggle', 'n_clicks')])
+def cell_toggle(n_clicks):
+    if n_clicks%2 == 1:
+        return {'minWidth': '50px', 'width': '50px', 'maxWidth': '50px', 'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'}
+    else:
+        return {'minWidth': '50px', 'width': '50px', 'maxWidth': '50px', 'backgroundColor': 'rgb(255, 255, 255)', 'color': 'black'}
+
+    # Toggles dark mode for header of DataTable
+@app.callback(Output('par-table', 'style_header'), [Input('dark-toggle', 'n_clicks')])
+def cell_toggle(n_clicks):
+    if n_clicks%2 == 1:      
+        return {'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'}
+    else:
+        return {'textAlign': 'center', 'backgroundColor': 'rgb(235, 235, 235)'}
 
 if __name__ == '__main__':
     app.run_server(debug=True)
