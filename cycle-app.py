@@ -24,10 +24,10 @@ def new_par(bike_name):
     return parPure
 
     # Generates nested dict with keys = parameter, and values = {column ID: data val}
-def genDataDic(constant, value, index, end):
+def genDataDic(columns, bike, index, end):
     data_dic = OrderedDict()
-    parPure = new_par(value)
-    for i in constant:     
+    parPure = new_par(bike)
+    for i in columns:     
         for p in range(index,end):   
             data_dic[pList[p]] = {i['id']:parPure.get(pList[p])}
             index += 1
@@ -35,31 +35,9 @@ def genDataDic(constant, value, index, end):
                 break
     return data_dic
 
-pList=['rF',
-       'mF',
-       'IFxx',
-       'IFyy',
-       'rR',
-       'mR',
-       'IRxx',
-       'IRyy',
-       'w',
-       'c',
-       'lam',
-       'g',
-       'xB',
-       'zB',
-       'mB',
-       'IBxx',
-       'IByy',
-       'IBzz',
-       'xH',
-       'zH',
-       'mH',
-       'IHxx',
-       'IHyy',
-       'IHzz',
-       'IHxz',]
+pList=['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
+       'w', 'c', 'lam', 'g',
+       'xB', 'zB', 'mB', 'IBxx', 'IByy', 'IBzz', 'xH', 'zH', 'mH', 'IHxx', 'IHyy', 'IHzz', 'IHxz',]
 
 OPTIONS=['Benchmark',
          'Browser',
@@ -163,8 +141,6 @@ def populate_data(value, n_clicks):
         zipped.update(d)
         data.append(zipped)
     return data
-    
-
 '''
     # Populates par-table columns with proper values
 @app.callback(Output('par-table', 'columns'), [Input('bike-dropdown', 'value')])
@@ -195,7 +171,7 @@ def reveal_geo_plot(value):
     # Toggles dark mode for cells of DataTable
 @app.callback(Output('wheel-table', 'style_cell'), [Input('dark-toggle', 'n_clicks')])
 def cell_toggle(n_clicks):
-    if n_clicks%2 == 1:
+    if n_clicks%2 == 0:
         return {'minWidth': '50px', 'width': '50px', 'maxWidth': '50px', 'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'}
     else:
         return {'minWidth': '50px', 'width': '50px', 'maxWidth': '50px', 'backgroundColor': 'rgb(255, 255, 255)', 'color': 'black'}
@@ -203,7 +179,7 @@ def cell_toggle(n_clicks):
     # Toggles dark mode for header of DataTable
 @app.callback(Output('wheel-table', 'style_header'), [Input('dark-toggle', 'n_clicks')])
 def header_toggle(n_clicks):
-    if n_clicks%2 == 1:      
+    if n_clicks%2 == 0:      
         return {'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'}
     else:
         return {'textAlign': 'center', 'backgroundColor': 'rgb(235, 235, 235)'}
