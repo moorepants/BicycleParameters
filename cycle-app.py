@@ -23,7 +23,7 @@ def new_par(bike_name):
     parPure = bp.io.remove_uncertainties(par)
     return parPure
 
-    # generates nested dict with keys = parameter, and values = {column ID: data val}
+    # Generates nested dict with keys = parameter, and values = {column ID: data val}
 def genDataDic(constant, value, index, end):
     data_dic = OrderedDict()
     parPure = new_par(value)
@@ -35,7 +35,31 @@ def genDataDic(constant, value, index, end):
                 break
     return data_dic
 
-pList=['rF','mF','IFxx','IFyy','rR','mR','IRxx','IRyy','w','c','lam','g','xB','zB','mB','IBxx','IByy','IBzz','xH','zH','mH','IHxx','IHyy','IHzz','IHxz',]
+pList=['rF',
+       'mF',
+       'IFxx',
+       'IFyy',
+       'rR',
+       'mR',
+       'IRxx',
+       'IRyy',
+       'w',
+       'c',
+       'lam',
+       'g',
+       'xB',
+       'zB',
+       'mB',
+       'IBxx',
+       'IByy',
+       'IBzz',
+       'xH',
+       'zH',
+       'mH',
+       'IHxx',
+       'IHyy',
+       'IHzz',
+       'IHxz',]
 
 OPTIONS=['Benchmark',
          'Browser',
@@ -138,9 +162,6 @@ def populate_data(value, n_clicks):
         zipped.update(c)
         zipped.update(d)
         data.append(zipped)
-    print(dataDic)
-    print(rW+fW)
-    print(data)
     return data
     
 
