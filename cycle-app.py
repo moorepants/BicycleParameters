@@ -38,7 +38,7 @@ def genDataDic(columns, bike, index, end):
 
 pList=['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
        'w', 'c', 'lam', 'g',
-       'xB', 'zB', 'mB', 'IBxx', 'IByy', 'IBzz', 'xH', 'zH', 'mH', 'IHxx', 'IHyy', 'IHzz', 'IHxz',]
+       'xB', 'zB', 'mB', 'IBxx', 'IByy', 'IBzz', 'IBxz', 'xH', 'zH', 'mH', 'IHxx', 'IHyy', 'IHzz', 'IHxz',]
 
 OPTIONS=['Benchmark',
          'Browser',
@@ -59,12 +59,8 @@ WHEEL_ROWS=['Radius',
             'Moment Ixx',
             'Moment Iyy']
 
-FRAME_COLUMNS=[{'name': 'General', 'id': 'bg'},
-               {'name': 'Frame', 'id': 'rF'},
-               {'name': 'Rider', 'id': 'rider'},
-               {'name': 'Rear Rack', 'id': 'rack'},
-               {'name': 'Front End', 'id': 'fE'},
-               {'name': 'Basket', 'id': 'basket'}]    
+FRAME_COLUMNS=[{'name': 'Rear Body', 'id': 'rB'},
+               {'name': 'Front Assembly', 'id': 'fA'}]    
 
 FRAME_ROWS=['CoM X',
             'CoM Y',
@@ -73,6 +69,14 @@ FRAME_ROWS=['CoM X',
             'Moment I22',
             'Moment Izz',
             'Principle Axis Angle']
+
+GENERAL_COLUMNS=[{'name': '', 'id': 'label'},
+                 {'name': 'Value', 'id': 'con'}]
+
+GENERAL_LABELS=['Wheel Base', 
+                'Trail',
+                'Steer Axis Tilt',
+                'Gravity']
 
 app = dash.Dash(__name__)
 
@@ -87,7 +91,19 @@ app.layout = html.Div([
                   data=[],      
                   style_cell={},
                   style_header={},
-                  editable=True),                                
+                  editable=True),
+    tbl.DataTable(id='frame-table',
+                  columns=FRAME_COLUMNS,
+                  data=[],
+                  style_cell={},
+                  style_header={},
+                  editable=True), 
+    tbl.DataTable(id='general-table',
+                  columns=GENERAL_COLUMNS,
+                  data=[],
+                  style_cell={},
+                  style_header={},
+                  editable=True),                               
     html.Button('Reset Table',
                 id='reset-button',
                 type='button',
@@ -120,7 +136,6 @@ app.layout = html.Div([
     # Populates wheel-table parameter with data
 @app.callback(Output('wheel-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
 def populate_data(value, n_clicks):
-    dataDic = OrderedDict()
     parPure = new_par(value)
     data = []
     fW = []
@@ -128,7 +143,7 @@ def populate_data(value, n_clicks):
     for i in range(8):
         if i < 4:
             fW.append({'fW':parPure.get(pList[i])}) 
-        if i >= 4:
+        else:
             rW.append({'rW':parPure.get(pList[i])})
     for c, d in zip(fW, rW):
         zipped = {}
@@ -136,8 +151,46 @@ def populate_data(value, n_clicks):
         zipped.update(d)
         data.append(zipped)
     return data
+
+    # Populates frame-table parameter with data
+@app.callback(Output('frame-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
+def populate_data(value, n_clicks):
+    parPure = new_par(value)
+    data = []
+    rB = []
+    fA = []
+    for i in range(12, len(pList)):
+        if i < 19:
+            rB.append({'rB':parPure.get(pList[i])}) 
+        else:
+            fA.append({'fA':parPure.get(pList[i])})
+    for c, d in zip(rB, fA):
+        zipped = {}
+        zipped.update(c)
+        zipped.update(d)
+        data.append(zipped)
+    return data
+
+    # Populates general-table parameter with data
+@app.callback(Output('general-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
+def populate_data(value, n_clicks):
+    dataDic = OrderedDict()
+    parPure = new_par(value)
+    data = []
+    empty = []
+    con = []
+    for i in GENERAL_LABELS:
+        empty.append({'label': i})
+    for i in range(8, 12):
+        con.append({'con':parPure.get(pList[i])}) 
+    for c, d in zip(empty, con):
+        zipped = {}
+        zipped.update(c)
+        zipped.update(d)
+        data.append(zipped)
+    return data
  
-    # Updates geometry-plot path with Dropdown value    
+    # Updates geometry-plot path with Dropdown value ***(not currently functioning)***
 @app.callback(Output('geometry-plot', 'src'),
               [Input('bike-dropdown', 'value'),                    
                Input('calc-button', 'n_clicks')],
@@ -181,20 +234,36 @@ def update_dropdown(n_clicks, value):
         return [{'label': i, 'value': i} for i in OPTIONS]
 
     # Toggles dark mode for cells of DataTable
-@app.callback(Output('wheel-table', 'style_cell'), [Input('dark-toggle', 'n_clicks')])
+@app.callback([Output('wheel-table', 'style_cell'),
+               Output('frame-table', 'style_cell'),
+               Output('general-table', 'style_cell')],
+              [Input('dark-toggle', 'n_clicks')])
 def cell_toggle(n_clicks):
+    light = []
+    dark = []
+    for i in range(3):
+        light.append({'minWidth': '50px', 'width': '50px', 'maxWidth': '50px', 'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'})
+        dark.append({'minWidth': '50px', 'width': '50px', 'maxWidth': '50px', 'backgroundColor': 'rgb(255, 255, 255)', 'color': 'black'})
     if n_clicks%2 == 0:
-        return {'minWidth': '50px', 'width': '50px', 'maxWidth': '50px', 'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'}
+        return light
     else:
-        return {'minWidth': '50px', 'width': '50px', 'maxWidth': '50px', 'backgroundColor': 'rgb(255, 255, 255)', 'color': 'black'}
+        return dark
 
     # Toggles dark mode for header of DataTable
-@app.callback(Output('wheel-table', 'style_header'), [Input('dark-toggle', 'n_clicks')])
+@app.callback([Output('wheel-table', 'style_header'),
+               Output('frame-table', 'style_header'),
+               Output('general-table', 'style_header')],
+              [Input('dark-toggle', 'n_clicks')])
 def header_toggle(n_clicks):
+    light = []
+    dark = []
+    for i in range(3):
+        light.append({'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'})
+        dark.append({'textAlign': 'center', 'backgroundColor': 'rgb(235, 235, 235)'})
     if n_clicks%2 == 0:      
-        return {'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'}
+        return light
     else:
-        return {'textAlign': 'center', 'backgroundColor': 'rgb(235, 235, 235)'}
+        return dark
 
 if __name__ == '__main__':
     app.run_server(debug=True)
