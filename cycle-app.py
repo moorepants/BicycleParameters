@@ -22,18 +22,19 @@ def new_par(bike_name):
     par = bike.parameters['Benchmark']
     parPure = bp.io.remove_uncertainties(par)
     return parPure
-
-    # Generates nested dict with keys = parameter, and values = {column ID: data val}
+'''
+    # Generates nested dict in {parameter: {column ID: data val}} format 
 def genDataDic(columns, bike, index, end):
     data_dic = OrderedDict()
     parPure = new_par(bike)
-    for i in columns:     
+    for c in columns:     
         for p in range(index,end):   
-            data_dic[pList[p]] = {i['id']:parPure.get(pList[p])}
+            data_dic[pList[p]] = {c['id']:parPure.get(pList[p])}
             index += 1
             if index == 4:
                 break
     return data_dic
+'''
 
 pList=['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
        'w', 'c', 'lam', 'g',
@@ -91,6 +92,10 @@ app.layout = html.Div([
                 id='reset-button',
                 type='button',
                 n_clicks=0),
+   html.Button('Calculate & Draw Plot',
+                id='calc-button',
+                type='button',
+                n_clicks=0),
     html.Button('Toggle Dark Mode',
                 id='dark-toggle',
                 type='button',
@@ -109,8 +114,62 @@ app.layout = html.Div([
                                 id='geometry-plot',),
                        html.Img(src='',
                                 alt='A plot revealing the eigenvalues of the bicycle system as a function of speed.',
-                                id='eigen-plot')])
-])
+                                id='eigen-plot')]),
+])       
+
+    # Populates wheel-table parameter with data
+@app.callback(Output('wheel-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
+def populate_data(value, n_clicks):
+    dataDic = OrderedDict()
+    parPure = new_par(value)
+    data = []
+    fW = []
+    rW = []
+    for i in range(8):
+        if i < 4:
+            fW.append({'fW':parPure.get(pList[i])}) 
+        if i >= 4:
+            rW.append({'rW':parPure.get(pList[i])})
+    for c, d in zip(fW, rW):
+        zipped = {}
+        zipped.update(c)
+        zipped.update(d)
+        data.append(zipped)
+    return data
+ 
+    # Updates geometry-plot path with Dropdown value    
+@app.callback(Output('geometry-plot', 'src'),
+              [Input('bike-dropdown', 'value'),                    
+               Input('calc-button', 'n_clicks')],
+              [State('wheel-table', 'data')])
+def update_geo_plot(value, data, n_clicks):
+    ctx = dash.callback_context
+    pDic = {}
+    currentBike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
+    image = value+'.png' 
+    for p in range(8):
+        if p < 4:
+            pDic.update({pList[p]:data})
+        else:
+            pDic.update({pList[p]:data})
+    for key in pDic:
+        currentBike.parameters['Benchmark'][key] = pDic.get(key)
+    if ctx.triggered[0] == 'n_clicks':
+        plot = currentBike.plot_bicycle_geometry()
+        plot.savefig(os.getcwd()+'\\assets\\geo-plots\\user-bikes\\'+image)
+        return '/assets/geo-plots/user-bikes/'+image
+    else: 
+        if os.path.exists(os.getcwd()+'\\assets\\geo-plots\\defaults\\'+image):        
+            return '/assets/geo-plots/defaults/'+image
+    
+    # Updates eigen-plot path with Dropdown value
+@app.callback(Output('eigen-plot', 'src'), [Input('bike-dropdown', 'value')])
+def reveal_eigen_plot(value):
+    image = value+'.png'
+    if os.path.exists(os.getcwd()+'\\assets\\eigen-plots\\defaults\\'+image):        
+        return '/assets/eigen-plots/defaults/'+image
+    else: 
+        return '/assets/eigen-plots/user-bikes/'+image
 
     # Updates dropdown options with save-input value
 @app.callback(Output('bike-dropdown', 'options'), [Input('drop-button', 'n_clicks')], [State('save-input', 'value')])
@@ -120,53 +179,6 @@ def update_dropdown(n_clicks, value):
     else:
         OPTIONS.append(value)
         return [{'label': i, 'value': i} for i in OPTIONS]
-
-    # Populates wheel-table parameter with data
-@app.callback(Output('wheel-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
-def populate_data(value, n_clicks):
-    dataDic = genDataDic(WHEEL_COLUMNS, value, 0, 8)
-    data = []
-    fW = []
-    rW = []
-    index = 0
-    for key in dataDic:
-        if index < 4:
-            fW.append(dataDic.get(key)) 
-        if index >= 4:
-            rW.append(dataDic.get(key))
-        index += 1 
-    for c, d in zip(fW, rW):
-        zipped = {}
-        zipped.update(c)
-        zipped.update(d)
-        data.append(zipped)
-    return data
-'''
-    # Populates par-table columns with proper values
-@app.callback(Output('par-table', 'columns'), [Input('bike-dropdown', 'value')])
-def populate_columns(value):
-    bike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
-    par = bike.parameters['Benchmark']
-    columns = [{'name': i, 'id': i} for i in par]
-    return columns
-'''    
-    # Updates geometry-plot path with Dropdown value
-@app.callback(Output('geometry-plot', 'src'), [Input('bike-dropdown', 'value')])
-def reveal_geo_plot(value):
-    image = value+'.png'
-    if os.path.exists(os.getcwd()+'\\assets\\geo-plots\\defaults\\'+image):        
-        return '/assets/geo-plots/defaults/'+image
-    else: 
-        return '/assets/geo-plots/user-bikes/'+image
-
-    # Updates eigen-plot path with Dropdown value
-@app.callback(Output('eigen-plot', 'src'), [Input('bike-dropdown', 'value')])
-def reveal_geo_plot(value):
-    image = value+'.png'
-    if os.path.exists(os.getcwd()+'\\assets\\eigen-plots\\defaults\\'+image):        
-        return '/assets/eigen-plots/defaults/'+image
-    else: 
-        return '/assets/eigen-plots/user-bikes/'+image
 
     # Toggles dark mode for cells of DataTable
 @app.callback(Output('wheel-table', 'style_cell'), [Input('dark-toggle', 'n_clicks')])
