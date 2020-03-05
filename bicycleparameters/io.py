@@ -109,6 +109,9 @@ def remove_uncertainties(dictionary):
             except TypeError:
                 # this is the case if the value is a float
                 noUncert[k] = v
+            except AttributeError:
+                # this is the case if the value is a float
+                noUncert[k] = v
     return noUncert
 
 def write_parameter_text_file(pathToTxtFile, parDict):
