@@ -22,19 +22,6 @@ def new_par(bike_name):
     par = bike.parameters['Benchmark']
     parPure = bp.io.remove_uncertainties(par)
     return parPure
-'''
-    # Generates nested dict in {parameter: {column ID: data val}} format 
-def genDataDic(columns, bike, index, end):
-    data_dic = OrderedDict()
-    parPure = new_par(bike)
-    for c in columns:     
-        for p in range(index,end):   
-            data_dic[pList[p]] = {c['id']:parPure.get(pList[p])}
-            index += 1
-            if index == 4:
-                break
-    return data_dic
-'''
 
 pList=['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
        'w', 'c', 'lam', 'g',
@@ -56,9 +43,9 @@ WHEEL_COLUMNS=[{'name': '', 'id': 'label'},
                {'name': 'Rear Wheel', 'id': 'rW'}]
 
 WHEEL_LABELS=['Radius',
-            'Mass',
-            'Moment Ixx',
-            'Moment Iyy']
+              'Mass',
+              'Moment Ixx',
+              'Moment Iyy']
 
 FRAME_COLUMNS=[{'name': '', 'id': 'label'},
                {'name': 'Rear Body', 'id': 'rB'},
@@ -73,7 +60,7 @@ FRAME_LABELS=['Center-of-Mass X',
               'Moment Ixz']
 
 GENERAL_COLUMNS=[{'name': '', 'id': 'label'},
-                 {'name': 'Value', 'id': 'con'}]
+                 {'name': 'Value', 'id': 'val'}]
 
 GENERAL_LABELS=['Wheel Base', 
                 'Trail',
@@ -83,7 +70,7 @@ GENERAL_LABELS=['Wheel Base',
 app = dash.Dash(__name__)
 
 app.layout = html.Div([
-    html.H1('Bicycle Geometry Plot',
+    html.H1('BicycleParameters Web Application',
             id='main-header'),
     dcc.Dropdown(id='bike-dropdown',
                  value='Benchmark',
@@ -110,7 +97,7 @@ app.layout = html.Div([
                 id='reset-button',
                 type='button',
                 n_clicks=0),
-   html.Button('Calculate & Draw Plot',
+    html.Button('Calculate & Draw Plot',
                 id='calc-button',
                 type='button',
                 n_clicks=0),
@@ -133,24 +120,35 @@ app.layout = html.Div([
                        html.Img(src='',
                                 alt='A plot revealing the eigenvalues of the bicycle system as a function of speed.',
                                 id='eigen-plot')]),
-])       
 
+                                html.Button('tessssssst',
+                                id='test-button',
+                                n_clicks=0),
+                                html.Div(id='pre')
+])  
+    # test callback to display the data as it is recieved in other callback Inputs     
+@app.callback(Output('pre', 'children'), [Input('test-button', 'n_clicks'), Input('wheel-table', 'data')])
+def testfunc(n_clicks,data):
+    ctx = dash.callback_context
+    wheelData = ctx.inputs.get('wheel-table.data')
+    return 'my data is "{}"'.format(wheelData)
+    
     # Populates wheel-table parameter with data
 @app.callback(Output('wheel-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
-def populate_data(value, n_clicks):
+def populate_wheel_data(value, n_clicks):
     parPure = new_par(value)
     data = []
-    empty = []
+    labels = []
     fW = []
     rW = []
     for i in WHEEL_LABELS:
-        empty.append({'label': i})
+        labels.append({'label': i})
     for i in range(8):
         if i < 4:
             fW.append({'fW':parPure.get(pList[i])}) 
         else:
             rW.append({'rW':parPure.get(pList[i])})
-    for c, d, e in zip(empty, fW, rW):
+    for c, d, e in zip(labels, fW, rW):
         zipped = {}
         zipped.update(c)
         zipped.update(d)
@@ -160,20 +158,20 @@ def populate_data(value, n_clicks):
 
     # Populates frame-table parameter with data
 @app.callback(Output('frame-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
-def populate_data(value, n_clicks):
+def populate_frame_data(value, n_clicks):
     parPure = new_par(value)
     data = []
-    empty = []
+    labels = []
     rB = []
     fA = []
     for i in FRAME_LABELS:
-        empty.append({'label': i})
+        labels.append({'label': i})
     for i in range(12, len(pList)):
         if i < 19:
             rB.append({'rB':parPure.get(pList[i])}) 
         else:
             fA.append({'fA':parPure.get(pList[i])})
-    for c, d, e in zip(empty, rB, fA):
+    for c, d, e in zip(labels, rB, fA):
         zipped = {}
         zipped.update(c)
         zipped.update(d)
@@ -183,17 +181,16 @@ def populate_data(value, n_clicks):
 
     # Populates general-table parameter with data
 @app.callback(Output('general-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
-def populate_data(value, n_clicks):
-    dataDic = OrderedDict()
+def populate_general_data(value, n_clicks):
     parPure = new_par(value)
     data = []
-    empty = []
-    con = []
+    labels = []
+    val = []
     for i in GENERAL_LABELS:
-        empty.append({'label': i})
+        labels.append({'label': i})
     for i in range(8, 12):
-        con.append({'con':parPure.get(pList[i])}) 
-    for c, d in zip(empty, con):
+        val.append({'val':parPure.get(pList[i])}) 
+    for c, d in zip(labels, val):
         zipped = {}
         zipped.update(c)
         zipped.update(d)
@@ -203,22 +200,34 @@ def populate_data(value, n_clicks):
     # Updates geometry-plot path with Dropdown value ***(not currently functioning)***
 @app.callback(Output('geometry-plot', 'src'),
               [Input('bike-dropdown', 'value'),                    
-               Input('calc-button', 'n_clicks')],
-              [State('wheel-table', 'data')])
-def update_geo_plot(value, data, n_clicks):
+               Input('calc-button', 'n_clicks'),
+               Input('wheel-table', 'data'),
+               Input('frame-table', 'data'),
+               Input('general-table', 'data')]) 
+def update_geo_plot(value, n_clicks, x, y, z):
     ctx = dash.callback_context
-    pDic = {}
-    currentBike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
+    wheelData = ctx.inputs.get('wheel-table.data')
+    frameData = ctx.inputs.get('frame-table.data')
+    genData = ctx.inputs.get('general-table.data')
     image = value+'.png' 
-    for p in range(8):
-        if p < 4:
-            pDic.update({pList[p]:data})
-        else:
-            pDic.update({pList[p]:data})
-    for key in pDic:
-        currentBike.parameters['Benchmark'][key] = pDic.get(key)
-    if ctx.triggered[0] == 'n_clicks':
-        plot = currentBike.plot_bicycle_geometry()
+    if ctx.triggered[0]['prop_id'] == 'calc-button.n_clicks':
+        newP = []
+        currentBike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
+        for p in range(8):
+            if p < 4:
+                newP.extend([pList[p], wheelData[p].get('fW')]) 
+            else:
+                newP.extend([pList[p], wheelData[p-4].get('rW')])
+        for p in range(12, len(pList)):
+            if p < 19:
+                newP.extend([pList[p], frameData[p-12].get('rB')])
+            else: 
+                newP.extend([pList[p], frameData[p-19].get('fA')])
+        for p in range(8,12):
+            newP.extend([pList[p], genData[p-8].get('val')])
+        for i in range(0,len(newP),2):
+            currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
+        plot = currentBike.plot_bicycle_geometry() # removing uncertainties from main has bug io.py 104/8
         plot.savefig(os.getcwd()+'\\assets\\geo-plots\\user-bikes\\'+image)
         return '/assets/geo-plots/user-bikes/'+image
     else: 
@@ -243,7 +252,7 @@ def update_dropdown(n_clicks, value):
         OPTIONS.append(value)
         return [{'label': i, 'value': i} for i in OPTIONS]
 
-    # Toggles dark mode for cells of DataTable ***debug for fixed column width***
+    # Toggles dark mode for cells of DataTable 
 @app.callback([Output('wheel-table', 'style_cell'),
                Output('frame-table', 'style_cell'),
                Output('general-table', 'style_cell')],
