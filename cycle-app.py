@@ -38,18 +38,18 @@ OPTIONS=['Benchmark',
          'Yellow',
          'Yellowrev']
 
-WHEEL_COLUMNS=[{'name': '', 'id': 'label'},
-               {'name': 'Front Wheel', 'id': 'fW'},
-               {'name': 'Rear Wheel', 'id': 'rW'}]
+WHEEL_COLUMNS=[{'name': '', 'id': 'label', 'type': 'text'}, 
+               {'name': 'Front Wheel', 'id': 'fW', 'type': 'numeric'},
+               {'name': 'Rear Wheel', 'id': 'rW', 'type': 'numeric'}]
 
 WHEEL_LABELS=['Radius',
               'Mass',
               'Moment Ixx',
               'Moment Iyy']
 
-FRAME_COLUMNS=[{'name': '', 'id': 'label'},
-               {'name': 'Rear Body', 'id': 'rB'},
-               {'name': 'Front Assembly', 'id': 'fA'}]    
+FRAME_COLUMNS=[{'name': '', 'id': 'label', 'type': 'text'},
+               {'name': 'Rear Body', 'id': 'rB', 'type': 'numeric'},
+               {'name': 'Front Assembly', 'id': 'fA', 'type': 'numeric'}]    
 
 FRAME_LABELS=['Center-of-Mass X',
               'Center-of-Mass Y',
@@ -59,8 +59,8 @@ FRAME_LABELS=['Center-of-Mass X',
               'Moment Izz',
               'Moment Ixz']
 
-GENERAL_COLUMNS=[{'name': '', 'id': 'label'},
-                 {'name': 'Value', 'id': 'val'}]
+GENERAL_COLUMNS=[{'name': '', 'id': 'label', 'type': 'text'},
+                 {'name': 'Value', 'id': 'val', 'type': 'numeric'}]
 
 GENERAL_LABELS=['Wheel Base', 
                 'Trail',
@@ -120,18 +120,7 @@ app.layout = html.Div([
                        html.Img(src='',
                                 alt='A plot revealing the eigenvalues of the bicycle system as a function of speed.',
                                 id='eigen-plot')]),
-
-                                html.Button('tessssssst',
-                                id='test-button',
-                                n_clicks=0),
-                                html.Div(id='pre')
 ])  
-    # test callback to display the data as it is recieved in other callback Inputs     
-@app.callback(Output('pre', 'children'), [Input('test-button', 'n_clicks'), Input('wheel-table', 'data')])
-def testfunc(n_clicks,data):
-    ctx = dash.callback_context
-    wheelData = ctx.inputs.get('wheel-table.data')
-    return 'my data is "{}"'.format(wheelData)
     
     # Populates wheel-table parameter with data
 @app.callback(Output('wheel-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
@@ -226,7 +215,10 @@ def update_geo_plot(value, n_clicks, x, y, z):
         for p in range(8,12):
             newP.extend([pList[p], genData[p-8].get('val')])
         for i in range(0,len(newP),2):
+            '''print(newP[i])
+            print(type(newP[i+1]))'''
             currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
+        print(currentBike.parameters['Benchmark'])
         plot = currentBike.plot_bicycle_geometry() # removing uncertainties from main has bug io.py 104/8
         plot.savefig(os.getcwd()+'\\assets\\geo-plots\\user-bikes\\'+image)
         return '/assets/geo-plots/user-bikes/'+image
