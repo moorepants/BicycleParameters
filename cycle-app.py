@@ -7,6 +7,7 @@ from dash.exceptions import PreventUpdate
 
 from collections import OrderedDict
 import os
+import base64
 
 import bicycleparameters as bp
 import pandas as pd
@@ -186,7 +187,7 @@ def populate_general_data(value, n_clicks):
         data.append(zipped)
     return data
  
-    # Updates geometry-plot path with Dropdown value ***(not currently functioning)***
+    # Updates geometry-plot path with Dropdown value or edited DataTable values
 @app.callback(Output('geometry-plot', 'src'),
               [Input('bike-dropdown', 'value'),                    
                Input('calc-button', 'n_clicks'),
@@ -215,26 +216,54 @@ def update_geo_plot(value, n_clicks, x, y, z):
         for p in range(8,12):
             newP.extend([pList[p], genData[p-8].get('val')])
         for i in range(0,len(newP),2):
-            '''print(newP[i])
-            print(type(newP[i+1]))'''
             currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
-        print(currentBike.parameters['Benchmark'])
-        plot = currentBike.plot_bicycle_geometry() # removing uncertainties from main has bug io.py 104/8
+        plot = currentBike.plot_bicycle_geometry() 
         plot.savefig(os.getcwd()+'\\assets\\geo-plots\\user-bikes\\'+image)
-        return '/assets/geo-plots/user-bikes/'+image
+        encoded_image = base64.b64encode(open(os.getcwd()+'\\assets\\geo-plots\\user-bikes\\'+image, 'rb').read())
+        return 'data:image/png;base64,{}'.format(encoded_image.decode())
     else: 
         if os.path.exists(os.getcwd()+'\\assets\\geo-plots\\defaults\\'+image):        
             return '/assets/geo-plots/defaults/'+image
-    
-    # Updates eigen-plot path with Dropdown value
-@app.callback(Output('eigen-plot', 'src'), [Input('bike-dropdown', 'value')])
-def reveal_eigen_plot(value):
-    image = value+'.png'
-    if os.path.exists(os.getcwd()+'\\assets\\eigen-plots\\defaults\\'+image):        
-        return '/assets/eigen-plots/defaults/'+image
+'''
+    # Updates eigen-plot path with Dropdown value or edited DataTable values
+@app.callback(Output('eigen-plot', 'src'),
+              [Input('bike-dropdown', 'value'),                    
+               Input('calc-button', 'n_clicks'),
+               Input('wheel-table', 'data'),
+               Input('frame-table', 'data'),
+               Input('general-table', 'data')]) 
+def update_geo_plot(value, n_clicks, x, y, z):
+    ctx = dash.callback_context
+    speeds = np.linspace(0, 10, num=100)
+    wheelData = ctx.inputs.get('wheel-table.data')
+    frameData = ctx.inputs.get('frame-table.data')
+    genData = ctx.inputs.get('general-table.data')
+    image = value+'.png' 
+    if ctx.triggered[0]['prop_id'] == 'calc-button.n_clicks':
+        newP = []
+        currentBike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
+        for p in range(8):
+            if p < 4:
+                newP.extend([pList[p], wheelData[p].get('fW')]) 
+            else:
+                newP.extend([pList[p], wheelData[p-4].get('rW')])
+        for p in range(12, len(pList)):
+            if p < 19:
+                newP.extend([pList[p], frameData[p-12].get('rB')])
+            else: 
+                newP.extend([pList[p], frameData[p-19].get('fA')])
+        for p in range(8,12):
+            newP.extend([pList[p], genData[p-8].get('val')])
+        for i in range(0,len(newP),2):
+            currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
+        plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False)
+        plot.savefig(os.getcwd()+'\\assets\\eigen-plots\\user-bikes\\'+image)
+        encoded_image = base64.b64encode(open(os.getcwd()+'\\assets\\eigen-plots\\user-bikes\\'+image, 'rb').read())
+        return 'data:image/png;base64,{}'.format(encoded_image.decode())
     else: 
-        return '/assets/eigen-plots/user-bikes/'+image
-
+        if os.path.exists(os.getcwd()+'\\assets\\eigen-plots\\defaults\\'+image):        
+            return '/assets/eigen-plots/defaults/'+image
+'''
     # Updates dropdown options with save-input value
 @app.callback(Output('bike-dropdown', 'options'), [Input('drop-button', 'n_clicks')], [State('save-input', 'value')])
 def update_dropdown(n_clicks, value):
