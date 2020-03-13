@@ -13,7 +13,6 @@ import io
 import bicycleparameters as bp
 import pandas as pd
 import numpy as np 
-from bicycleparameters import parameter_sets as ps
 
 ###!!!Must ensure that current working directory is set to directory immediatly containing '\data\'!!!###
 ###---------------------------------------------------------------------------------------------------###

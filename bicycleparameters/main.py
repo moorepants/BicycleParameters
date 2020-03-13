@@ -35,8 +35,8 @@ class Bicycle(object):
         try:
             pathToBicycle = os.path.join(pathToData, 'bicycles', bicycleName)
             if os.path.isdir(pathToBicycle) == True:
-                print("We have foundeth a directory named: " +
-                      "{0}.".format(pathToBicycle))
+                '''print("We have foundeth a directory named: " +
+                      "{0}.".format(pathToBicycle))'''
                 return super(Bicycle, cls).__new__(cls)
             else:
                 raise ValueError
@@ -113,7 +113,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         isRawDataDir = 'RawData' in os.listdir(self.directory)
 
         if isRawDataDir:
-            print("Found the RawData directory:", rawDataDir)
+            #print("Found the RawData directory:", rawDataDir)
             isMeasuredFile = bicycleName + 'Measured.txt' in os.listdir(rawDataDir)
         else:
             isMeasuredFile = False
@@ -136,9 +136,9 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                   % self.bicycleName)
         elif not forceRawCalc and isBenchmark:
             # we already have what we need
-            stmt1 = "Looks like you've already got some parameters for %s, "
+            '''stmt1 = "Looks like you've already got some parameters for %s, "
             stmt2 = "use forceRawCalc to recalculate."
-            print((stmt1 + stmt2) % self.bicycleName)
+            print((stmt1 + stmt2) % self.bicycleName)'''
             # load the measured.txt file if it exists
             pathToRawFile = os.path.join(rawDataDir,
                     self.bicycleName + 'Measured.txt')
@@ -479,7 +479,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             self.riderName = riderName
             self.hasRider = True
 
-    def plot_bicycle_geometry(self, show=True, pendulum=True,
+    def plot_bicycle_geometry(self, show=False, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
         '''Returns a figure showing the basic bicycle geometry, the centers of
         mass and the moments of inertia.
@@ -877,7 +877,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         figsize = [figwidth, figwidth * goldenMean]
         params = {#'backend': 'ps',
             'axes.labelsize': 8,
-            'text.fontsize': 10,
+            #'text.fontsize': 10, # removed because out of date
             'legend.fontsize': 8,
             'xtick.labelsize': 6,
             'ytick.labelsize': 6,
