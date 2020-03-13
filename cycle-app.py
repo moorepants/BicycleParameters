@@ -8,6 +8,7 @@ from dash.exceptions import PreventUpdate
 from collections import OrderedDict
 import os
 import base64
+import io
 
 import bicycleparameters as bp
 import pandas as pd
@@ -220,11 +221,13 @@ def update_eigen_plot(value, n_clicks, x, y, z):
         for i in range(0,len(newP),2):
             currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
         plot = currentBike.plot_bicycle_geometry() 
-        plot.savefig(os.getcwd()+'\\assets\\geo-plots\\user-bikes\\'+image)
+        fake_geo = io.BytesIO()
+        plot.savefig(fake_geo)
         plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False)
-        plot.savefig(os.getcwd()+'\\assets\\eigen-plots\\user-bikes\\'+image)
-        geo_image = base64.b64encode(open(os.getcwd()+'\\assets\\geo-plots\\user-bikes\\'+image, 'rb').read())
-        eigen_image = base64.b64encode(open(os.getcwd()+'\\assets\\eigen-plots\\user-bikes\\'+image, 'rb').read())       
+        fake_eigen = io.BytesIO()
+        plot.savefig(fake_eigen)
+        geo_image = base64.b64encode(fake_geo.getvalue())
+        eigen_image = base64.b64encode(fake_eigen.getvalue())     
         return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
     else:         
         return '/assets/geo-plots/defaults/'+image, '/assets/eigen-plots/defaults/'+image
