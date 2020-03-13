@@ -1,0 +1,16 @@
+body {
+	background-color: grey;
+}
+
+#main-header {
+	color: maroon;
+}
+
+#geometry-plot {
+	width: 640;
+	height: 480;
+}
+
+#image-bin {
+	background-color: lightgrey;
+}
