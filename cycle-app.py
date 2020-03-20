@@ -191,45 +191,42 @@ def populate_general_data(value, n_clicks):
 @app.callback([Output('geometry-plot', 'src'),
                Output('eigen-plot', 'src')],
               [Input('bike-dropdown', 'value'),                    
-               Input('calc-button', 'n_clicks'),
                Input('wheel-table', 'data'),
                Input('frame-table', 'data'),
                Input('general-table', 'data')]) 
-def update_eigen_plot(value, n_clicks, x, y, z):
+def plot_update(value, x, y, z):
     ctx = dash.callback_context
     speeds = np.linspace(0, 10, num=100)
     wheelData = ctx.inputs.get('wheel-table.data')
     frameData = ctx.inputs.get('frame-table.data')
     genData = ctx.inputs.get('general-table.data')
     image = value+'.png' 
-    if ctx.triggered[0]['prop_id'] == 'calc-button.n_clicks':
-        newP = []
-        currentBike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
-        for p in range(8):
-            if p < 4:
-                newP.extend([pList[p], wheelData[p].get('fW')]) 
-            else:
-                newP.extend([pList[p], wheelData[p-4].get('rW')])
-        for p in range(12, len(pList)):
-            if p < 19:
-                newP.extend([pList[p], frameData[p-12].get('rB')])
-            else: 
-                newP.extend([pList[p], frameData[p-19].get('fA')])
-        for p in range(8,12):
-            newP.extend([pList[p], genData[p-8].get('con')])
-        for i in range(0,len(newP),2):
-            currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
-        plot = currentBike.plot_bicycle_geometry() 
-        fake_geo = io.BytesIO()
-        plot.savefig(fake_geo)
-        plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False)
-        fake_eigen = io.BytesIO()
-        plot.savefig(fake_eigen)
-        geo_image = base64.b64encode(fake_geo.getvalue())
-        eigen_image = base64.b64encode(fake_eigen.getvalue())     
-        return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
-    else:         
-        return '/assets/geo-plots/defaults/'+image, '/assets/eigen-plots/defaults/'+image
+    newP = []
+    currentBike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
+    for p in range(8):
+        if p < 4:
+            newP.extend([pList[p], wheelData[p].get('fW')]) 
+        else:
+            newP.extend([pList[p], wheelData[p-4].get('rW')])
+    for p in range(12, len(pList)):
+        if p < 19:
+            newP.extend([pList[p], frameData[p-12].get('rB')])
+        else: 
+            newP.extend([pList[p], frameData[p-19].get('fA')])
+    for p in range(8,12):
+        newP.extend([pList[p], genData[p-8].get('con')])
+    for i in range(0,len(newP),2):
+        currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
+    print(currentBike.parameters['Benchmark'])
+    geo_plot = currentBike.plot_bicycle_geometry() 
+    geo_fake = io.BytesIO()
+    geo_plot.savefig(geo_fake)
+    geo_image = base64.b64encode(geo_fake.getvalue())
+    eigen_plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False)
+    eigen_fake = io.BytesIO()
+    eigen_plot.savefig(eigen_fake)    
+    eigen_image = base64.b64encode(eigen_fake.getvalue())     
+    return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
 
     # Updates dropdown options with save-input value
 @app.callback(Output('bike-dropdown', 'options'), [Input('drop-button', 'n_clicks')], [State('save-input', 'value')])
