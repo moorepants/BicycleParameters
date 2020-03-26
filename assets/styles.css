@@ -1,9 +1,11 @@
-body {
+html {
 	background-color: grey;
+	background-image: url("/assets/bike-wall.png");
+	background-size: cover;
 }
 
 #main-header {
-	color: maroon;
+	color: violet;
 }
 
 #geometry-plot {
