@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Wedge
 from uncertainties import unumpy
-from dtk import control
+#from dtk import control
 
 # local module imports
 from . import bicycle
