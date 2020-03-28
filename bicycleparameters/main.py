@@ -500,8 +500,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         except AttributeError:
             pendulum = False
 
-        fig = plt.figure()
-        ax = plt.axes()
+        fig, ax = plt.subplots()
 
         # define some colors for the parts
         numColors = len(parts)
@@ -550,7 +549,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         # plot the ground line
         x = np.array([-par['rR'],
                       par['w'] + par['rF']])
-        plt.plot(x, np.zeros_like(x), 'k')
+        ax.plot(x, np.zeros_like(x), 'k')
 
         # plot the rear wheel
         c = plt.Circle((0., par['rR']), radius=par['rR'], fill=False)
@@ -562,11 +561,11 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         # plot the fundamental bike
         deex, deez = geometry.fundamental_geometry_plot_data(par)
-        plt.plot(deex, -deez, 'k')
+        ax.plot(deex, -deez, 'k')
 
         # plot the steer axis
         dx3 = deex[2] + deez[2] * (deex[2] - deex[1]) / (deez[1] - deez[2])
-        plt.plot([deex[2], dx3],  [-deez[2], 0.], 'k--')
+        ax.plot([deex[2], dx3],  [-deez[2], 0.], 'k--')
 
         # don't plot the pendulum lines if a rider has been added because the
         # inertia has changed
@@ -587,9 +586,9 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                     x = np.array([xPoint - xPlus,
                                   xPoint + xPlus])
                     z = -m * x - b
-                    plt.plot(x, z, color=partColors[part])
+                    ax.plot(x, z, color=partColors[part])
                     # label the pendulum lines with a number
-                    plt.text(x[0], z[0], str(i + 1))
+                    ax.text(x[0], z[0], str(i + 1))
 
         if centerOfMass:
             # plot the center of mass location
@@ -610,26 +609,26 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             # front wheel CoM
             ax = com_symbol(ax, (par['w'], par['rF']), sRad,
                             color=partColors['F'])
-            plt.text(par['w'] + sRad, par['rF'] + sRad, 'F')
+            ax.text(par['w'] + sRad, par['rF'] + sRad, 'F')
             # rear wheel CoM
             ax = com_symbol(ax, (0., par['rR']), sRad,
                             color=partColors['R'])
-            plt.text(0. + sRad, par['rR'] + sRad, 'R')
+            ax.text(0. + sRad, par['rR'] + sRad, 'R')
             for j, part in enumerate([x for x in parts
                                       if x not in 'RFD']):
                 xcom = par['x' + part]
                 zcom = par['z' + part]
                 ax = com_symbol(ax, (xcom, -zcom), sRad,
                                 color=partColors[part])
-                plt.text(xcom + sRad, -zcom + sRad, part)
+                ax.text(xcom + sRad, -zcom + sRad, part)
             if 'H' not in parts:
                 ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
-                plt.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
+                ax.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
 
 
-        plt.axis('equal')
-        plt.ylim((0., 1.))
-        plt.title(self.bicycleName)
+        ax.set_aspect('equal')
+        ax.set_ylim((0., 1.))
+        ax.set_title(self.bicycleName)
 
         # if there is a rider on the bike, make a simple stick figure
         if self.human:
@@ -639,36 +638,39 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             # K2: lower leg, tip of foot to knee
             start = rider.yeadon_vec_to_bicycle_vec(human.K2.end_pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
-            plt.plot([start[0, 0], end[0, 0]],
-                     [-start[2, 0], -end[2, 0]], 'k')
+            ax.plot([start[0, 0], end[0, 0]],
+                    [-start[2, 0], -end[2, 0]], 'k')
             # K1: upper leg, knee to hip
             start = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
-            plt.plot([start[0, 0], end[0, 0]],
-                     [-start[2, 0], -end[2, 0]], 'k')
+            ax.plot([start[0, 0], end[0, 0]],
+                    [-start[2, 0], -end[2, 0]], 'k')
             # torso
             start = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
-            plt.plot([start[0, 0], end[0, 0]],
-                     [-start[2, 0], -end[2, 0]], 'k')
+            ax.plot([start[0, 0], end[0, 0]],
+                    [-start[2, 0], -end[2, 0]], 'k')
             # B1: upper arm
             start = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.B2.pos, mpar, bpar)
-            plt.plot([start[0, 0], end[0, 0]],
-                     [-start[2, 0], -end[2, 0]], 'k')
+            ax.plot([start[0, 0], end[0, 0]],
+                    [-start[2, 0], -end[2, 0]], 'k')
             # B2: lower arm, elbow to tip of fingers
             start = rider.yeadon_vec_to_bicycle_vec(human.B2.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.B2.end_pos, mpar, bpar)
-            plt.plot([start[0, 0], end[0, 0]],
-                     [-start[2, 0], -end[2, 0]], 'k')
+            ax.plot([start[0, 0], end[0, 0]],
+                    [-start[2, 0], -end[2, 0]], 'k')
             # C: chest/head
             start = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.C.end_pos, mpar, bpar)
-            plt.plot([start[0, 0], end[0, 0]],
-                     [-start[2, 0], -end[2, 0]], 'k')
+            ax.plot([start[0, 0], end[0, 0]],
+                    [-start[2, 0], -end[2, 0]], 'k')
 
         if show:
             fig.show()
+
+        # TODO : This should return ax instead of fig to follow typical
+        # practice in other Python libraries.
 
         return fig
 
