@@ -13,6 +13,10 @@ html {
 	height: 480;
 }
 
+#slider-bin {
+	background-color: black;
+}
+
 #image-bin {
 	background-color: lightgrey;
 }

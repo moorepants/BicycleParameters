@@ -4,31 +4,16 @@ import dash_html_components as html
 import dash_table as tbl
 from dash.dependencies import Input, Output, State
 
-from collections import OrderedDict
+import bicycleparameters as bp
+import pandas as pd
+import numpy as np
 import os
 import base64
 import io
 
-import bicycleparameters as bp
-import pandas as pd
-import numpy as np
-
-###!!!Must ensure that current working directory is set to directory immediatly containing '\data\'!!!###
-###---------------------------------------------------------------------------------------------------###
-
-# Initializes bike data as Bicycle and retrieves its parameters
-
-
-def new_par(bike_name):
-    bike = bp.Bicycle(bike_name, pathToData=os.getcwd()+'\\data')
-    par = bike.parameters['Benchmark']
-    parPure = bp.io.remove_uncertainties(par)
-    return parPure
-
-
 pList = ['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
          'w', 'c', 'lam', 'g',
-         'xB', 'zB', 'mB', 'IBxx', 'IByy', 'IBzz', 'IBxz', 'xH', 'zH', 'mH', 'IHxx', 'IHyy', 'IHzz', 'IHxz', ]
+         'xB', 'zB', 'mB', 'IBxx', 'IByy', 'IBzz', 'IBxz', 'xH', 'zH', 'mH', 'IHxx', 'IHyy', 'IHzz', 'IHxz']
 
 OPTIONS = ['Benchmark',
            'Browser',
@@ -97,24 +82,29 @@ app.layout = html.Div([
                                      style_cell={},
                                      style_header={},
                                      editable=True)]),
-    dcc.Slider(id='min-slider',
-               min=0,
-               max=20,
-               marks={0: '0 m/s',
-                      5: '5 m/s',
-                      10: '10 m/s',
-                      15: '15 m/s',
-                      20: '20 m/s'},
-               value=0),
-    dcc.Slider(id='max-slider',
-               min=0,
-               max=20,
-               marks={0: '0 m/s',
-                      5: '5 m/s',
-                      10: '10 m/s',
-                      15: '15 m/s',
-                      20: '20 m/s'},
-               value=20),
+    html.Div(id='slider-bin',
+             children=[dcc.Slider(id='min-slider',
+                                  min=0,
+                                  max=20,
+                                  step=2,
+                                  marks={0: '0 m/s',
+                                         4: '4 m/s',
+                                         8: '8 m/s',
+                                         12: '12 m/s',
+                                         16: '16 m/s',
+                                         20: '20 m/s'},
+                                  value=0),
+                       dcc.Slider(id='max-slider',
+                                  min=0,
+                                  max=20,
+                                  step=2,
+                                  marks={0: '0 m/s',
+                                         4: '4 m/s',
+                                         8: '8 m/s',
+                                         12: '12 m/s',
+                                         16: '16 m/s',
+                                         20: '20 m/s'},
+                                  value=10)]),
     html.Button('Reset Table',
                 id='reset-button',
                 type='button',
@@ -126,13 +116,22 @@ app.layout = html.Div([
     html.Div(id='plot-bin',
              children=[html.Img(src='',
                                 alt='May take a moment to load...',
-                                id='geometry-plot',),
+                                id='geometry-plot'),
                        html.Img(src='',
                                 alt='May take a moment to load...',
                                 id='eigen-plot')]),
 ])
 
-# Populates wheel-table parameter with data
+# creates generic set of Benchmark parameters
+
+
+def new_par(bike_name):
+    bike = bp.Bicycle(bike_name, pathToData=os.getcwd()+'\\data')
+    par = bike.parameters['Benchmark']
+    parPure = bp.io.remove_uncertainties(par)
+    return parPure
+
+# populates wheel-table parameter with data
 
 
 @app.callback(Output('wheel-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
@@ -157,7 +156,7 @@ def populate_wheel_data(value, n_clicks):
         data.append(zipped)
     return data
 
-    # Populates frame-table parameter with data
+    # populates frame-table parameter with data
 
 
 @app.callback(Output('frame-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
@@ -182,7 +181,7 @@ def populate_frame_data(value, n_clicks):
         data.append(zipped)
     return data
 
-    # Populates general-table parameter with data
+    # populates general-table parameter with data
 
 
 @app.callback(Output('general-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
@@ -202,7 +201,7 @@ def populate_general_data(value, n_clicks):
         data.append(zipped)
     return data
 
-    # Updates geo-plot & eigen-plot path with Dropdown value or edited DataTable values
+    # updates geo-plot & eigen-plot path with Dropdown value or edited DataTable values
 
 
 @app.callback([Output('geometry-plot', 'src'),
@@ -221,20 +220,24 @@ def plot_update(value, wheel, frame, general, minVal, maxVal):
     genData = ctx.inputs.get('general-table.data')
     bound1 = ctx.inputs.get('min-slider.value')
     bound2 = ctx.inputs.get('max-slider.value')
+    print(wheelData)
 
     # sets the speed range for eigen-plot based on min/max-slider
     minBound = min(bound1, bound2)
     maxBound = max(bound1, bound2)
     steps = (maxBound-minBound)/0.1
-    speeds = np.linspace(minBound, maxBound, num=steps)
+    speeds = np.linspace(minBound, maxBound, num=int(steps))
 
     # creates an alternating list of [parameter,value] from table data
     newP = []
     for p in range(8):
         if p < 4:
+            # index out of range error, but print(newP) yields expected result?
             newP.extend([pList[p], wheelData[p].get('fW')])
+            print(newP)
         else:
             newP.extend([pList[p], wheelData[p-4].get('rW')])
+            print(newP)
     for p in range(12, len(pList)):
         if p < 19:
             newP.extend([pList[p], frameData[p-12].get('rB')])
@@ -262,7 +265,7 @@ def plot_update(value, wheel, frame, general, minVal, maxVal):
 
     return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
 
-    # Toggles dark mode for cells of DataTable
+    # toggles dark mode for cells of DataTable
 
 
 @app.callback([Output('wheel-table', 'style_cell'),
@@ -282,7 +285,7 @@ def cell_toggle(n_clicks):
     else:
         return dark
 
-    # Toggles dark mode for header of DataTable
+    # toggles dark mode for header of DataTable
 
 
 @app.callback([Output('wheel-table', 'style_header'),
