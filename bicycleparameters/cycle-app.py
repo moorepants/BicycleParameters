@@ -126,7 +126,7 @@ app.layout = html.Div([
 
 
 def new_par(bike_name):
-    bike = bp.Bicycle(bike_name, pathToData=os.getcwd()+'\\data')
+    bike = bp.Bicycle(bike_name, pathToData=os.getcwd()+'\\app-data')
     par = bike.parameters['Benchmark']
     parPure = bp.io.remove_uncertainties(par)
     return parPure
@@ -247,7 +247,7 @@ def plot_update(value, wheel, frame, general, minVal, maxVal):
         newP.extend([pList[p], genData[p-8].get('con')])
 
     # edits bicycle parameters based on table data
-    currentBike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
+    currentBike = bp.Bicycle(value, pathToData=os.getcwd()+'\\app-data')
     for i in range(0, len(newP), 2):
         currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
 
