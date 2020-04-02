@@ -97,6 +97,24 @@ app.layout = html.Div([
                                      style_cell={},
                                      style_header={},
                                      editable=True)]),
+    dcc.Slider(id='min-slider',
+               min=0,
+               max=20,
+               marks={0: '0 m/s',
+                      5: '5 m/s',
+                      10: '10 m/s',
+                      15: '15 m/s',
+                      20: '20 m/s'},
+               value=0),
+    dcc.Slider(id='max-slider',
+               min=0,
+               max=20,
+               marks={0: '0 m/s',
+                      5: '5 m/s',
+                      10: '10 m/s',
+                      15: '15 m/s',
+                      20: '20 m/s'},
+               value=20),
     html.Button('Reset Table',
                 id='reset-button',
                 type='button',
@@ -192,15 +210,26 @@ def populate_general_data(value, n_clicks):
               [Input('bike-dropdown', 'value'),
                Input('wheel-table', 'data'),
                Input('frame-table', 'data'),
-               Input('general-table', 'data')])
-def plot_update(value, x, y, z):
+               Input('general-table', 'data'),
+               Input('min-slider', 'value'),
+               Input('max-slider', 'value')])
+def plot_update(value, wheel, frame, general, minVal, maxVal):
+    # accesses Input properties to avoid redundancies
     ctx = dash.callback_context
-    speeds = np.linspace(0, 10, num=100)
     wheelData = ctx.inputs.get('wheel-table.data')
     frameData = ctx.inputs.get('frame-table.data')
     genData = ctx.inputs.get('general-table.data')
+    bound1 = ctx.inputs.get('min-slider.value')
+    bound2 = ctx.inputs.get('max-slider.value')
+
+    # sets the speed range for eigen-plot based on min/max-slider
+    minBound = min(bound1, bound2)
+    maxBound = max(bound1, bound2)
+    steps = (maxBound-minBound)/0.1
+    speeds = np.linspace(minBound, maxBound, num=steps)
+
+    # creates an alternating list of [parameter,value] from table data
     newP = []
-    currentBike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
     for p in range(8):
         if p < 4:
             newP.extend([pList[p], wheelData[p].get('fW')])
@@ -213,16 +242,24 @@ def plot_update(value, x, y, z):
             newP.extend([pList[p], frameData[p-19].get('fA')])
     for p in range(8, 12):
         newP.extend([pList[p], genData[p-8].get('con')])
+
+    # edits bicycle parameters based on table data
+    currentBike = bp.Bicycle(value, pathToData=os.getcwd()+'\\data')
     for i in range(0, len(newP), 2):
         currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
+
+    # create geo-plot image
     geo_plot = currentBike.plot_bicycle_geometry()
     geo_fake = io.BytesIO()
     geo_plot.savefig(geo_fake)
     geo_image = base64.b64encode(geo_fake.getvalue())
+
+    # create eigen-plot image
     eigen_plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False)
     eigen_fake = io.BytesIO()
     eigen_plot.savefig(eigen_fake)
     eigen_image = base64.b64encode(eigen_fake.getvalue())
+
     return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
 
     # Toggles dark mode for cells of DataTable
