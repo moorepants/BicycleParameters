@@ -4,7 +4,8 @@ import dash_html_components as html
 import dash_table as tbl
 from dash.dependencies import Input, Output, State
 
-import bicycleparameters as bp
+from . import bicycleparameters as bp
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import os
@@ -255,16 +256,18 @@ def plot_update(value, wheel, frame, general, minVal, maxVal):
         currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
 
     # create geo-plot image
-    geo_plot = currentBike.plot_bicycle_geometry()
     geo_fake = io.BytesIO()
+    geo_plot = currentBike.plot_bicycle_geometry()
     geo_plot.savefig(geo_fake)
     geo_image = base64.b64encode(geo_fake.getvalue())
+    plt.close(geo_plot)
 
     # create eigen-plot image
-    eigen_plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False)
     eigen_fake = io.BytesIO()
+    eigen_plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False)
     eigen_plot.savefig(eigen_fake)
     eigen_image = base64.b64encode(eigen_fake.getvalue())
+    plt.close(eigen_plot)
 
     return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
 
