@@ -11,6 +11,8 @@ import os
 import base64
 import io
 
+path_to_app_data = os.path.join(os.path.dirname(os.path.abspath(__file__)),'app-data')
+
 pList = ['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
          'w', 'c', 'lam', 'g',
          'xB', 'zB', 'mB', 'IBxx', 'IByy', 'IBzz', 'IBxz', 'xH', 'zH', 'mH', 'IHxx', 'IHyy', 'IHzz', 'IHxz']
