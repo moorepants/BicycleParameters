@@ -11,7 +11,8 @@ import os
 import base64
 import io
 
-path_to_app_data = os.path.join(os.path.dirname(os.path.abspath(__file__)),'app-data')
+path_to_app_data = os.path.join(os.path.dirname(
+    os.path.abspath(__file__)), 'app-data')
 
 pList = ['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
          'w', 'c', 'lam', 'g',
@@ -128,7 +129,7 @@ app.layout = html.Div([
 
 
 def new_par(bike_name):
-    bike = bp.Bicycle(bike_name, pathToData=os.getcwd()+'\\app-data')
+    bike = bp.Bicycle(bike_name, pathToData=path_to_app_data)
     par = bike.parameters['Benchmark']
     parPure = bp.io.remove_uncertainties(par)
     return parPure
@@ -249,7 +250,7 @@ def plot_update(value, wheel, frame, general, minVal, maxVal):
         newP.extend([pList[p], genData[p-8].get('con')])
 
     # edits bicycle parameters based on table data
-    currentBike = bp.Bicycle(value, pathToData=os.getcwd()+'\\app-data')
+    currentBike = bp.Bicycle(value, pathToData=path_to_app_data)
     for i in range(0, len(newP), 2):
         currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
 
