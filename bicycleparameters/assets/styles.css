@@ -1,0 +1,21 @@
+html {
+	background-color: grey;
+	background-size: cover;
+}
+
+#main-header {
+	color: violet;
+}
+
+#geometry-plot {
+	width: 640;
+	height: 480;
+}
+
+#slider-bin {
+	background-color: black;
+}
+
+#image-bin {
+	background-color: lightgrey;
+}

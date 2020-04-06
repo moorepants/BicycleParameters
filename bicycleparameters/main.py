@@ -479,7 +479,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             self.riderName = riderName
             self.hasRider = True
 
-    def plot_bicycle_geometry(self, show=False, pendulum=True,
+    def plot_bicycle_geometry(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
         '''Returns a figure showing the basic bicycle geometry, the centers of
         mass and the moments of inertia.
@@ -885,7 +885,11 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             'ytick.labelsize': 6,
             'figure.figsize': figsize
             }
-        plt.rcParams.update(params)
+        try:
+            plt.rcParams.update(params)
+        except KeyError:
+            del params['text.fontsize']
+            plt.rcParams.update(params)
 
         if not fig:
             fig = plt.figure(figsize=figsize)

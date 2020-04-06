@@ -4,7 +4,7 @@ import dash_html_components as html
 import dash_table as tbl
 from dash.dependencies import Input, Output, State
 
-from . import bicycleparameters as bp
+import bicycleparameters as bp
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -257,7 +257,7 @@ def plot_update(value, wheel, frame, general, minVal, maxVal):
 
     # create geo-plot image
     geo_fake = io.BytesIO()
-    geo_plot = currentBike.plot_bicycle_geometry()
+    geo_plot = currentBike.plot_bicycle_geometry(show=False)
     geo_plot.savefig(geo_fake)
     geo_image = base64.b64encode(geo_fake.getvalue())
     plt.close(geo_plot)
@@ -314,3 +314,4 @@ def header_toggle(n_clicks):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+    
