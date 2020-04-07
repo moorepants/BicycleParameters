@@ -1,9 +1,0 @@
-- Add the root loci plots in the complex plane.
-- Add a transfer function method to the Bicycle class.
-- Start using some other convention other than camel case for the file names.
-- Add a critical speed method to the Bicycle class.
-- Add methods to ouput other parameter sets (Sharp2008, JBike6, etc).
-- Change lsp + lst to just one variable for the bike geometry.
-- Move some of the functionality to DynamicistToolKit and have the imports work with uncertainties.
-- Add a load_parameters method to the Bicycle class.
-- Add lots of tests for the code.
