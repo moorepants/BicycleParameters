@@ -31,7 +31,7 @@ Dependencies
 Required
 --------
 
-- `Python 2.7 or >= 3.3 <http://www.python.org/>`_
+- `Python 2.7 or >= 3.5 <http://www.python.org/>`_
 - `Numpy >= 1.6.1 <https://numpy.org/>`_
 - `Scipy >= 0.9.0 <https://scipy.org/>`_
 - `Matplotlib >= 1.1.1 <https://matplotlib.org/>`_
