@@ -5,6 +5,8 @@ import dash_table as tbl
 from dash.dependencies import Input, Output, State
 
 import bicycleparameters as bp
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -88,7 +90,8 @@ app.layout = html.Div([
                                               10: '10 m/s',
                                               20: '20 m/s',
                                               30: '30 m/s',
-                                              40: '40 m/s'})]),
+                                              40: '40 m/s'},
+                                        allowCross=False)]),
     html.Div(id='table-bin',
              children=[tbl.DataTable(id='wheel-table',
                                      columns=WHEEL_COLUMNS,
