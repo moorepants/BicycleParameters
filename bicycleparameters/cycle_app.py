@@ -1,3 +1,9 @@
+import io
+import base64
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -7,12 +13,6 @@ from dash.dependencies import Input, Output, State
 import bicycleparameters as bp
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-import os
-import base64
-import io
 
 path_to_app_data = os.path.join(os.path.dirname(
     os.path.abspath(__file__)), 'app-data')
@@ -91,7 +91,7 @@ app.layout = html.Div([
                                               20: '20 m/s',
                                               30: '30 m/s',
                                               40: '40 m/s'},
-                                        allowCross=False)]),
+                                       allowCross=False)]),
     html.Div(id='table-bin',
              children=[tbl.DataTable(id='wheel-table',
                                      columns=WHEEL_COLUMNS,
