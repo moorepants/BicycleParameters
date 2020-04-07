@@ -20,7 +20,7 @@ of the Whipple-Carvallo bicycle model.
    :target: https://pypi.org/project/BicycleParameters/
 
 .. |Anaconda| image:: https://anaconda.org/conda-forge/bicycleparameters/badges/version.svg
-   :target: https://anaconda.org/conda-forges/bicycleparameters
+   :target: https://anaconda.org/conda-forge/bicycleparameters
 
 .. |Travis| image:: https://travis-ci.org/moorepants/BicycleParameters.svg?branch=master
    :target: https://travis-ci.org/moorepants/BicycleParameters
