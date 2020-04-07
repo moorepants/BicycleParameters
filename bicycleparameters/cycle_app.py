@@ -75,28 +75,20 @@ app.layout = html.Div([
                                 alt='May take a moment to load...',
                                 id='eigen-plot')]),
     html.Div(id='slider-bin',
-             children=[dcc.Slider(id='min-slider',
-                                  min=0,
-                                  max=20,
-                                  step=2,
-                                  marks={0: '0 m/s',
-                                         4: '4 m/s',
-                                         8: '8 m/s',
-                                         12: '12 m/s',
-                                         16: '16 m/s',
-                                         20: '20 m/s'},
-                                  value=0),
-                       dcc.Slider(id='max-slider',
-                                  min=0,
-                                  max=20,
-                                  step=2,
-                                  marks={0: '0 m/s',
-                                         4: '4 m/s',
-                                         8: '8 m/s',
-                                         12: '12 m/s',
-                                         16: '16 m/s',
-                                         20: '20 m/s'},
-                                  value=10)]),
+             children=[dcc.RangeSlider(id='range-slider',
+                                       min=-45,
+                                       max=45,
+                                       step=5,
+                                       value=[0, 10],
+                                       marks={-40: '-40 m/s',
+                                              -30: '-30 m/s',
+                                              -20: '-20 m/s',
+                                              -10: '-10 m/s',
+                                              0: '0 m/s',
+                                              10: '10 m/s',
+                                              20: '20 m/s',
+                                              30: '30 m/s',
+                                              40: '40 m/s'})]),
     html.Div(id='table-bin',
              children=[tbl.DataTable(id='wheel-table',
                                      columns=WHEEL_COLUMNS,
@@ -215,21 +207,18 @@ def populate_general_data(value, n_clicks):
                Input('wheel-table', 'data'),
                Input('frame-table', 'data'),
                Input('general-table', 'data'),
-               Input('min-slider', 'value'),
-               Input('max-slider', 'value')])
-def plot_update(value, wheel, frame, general, minVal, maxVal):
+               Input('range-slider', 'value')])
+def plot_update(value, wheel, frame, general, slider):
     # accesses Input properties to avoid redundancies
     ctx = dash.callback_context
     wheelData = ctx.inputs.get('wheel-table.data')
     frameData = ctx.inputs.get('frame-table.data')
     genData = ctx.inputs.get('general-table.data')
-    bound1 = ctx.inputs.get('min-slider.value')
-    bound2 = ctx.inputs.get('max-slider.value')
-    print(wheelData)
+    rangeSliderData = ctx.inputs.get('range-slider.value')
 
-    # sets the speed range for eigen-plot based on min/max-slider
-    minBound = min(bound1, bound2)
-    maxBound = max(bound1, bound2)
+    # sets the speed range for eigen-plot based on range-slider
+    minBound = rangeSliderData[0]
+    maxBound = rangeSliderData[1]
     steps = (maxBound-minBound)/0.1
     speeds = np.linspace(minBound, maxBound, num=int(steps))
 
@@ -239,10 +228,8 @@ def plot_update(value, wheel, frame, general, minVal, maxVal):
         if p < 4:
             # index out of range error, but print(newP) yields expected result?
             newP.extend([pList[p], wheelData[p].get('fW')])
-            print(newP)
         else:
             newP.extend([pList[p], wheelData[p-4].get('rW')])
-            print(newP)
     for p in range(12, len(pList)):
         if p < 19:
             newP.extend([pList[p], frameData[p-12].get('rB')])
@@ -314,4 +301,4 @@ def header_toggle(n_clicks):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, dev_tools_ui=False)
