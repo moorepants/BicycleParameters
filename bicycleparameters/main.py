@@ -879,13 +879,17 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         figsize = [figwidth, figwidth * goldenMean]
         params = {#'backend': 'ps',
             'axes.labelsize': 8,
-            'text.fontsize': 10,
+            'text.fontsize': 10, # removed because out of date
             'legend.fontsize': 8,
             'xtick.labelsize': 6,
             'ytick.labelsize': 6,
             'figure.figsize': figsize
             }
-        plt.rcParams.update(params)
+        try:
+            plt.rcParams.update(params)
+        except KeyError:
+            del params['text.fontsize']
+            plt.rcParams.update(params)
 
         if not fig:
             fig = plt.figure(figsize=figsize)
