@@ -131,75 +131,71 @@ def new_par(bike_name):
     parPure = bp.io.remove_uncertainties(par)
     return parPure
 
-# populates wheel-table parameter with data
+# populates all data tables with bicycleparameters data
 
 
-@app.callback(Output('wheel-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
+@app.callback([Output('wheel-table', 'data'),
+               Output('frame-table', 'data'),
+               Output('general-table', 'data')],
+              [Input('bike-dropdown', 'value'),
+               Input('reset-button', 'n_clicks')])
 def populate_wheel_data(value, n_clicks):
-    parPure = new_par(value)
-    data = []
-    labels = []
+    # generates data for wheel-table
+    wheelPure = new_par(value)
+    wheelData = []
+    wheelLabels = []
     fW = []
     rW = []
     for i in WHEEL_LABELS:
-        labels.append({'label': i})
+        wheelLabels.append({'label': i})
     for i in range(8):
         if i < 4:
-            fW.append({'fW': parPure.get(pList[i])})
+            fW.append({'fW': wheelPure.get(pList[i])})
         else:
-            rW.append({'rW': parPure.get(pList[i])})
-    for c, d, e in zip(labels, fW, rW):
+            rW.append({'rW': wheelPure.get(pList[i])})
+    for c, d, e in zip(wheelLabels, fW, rW):
         zipped = {}
         zipped.update(c)
         zipped.update(d)
         zipped.update(e)
-        data.append(zipped)
-    return data
+        wheelData.append(zipped)
 
-    # populates frame-table parameter with data
-
-
-@app.callback(Output('frame-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
-def populate_frame_data(value, n_clicks):
-    parPure = new_par(value)
-    data = []
-    labels = []
+    # generates data for frame-table
+    framePure = new_par(value)
+    frameData = []
+    frameLabels = []
     rB = []
     fA = []
     for i in FRAME_LABELS:
-        labels.append({'label': i})
+        frameLabels.append({'label': i})
     for i in range(12, len(pList)):
         if i < 19:
-            rB.append({'rB': parPure.get(pList[i])})
+            rB.append({'rB': framePure.get(pList[i])})
         else:
-            fA.append({'fA': parPure.get(pList[i])})
-    for c, d, e in zip(labels, rB, fA):
+            fA.append({'fA': framePure.get(pList[i])})
+    for c, d, e in zip(frameLabels, rB, fA):
         zipped = {}
         zipped.update(c)
         zipped.update(d)
         zipped.update(e)
-        data.append(zipped)
-    return data
+        frameData.append(zipped)
 
-    # populates general-table parameter with data
-
-
-@app.callback(Output('general-table', 'data'), [Input('bike-dropdown', 'value'), Input('reset-button', 'n_clicks')])
-def populate_general_data(value, n_clicks):
-    parPure = new_par(value)
-    data = []
-    labels = []
+    # generates data for general-table
+    genPure = new_par(value)
+    genData = []
+    genLabels = []
     con = []
     for i in GENERAL_LABELS:
-        labels.append({'label': i})
+        genLabels.append({'label': i})
     for i in range(8, 12):
-        con.append({'con': parPure.get(pList[i])})
-    for c, d in zip(labels, con):
+        con.append({'con': genPure.get(pList[i])})
+    for c, d in zip(genLabels, con):
         zipped = {}
         zipped.update(c)
         zipped.update(d)
-        data.append(zipped)
-    return data
+        genData.append(zipped)
+
+    return wheelData, frameData, genData
 
     # updates geo-plot & eigen-plot path with Dropdown value or edited DataTable values
 
