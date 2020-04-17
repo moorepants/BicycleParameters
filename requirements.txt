@@ -1,3 +1,4 @@
+# build dependencies for running the app on heroku
 DynamicistToolKit
 dash
 gunicorn
