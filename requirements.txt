@@ -1,0 +1,7 @@
+dash
+DynamicistToolKit
+matplotlib
+numpy
+scipy
+uncertainties
+yeadon
