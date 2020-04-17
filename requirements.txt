@@ -3,6 +3,7 @@ dash
 gunicorn
 matplotlib
 numpy
+pandas
 scipy
 uncertainties
 yeadon
