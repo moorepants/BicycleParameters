@@ -67,9 +67,10 @@ server = app.server  # needed for heroku
 app.layout = html.Div([
     html.U(html.B(html.H1('Bicycle Dynamics Analysis App',
                           id='main-header'))),
-    dcc.Dropdown(id='bike-dropdown',
-                 value='Benchmark',
-                 options=[{'label': i, 'value': i} for i in OPTIONS]),
+    html.Div(id='dropdown-bin',
+             children=[dcc.Dropdown(id='bike-dropdown',
+                                    value='Benchmark',
+                                    options=[{'label': i, 'value': i} for i in OPTIONS])]),
     html.Div(id='plot-bin',
              children=[html.Img(src='',
                                 alt='May take a moment to load...',

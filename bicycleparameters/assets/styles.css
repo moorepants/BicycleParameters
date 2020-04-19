@@ -5,34 +5,41 @@ html {
 }
 
 #main-header {
-	color :rgb(50, 150, 50);
+	color :rgb(230, 150, 0);
 	text-align: center; 
-	background-color: rgb(30, 30, 30);
-	padding: 15px;
 	width: 35%;
 	margin: 5px auto;
+	padding: 15px;
+	background-color: rgb(30, 30, 30);
+	border: 5px ridge rgb(60, 60, 90);
 }
 
 u {
-	color: rgb(30, 90, 30);
+	color: rgb(200, 100, 30);
+}
+
+#dropdown-bin {
+	width: 30%;
+	margin: 0 auto;
+	border: 5px ridge rgb(60, 60, 90);
 }
 
 #bike-dropdown {
-	width: 30%;
-	padding: 5px;
+	width: 100%;
 	margin: 0 auto;
 }
 
 #plot-bin {
 	margin: 5px auto;
-	width: 98%;
+	width: 100%;
 }
 
 img {
 	width: 600px;
 	height: 370px;
-	margin: 5px auto;
+	border: 5px ridge rgb(60, 60, 90);
 	background-color: white;	
+	margin: 0 auto;
 }
 
 #range-slider {
@@ -40,6 +47,7 @@ img {
 	margin: 0 auto;
 	width: 50%;
 	height: 20px;
+	border: 5px ridge rgb(60, 60, 90);
 }
 
 #reset-button {
@@ -47,6 +55,7 @@ img {
 	margin-left: 25%;
 	width: 10%;
 	font-size: 15px;
+
 }
 
 #table-bin {
