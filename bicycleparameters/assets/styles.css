@@ -7,6 +7,10 @@ html {
 #main-header {
 	color :rgb(50, 150, 50);
 	text-align: center; 
+	background-color: rgb(30, 30, 30);
+	padding: 15px;
+	width: 35%;
+	margin: 5px auto;
 }
 
 u {
@@ -27,7 +31,7 @@ u {
 img {
 	width: 600px;
 	height: 370px;
-	margin: 5px;
+	margin: 5px auto;
 	background-color: white;	
 }
 
