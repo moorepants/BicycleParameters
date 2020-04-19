@@ -1,21 +1,47 @@
 html {
-	background-color: grey;
-	background-size: cover;
+	background-color: rgb(30, 90, 30);
+	background-size: contain;
+	background-image: url(https://images.pexels.com/photos/686230/pexels-photo-686230.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260);
 }
 
 #main-header {
-	color: violet;
+	color :rgb(50, 150, 50);
+	text-align: center; 
 }
 
-#geometry-plot {
-	width: 640;
-	height: 480;
+u {
+	color: rgb(30, 90, 30);
+}
+
+#bike-dropdown {
+	width: 400px;
+	padding: 5px;
+}
+
+#plot-bin {
+	margin: 0 auto;
+	width: 1220px;
+	height: 380px;
+}
+
+img {
+	width: 600px;
+	height: 370px;
+	margin: 5px;
 }
 
 #slider-bin {
-	background-color: black;
+	background-color: white;
+	margin: 5px auto;
+	width: 640px;
 }
 
-#image-bin {
-	background-color: lightgrey;
+#reset-button {
+	margin: 5px auto;
+}
+
+#table-bin {
+	margin: 15px auto;
+	width: 600px;
+	background-color: white;
 }
