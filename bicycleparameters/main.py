@@ -19,6 +19,7 @@ from . import geometry
 from . import period
 from . import rider
 
+GOLDEN_RATIO = (1.0 + np.sqrt(5.0))/2.0
 
 class Bicycle(object):
     """
@@ -489,15 +490,33 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
 
     def plot_bicycle_geometry(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
-        '''Returns a figure showing the basic bicycle geometry, the centers of
+        """Returns a figure showing the basic bicycle geometry, the centers of
         mass and the moments of inertia.
 
+        Parameters
+        ==========
+        show : boolean, optional
+            If true ``matplotlib.pyplot.show()`` will be called before exiting
+            the function.
+        pendulum : boolean, optional
+            If true the axes of the torsional pendulum will be displayed (only
+            useful if raw measurement data is availabe).
+        centerOfMass : boolean, optional
+            If true the mass center of each rigid body will be displayed.
+        inertiaEllipse : boolean optional
+            If true inertia ellipses for each rigid body will be displayed.
+
+        Returns
+        =======
+        fig : matplotlib.pyplot.Figure
+
         Notes
-        -----
+        =====
+
         If the flywheel is defined, it's center of mass corresponds to the
         front wheel and is not depicted in the plot.
 
-        '''
+        """
         par = io.remove_uncertainties(self.parameters['Benchmark'])
         parts = get_parts_in_parameters(par)
 
@@ -509,6 +528,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
             pendulum = False
 
         fig, ax = plt.subplots()
+
+        fig.set_size_inches([4.0*GOLDEN_RATIO, 4.0])
 
         # define some colors for the parts
         numColors = len(parts)
@@ -634,11 +655,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
                 ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
                 ax.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
 
-        ax.set_aspect('equal')
-        ax.set_ylim((0., 1.))
-        ax.set_title(self.bicycleName)
-
         # if there is a rider on the bike, make a simple stick figure
+        top_of_head = 0.0
         if self.human:
             human = self.human
             mpar = self.parameters['Measured']
@@ -674,6 +692,23 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
             end = rider.yeadon_vec_to_bicycle_vec(human.C.end_pos, mpar, bpar)
             ax.plot([start[0, 0], end[0, 0]],
                     [-start[2, 0], -end[2, 0]], 'k')
+            top_of_head = -end[2, 0]
+
+        ax.set_aspect('equal')
+
+        # set the y limits to encompass the bicycle and rider geometry
+        max_y = max([2*par['rR'],  # rear wheel diameter
+                     2*par['rF'],  # front wheel diameter
+                     max(-deez),  # max of Z values of bicycle geometry
+                     top_of_head])  # max of Z values of human head
+        min_y = min(-deez)
+        if min_y >= 0.0:
+            y_low = min([0.0, min_y])
+        else:
+            y_low = -np.ceil(np.abs(min_y))
+        ax.set_ylim((y_low, np.ceil(max_y)))
+
+        ax.set_title(self.bicycleName)
 
         if show:
             fig.show()
@@ -883,9 +918,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
         speeds = np.sort(speeds)
 
         # figure properties
-        figwidth = 6.0  # in inches
-        goldenMean = (np.sqrt(5.0) - 1.0) / 2.0
-        figsize = [figwidth, figwidth * goldenMean]
+        fig_height = 4.0  # inches
+        figsize = [fig_height*GOLDEN_RATIO, fig_height]
         params = {
             'axes.labelsize': 8,
             # TODO : text.fontsize no longer supported in matplotlib
