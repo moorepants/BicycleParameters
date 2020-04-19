@@ -28,6 +28,7 @@ img {
 	width: 600px;
 	height: 370px;
 	margin: 5px;
+	background-color: white;	
 }
 
 #range-slider {
