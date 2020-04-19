@@ -19,6 +19,7 @@ from . import geometry
 from . import period
 from . import rider
 
+GOLDEN_RATIO = (1.0 + np.sqrt(5.0))/2.0
 
 class Bicycle(object):
     """
@@ -528,8 +529,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
 
         fig, ax = plt.subplots()
 
-        golden_ratio = (1.0 + np.sqrt(5.0))/2.0
-        fig.set_size_inches([4.0*golden_ratio, 4.0])
+        fig.set_size_inches([4.0*GOLDEN_RATIO, 4.0])
 
         # define some colors for the parts
         numColors = len(parts)
@@ -919,8 +919,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
 
         # figure properties
         fig_height = 4.0  # inches
-        golden_ratio = (np.sqrt(5.0) - 1.0) / 2.0
-        figsize = [fig_height/golden_ratio, fig_height]
+        figsize = [fig_height*GOLDEN_RATIO, fig_height]
         params = {
             'axes.labelsize': 8,
             # TODO : text.fontsize no longer supported in matplotlib
