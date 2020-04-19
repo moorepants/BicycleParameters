@@ -30,14 +30,17 @@ img {
 	margin: 5px;
 }
 
-#slider-bin {
+#range-slider {
 	background-color: white;
 	margin: 5px auto;
 	width: 640px;
+	height: 20px;
+	
 }
 
 #reset-button {
 	margin: 5px auto;
+	width: 8%;
 }
 
 #table-bin {
