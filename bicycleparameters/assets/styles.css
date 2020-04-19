@@ -14,14 +14,14 @@ u {
 }
 
 #bike-dropdown {
-	width: 400px;
+	width: 30%;
 	padding: 5px;
+	margin: 0 auto;
 }
 
 #plot-bin {
-	margin: 0 auto;
-	width: 1220px;
-	height: 380px;
+	margin: 5px auto;
+	width: 98%;
 }
 
 img {
@@ -32,19 +32,20 @@ img {
 
 #range-slider {
 	background-color: white;
-	margin: 5px auto;
-	width: 640px;
+	margin: 0 auto;
+	width: 50%;
 	height: 20px;
-	
 }
 
 #reset-button {
-	margin: 5px auto;
-	width: 8%;
+	margin-top: 5px;
+	margin-left: 25%;
+	width: 10%;
+	font-size: 15px;
 }
 
 #table-bin {
-	margin: 15px auto;
-	width: 600px;
-	background-color: white;
+	margin: 0 auto;
+	width: 50%;
+	background-color: rgb(211, 211, 211);
 }
