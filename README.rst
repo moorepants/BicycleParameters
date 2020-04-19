@@ -15,6 +15,8 @@ of the Whipple-Carvallo bicycle model.
      - http://packages.python.org/BicycleParameters
    * - Travis CI Status
      - |Travis|
+   * - Heroku App
+     - |heroku|
 
 .. |PyPi| image:: https://img.shields.io/pypi/v/BicycleParameters.svg
    :target: https://pypi.org/project/BicycleParameters/
@@ -24,6 +26,10 @@ of the Whipple-Carvallo bicycle model.
 
 .. |Travis| image:: https://travis-ci.org/moorepants/BicycleParameters.svg?branch=master
    :target: https://travis-ci.org/moorepants/BicycleParameters
+
+.. |heroku| image:: http://heroku-badge.herokuapp.com/?app=bicycleparameters&svg=1
+   :target: https://bicycleparameters.herokuapp.com
+   :alt: Heroku Application
 
 Dependencies
 ============

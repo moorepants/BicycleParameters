@@ -19,6 +19,8 @@ from . import geometry
 from . import period
 from . import rider
 
+GOLDEN_RATIO = (1.0 + np.sqrt(5.0))/2.0
+
 
 class Bicycle(object):
     """
@@ -35,18 +37,17 @@ class Bicycle(object):
         # put some data in the folder so we have something to work with!
         try:
             pathToBicycle = os.path.join(pathToData, 'bicycles', bicycleName)
-            if os.path.isdir(pathToBicycle) == True:
+            if os.path.isdir(pathToBicycle):
                 print("We have foundeth a directory named: " +
                       "{0}.".format(pathToBicycle))
                 return super(Bicycle, cls).__new__(cls)
             else:
                 raise ValueError
         except:
-            mes = """Are you nuts?! Make a directory called '{0}' with basic data
-for your bicycle in this directory: '{1}'. Then I can actually
-create a bicycle object. You may either need to change to the
-correct directory or reset the pathToData argument.""".format(bicycleName,
-                                                              pathToData)
+            mes = """Are you nuts?! Make a directory called '{0}' with basic
+data for your bicycle in this directory: '{1}'. Then I can actually create a
+bicycle object. You may either need to change to the correct directory or reset
+the pathToData argument.""".format(bicycleName, pathToData)
             print(mes)
             return None
 
@@ -68,9 +69,9 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
             and raw data are stored. The default is the current working
             directory.
         forceRawCalc : boolean
-            Forces a recalculation of the benchmark parameters from the measured
-            parameters. Otherwise it will only run the calculation if there is
-            no benchmark parameter file.
+            Forces a recalculation of the benchmark parameters from the
+            measured parameters. Otherwise it will only run the calculation if
+            there is no benchmark parameter file.
         forcePeriodCalc : boolean
             Forces a recalculation of the periods from the oscillation data.
 
@@ -102,7 +103,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
                 bike, ptype = io.space_out_camel_case(fname, output='list')
                 # load the parameters
                 pathToFile = os.path.join(parDir, parFile)
-                self.parameters[ptype] = io.load_parameter_text_file(pathToFile)
+                self.parameters[ptype] = io.load_parameter_text_file(
+                    pathToFile)
 
         # this is where the raw data files from the pendulum oscillations are
         # stored
@@ -116,7 +118,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
 
         if isRawDataDir:
             print("Found the RawData directory:", rawDataDir)
-            isMeasuredFile = bicycleName + 'Measured.txt' in os.listdir(rawDataDir)
+            fname = bicycleName + 'Measured.txt'
+            isMeasuredFile = fname in os.listdir(rawDataDir)
         else:
             isMeasuredFile = False
 
@@ -378,7 +381,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
                                      self.bicycleName + 'Measured.txt')
 
         # load the measured parameters
-        self.parameters['Measured'] = io.load_parameter_text_file(pathToRawFile)
+        self.parameters['Measured'] = io.load_parameter_text_file(
+            pathToRawFile)
 
         forkIsSplit = is_fork_split(self.parameters['Measured'])
 
@@ -454,7 +458,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
                                           measuredPar, draw)
             else:
                 pathToParFile = os.path.join(pathToRider, 'Parameters',
-                    riderName + self.bicycleName + 'Benchmark.txt')
+                                             riderName + self.bicycleName +
+                                             'Benchmark.txt')
                 try:
                     # load the parameter file
                     riderPar = io.load_parameter_text_file(pathToParFile)
@@ -465,8 +470,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
                     try:
                         measuredPar = self.parameters['Measured']
                     except KeyError:
-                        print('The measured bicycle parameters need to be ' +
-                              'available, create your bicycle such that they ' +
+                        print('The measured bicycle parameters need to be '
+                              'available, create your bicycle such that they '
                               'are available.')
                         raise
                     riderPar, human, bicycleRiderPar =\
@@ -489,26 +494,47 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
 
     def plot_bicycle_geometry(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
-        '''Returns a figure showing the basic bicycle geometry, the centers of
+        """Returns a figure showing the basic bicycle geometry, the centers of
         mass and the moments of inertia.
 
+        Parameters
+        ==========
+        show : boolean, optional
+            If true ``matplotlib.pyplot.show()`` will be called before exiting
+            the function.
+        pendulum : boolean, optional
+            If true the axes of the torsional pendulum will be displayed (only
+            useful if raw measurement data is availabe).
+        centerOfMass : boolean, optional
+            If true the mass center of each rigid body will be displayed.
+        inertiaEllipse : boolean optional
+            If true inertia ellipses for each rigid body will be displayed.
+
+        Returns
+        =======
+        fig : matplotlib.pyplot.Figure
+
         Notes
-        -----
+        =====
+
         If the flywheel is defined, it's center of mass corresponds to the
         front wheel and is not depicted in the plot.
 
-        '''
+        """
         par = io.remove_uncertainties(self.parameters['Benchmark'])
         parts = get_parts_in_parameters(par)
 
         try:
             slopes = io.remove_uncertainties(self.extras['slopes'])
             intercepts = io.remove_uncertainties(self.extras['intercepts'])
-            penInertias = io.remove_uncertainties(self.extras['pendulumInertias'])
+            penInertias = io.remove_uncertainties(
+                self.extras['pendulumInertias'])
         except AttributeError:
             pendulum = False
 
         fig, ax = plt.subplots()
+
+        fig.set_size_inches([4.0*GOLDEN_RATIO, 4.0])
 
         # define some colors for the parts
         numColors = len(parts)
@@ -634,11 +660,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
                 ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
                 ax.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
 
-        ax.set_aspect('equal')
-        ax.set_ylim((0., 1.))
-        ax.set_title(self.bicycleName)
-
         # if there is a rider on the bike, make a simple stick figure
+        top_of_head = 0.0
         if self.human:
             human = self.human
             mpar = self.parameters['Measured']
@@ -674,6 +697,23 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
             end = rider.yeadon_vec_to_bicycle_vec(human.C.end_pos, mpar, bpar)
             ax.plot([start[0, 0], end[0, 0]],
                     [-start[2, 0], -end[2, 0]], 'k')
+            top_of_head = -end[2, 0]
+
+        ax.set_aspect('equal')
+
+        # set the y limits to encompass the bicycle and rider geometry
+        max_y = max([2*par['rR'],  # rear wheel diameter
+                     2*par['rF'],  # front wheel diameter
+                     max(-deez),  # max of Z values of bicycle geometry
+                     top_of_head])  # max of Z values of human head
+        min_y = min(-deez)
+        if min_y >= 0.0:
+            y_low = min([0.0, min_y])
+        else:
+            y_low = -np.ceil(np.abs(min_y))
+        ax.set_ylim((y_low, np.ceil(max_y)))
+
+        ax.set_title(self.bicycleName)
 
         if show:
             fig.show()
@@ -883,9 +923,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
         speeds = np.sort(speeds)
 
         # figure properties
-        figwidth = 6.0  # in inches
-        goldenMean = (np.sqrt(5.0) - 1.0) / 2.0
-        figsize = [figwidth, figwidth * goldenMean]
+        fig_height = 4.0  # inches
+        figsize = [fig_height*GOLDEN_RATIO, fig_height]
         params = {
             'axes.labelsize': 8,
             # TODO : text.fontsize no longer supported in matplotlib
@@ -901,10 +940,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
             del params['text.fontsize']
             plt.rcParams.update(params)
 
-        if not fig:
-            fig = plt.figure(figsize=figsize)
-
-        plt.axes([0.125, 0.2, 0.95 - 0.125, 0.85 - 0.2])
+        if fig is None:
+            fig, ax = plt.subplots(figsize=figsize)
 
         evals, evecs = self.eig(speeds)
 
@@ -929,52 +966,51 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
 
         if largest:
             maxEval = np.max(np.real(evals), axis=1)
-            plt.plot(speeds, maxEval, color=color, label=maxLabel,
-                     linestyle=linestyle, linewidth=1.5)
+            ax.plot(speeds, maxEval, color=color, label=maxLabel,
+                    linestyle=linestyle, linewidth=1.5)
             # x axis line
-            plt.plot(speeds, np.zeros_like(speeds), 'k-',
-                     label='_nolegend_', linewidth=1.5)
-            plt.ylim((np.min(maxEval), np.max(maxEval)))
-            plt.ylabel('Real Part of the Largest Eigenvalue [1/s]')
+            ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
+                    linewidth=1.5)
+            ax.set_ylim((np.min(maxEval), np.max(maxEval)))
+            ax.set_ylabel('Real Part of the Largest Eigenvalue [1/s]')
         else:
             wea, cap, cas = bicycle.sort_modes(evals, evecs)
 
             # imaginary components
-            plt.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
-                     label=legend[0], linestyle='--')
-            plt.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsizeColor,
-                     label=legend[1], linestyle='--')
-            plt.plot(speeds, np.abs(np.imag(cas['evals'])), color=casterColor,
-                     label=legend[2], linestyle='--')
+            ax.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
+                    label=legend[0], linestyle='--')
+            ax.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsizeColor,
+                    label=legend[1], linestyle='--')
+            ax.plot(speeds, np.abs(np.imag(cas['evals'])), color=casterColor,
+                    label=legend[2], linestyle='--')
 
             # x axis line
-            plt.plot(speeds, np.zeros_like(speeds), 'k-',
-                     label='_nolegend_', linewidth=1.5)
+            ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
+                    linewidth=1.5)
 
             # plot the real parts of the eigenvalues
-            plt.plot(speeds, np.real(wea['evals']),
-                     color=weaveColor, label=legend[3])
-            plt.plot(speeds, np.real(cap['evals']),
-                     color=capsizeColor, label=legend[4])
-            plt.plot(speeds, np.real(cas['evals']),
-                     color=casterColor, label=legend[5])
+            ax.plot(speeds, np.real(wea['evals']), color=weaveColor,
+                    label=legend[3])
+            ax.plot(speeds, np.real(cap['evals']), color=capsizeColor,
+                    label=legend[4])
+            ax.plot(speeds, np.real(cas['evals']), color=casterColor,
+                    label=legend[5])
 
             # set labels and limits
-            plt.ylim((np.min(np.real(evals)),
-                      np.max(np.imag(evals))))
-            plt.ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
+            ax.set_ylim((np.min(np.real(evals)), np.max(np.imag(evals))))
+            ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
 
-        plt.xlim((speeds[0], speeds[-1]))
-        plt.xlabel('Speed [m/s]')
+        ax.set_xlim((speeds[0], speeds[-1]))
+        ax.set_xlabel('Speed [m/s]')
 
         if generic:
-            plt.title('Eigenvalues vs Speed')
+            ax.set_title('Eigenvalues vs Speed')
         else:
-            plt.title('%s\nEigenvalues vs Speed' % self.bicycleName)
-            plt.legend()
+            ax.set_title('%s\nEigenvalues vs Speed' % self.bicycleName)
+            ax.legend()
 
         if show:
-            plt.show()
+            fig.show()
 
         return fig
 
