@@ -65,8 +65,8 @@ app = dash.Dash(__name__)
 server = app.server  # needed for heroku
 
 app.layout = html.Div([
-    html.H1('BicycleParameters Web Application',
-            id='main-header'),
+    html.U(html.B(html.H1('Bicycle Dynamics Analysis App',
+            id='main-header'))),
     dcc.Dropdown(id='bike-dropdown',
                  value='Benchmark',
                  options=[{'label': i, 'value': i} for i in OPTIONS]),
@@ -93,34 +93,35 @@ app.layout = html.Div([
                                               30: '30 m/s',
                                               40: '40 m/s'},
                                        allowCross=False)]),
-    html.Div(id='table-bin',
-             children=[tbl.DataTable(id='wheel-table',
-                                     columns=WHEEL_COLUMNS,
-                                     data=[],
-                                     style_cell={},
-                                     style_header={},
-                                     editable=True),
-                       tbl.DataTable(id='frame-table',
-                                     columns=FRAME_COLUMNS,
-                                     data=[],
-                                     style_cell={},
-                                     style_header={},
-                                     editable=True),
-                       tbl.DataTable(id='general-table',
-                                     columns=GENERAL_COLUMNS,
-                                     data=[],
-                                     style_cell={},
-                                     style_header={},
-                                     editable=True)]),
     html.Button('Reset Table',
                 id='reset-button',
                 type='button',
                 n_clicks=0),
-    html.Button('Toggle Dark Mode',
-                id='dark-toggle',
-                type='button',
-                n_clicks=0),
-
+    html.Div(id='table-bin',
+             children=[tbl.DataTable(id='wheel-table',
+                                     columns=WHEEL_COLUMNS,
+                                     data=[],
+                                     style_cell={'minWidth': '50px', 'width': '50px', 'maxWidth': '50px',
+                                                 'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'},
+                                     style_header={
+                                         'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
+                                     editable=True),
+                       tbl.DataTable(id='frame-table',
+                                     columns=FRAME_COLUMNS,
+                                     data=[],
+                                     style_cell={'minWidth': '50px', 'width': '50px', 'maxWidth': '50px',
+                                                 'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'},
+                                     style_header={
+                                         'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
+                                     editable=True),
+                       tbl.DataTable(id='general-table',
+                                     columns=GENERAL_COLUMNS,
+                                     data=[],
+                                     style_cell={'minWidth': '50px', 'width': '50px', 'maxWidth': '50px',
+                                                 'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'},
+                                     style_header={
+                                         'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
+                                     editable=True)]),
 ])
 
 # creates generic set of Benchmark parameters
@@ -198,7 +199,7 @@ def populate_wheel_data(value, n_clicks):
 
     return wheelData, frameData, genData
 
-    # updates geo-plot & eigen-plot path with Dropdown value or edited DataTable values
+    # updates geometry-plot & eigen-plot path with Dropdown value or edited DataTable values
 
 
 @app.callback([Output('geometry-plot', 'src'),
@@ -243,7 +244,7 @@ def plot_update(value, wheel, frame, general, slider):
     for i in range(0, len(newP), 2):
         currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
 
-    # create geo-plot image
+    # create geometry-plot image
     geo_fake = io.BytesIO()
     geo_plot = currentBike.plot_bicycle_geometry(show=False)
     geo_plot.savefig(geo_fake)
@@ -258,46 +259,6 @@ def plot_update(value, wheel, frame, general, slider):
     plt.close(eigen_plot)
 
     return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
-
-    # toggles dark mode for cells of DataTable
-
-
-@app.callback([Output('wheel-table', 'style_cell'),
-               Output('frame-table', 'style_cell'),
-               Output('general-table', 'style_cell')],
-              [Input('dark-toggle', 'n_clicks')])
-def cell_toggle(n_clicks):
-    light = []
-    dark = []
-    for _ in range(3):
-        light.append({'minWidth': '50px', 'width': '50px', 'maxWidth': '50px',
-                      'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'})
-        dark.append({'minWidth': '50px', 'width': '50px', 'maxWidth': '50px',
-                     'backgroundColor': 'rgb(255, 255, 255)', 'color': 'black'})
-    if n_clicks % 2 == 0:
-        return light
-    else:
-        return dark
-
-    # toggles dark mode for header of DataTable
-
-
-@app.callback([Output('wheel-table', 'style_header'),
-               Output('frame-table', 'style_header'),
-               Output('general-table', 'style_header')],
-              [Input('dark-toggle', 'n_clicks')])
-def header_toggle(n_clicks):
-    light = []
-    dark = []
-    for _ in range(3):
-        light.append(
-            {'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'})
-        dark.append(
-            {'textAlign': 'center', 'backgroundColor': 'rgb(235, 235, 235)'})
-    if n_clicks % 2 == 0:
-        return light
-    else:
-        return dark
 
 
 if __name__ == '__main__':
