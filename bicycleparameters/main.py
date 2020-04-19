@@ -21,6 +21,7 @@ from . import rider
 
 GOLDEN_RATIO = (1.0 + np.sqrt(5.0))/2.0
 
+
 class Bicycle(object):
     """
     An object for a bicycle. A bicycle has parameters and can have a rider
@@ -36,18 +37,17 @@ class Bicycle(object):
         # put some data in the folder so we have something to work with!
         try:
             pathToBicycle = os.path.join(pathToData, 'bicycles', bicycleName)
-            if os.path.isdir(pathToBicycle) == True:
+            if os.path.isdir(pathToBicycle):
                 print("We have foundeth a directory named: " +
                       "{0}.".format(pathToBicycle))
                 return super(Bicycle, cls).__new__(cls)
             else:
                 raise ValueError
         except:
-            mes = """Are you nuts?! Make a directory called '{0}' with basic data
-for your bicycle in this directory: '{1}'. Then I can actually
-create a bicycle object. You may either need to change to the
-correct directory or reset the pathToData argument.""".format(bicycleName,
-                                                              pathToData)
+            mes = """Are you nuts?! Make a directory called '{0}' with basic
+data for your bicycle in this directory: '{1}'. Then I can actually create a
+bicycle object. You may either need to change to the correct directory or reset
+the pathToData argument.""".format(bicycleName, pathToData)
             print(mes)
             return None
 
@@ -69,9 +69,9 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
             and raw data are stored. The default is the current working
             directory.
         forceRawCalc : boolean
-            Forces a recalculation of the benchmark parameters from the measured
-            parameters. Otherwise it will only run the calculation if there is
-            no benchmark parameter file.
+            Forces a recalculation of the benchmark parameters from the
+            measured parameters. Otherwise it will only run the calculation if
+            there is no benchmark parameter file.
         forcePeriodCalc : boolean
             Forces a recalculation of the periods from the oscillation data.
 
@@ -103,7 +103,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
                 bike, ptype = io.space_out_camel_case(fname, output='list')
                 # load the parameters
                 pathToFile = os.path.join(parDir, parFile)
-                self.parameters[ptype] = io.load_parameter_text_file(pathToFile)
+                self.parameters[ptype] = io.load_parameter_text_file(
+                    pathToFile)
 
         # this is where the raw data files from the pendulum oscillations are
         # stored
@@ -117,7 +118,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
 
         if isRawDataDir:
             print("Found the RawData directory:", rawDataDir)
-            isMeasuredFile = bicycleName + 'Measured.txt' in os.listdir(rawDataDir)
+            fname = bicycleName + 'Measured.txt'
+            isMeasuredFile = fname in os.listdir(rawDataDir)
         else:
             isMeasuredFile = False
 
@@ -379,7 +381,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
                                      self.bicycleName + 'Measured.txt')
 
         # load the measured parameters
-        self.parameters['Measured'] = io.load_parameter_text_file(pathToRawFile)
+        self.parameters['Measured'] = io.load_parameter_text_file(
+            pathToRawFile)
 
         forkIsSplit = is_fork_split(self.parameters['Measured'])
 
@@ -455,7 +458,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
                                           measuredPar, draw)
             else:
                 pathToParFile = os.path.join(pathToRider, 'Parameters',
-                    riderName + self.bicycleName + 'Benchmark.txt')
+                                             riderName + self.bicycleName +
+                                             'Benchmark.txt')
                 try:
                     # load the parameter file
                     riderPar = io.load_parameter_text_file(pathToParFile)
@@ -466,8 +470,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
                     try:
                         measuredPar = self.parameters['Measured']
                     except KeyError:
-                        print('The measured bicycle parameters need to be ' +
-                              'available, create your bicycle such that they ' +
+                        print('The measured bicycle parameters need to be '
+                              'available, create your bicycle such that they '
                               'are available.')
                         raise
                     riderPar, human, bicycleRiderPar =\
@@ -523,7 +527,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
         try:
             slopes = io.remove_uncertainties(self.extras['slopes'])
             intercepts = io.remove_uncertainties(self.extras['intercepts'])
-            penInertias = io.remove_uncertainties(self.extras['pendulumInertias'])
+            penInertias = io.remove_uncertainties(
+                self.extras['pendulumInertias'])
         except AttributeError:
             pendulum = False
 
