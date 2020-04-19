@@ -935,10 +935,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
             del params['text.fontsize']
             plt.rcParams.update(params)
 
-        if not fig:
-            fig = plt.figure(figsize=figsize)
-
-        plt.axes([0.125, 0.2, 0.95 - 0.125, 0.85 - 0.2])
+        if fig is None:
+            fig, ax = plt.subplots(figsize=figsize)
 
         evals, evecs = self.eig(speeds)
 
@@ -963,52 +961,51 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
 
         if largest:
             maxEval = np.max(np.real(evals), axis=1)
-            plt.plot(speeds, maxEval, color=color, label=maxLabel,
-                     linestyle=linestyle, linewidth=1.5)
+            ax.plot(speeds, maxEval, color=color, label=maxLabel,
+                    linestyle=linestyle, linewidth=1.5)
             # x axis line
-            plt.plot(speeds, np.zeros_like(speeds), 'k-',
-                     label='_nolegend_', linewidth=1.5)
-            plt.ylim((np.min(maxEval), np.max(maxEval)))
-            plt.ylabel('Real Part of the Largest Eigenvalue [1/s]')
+            ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
+                    linewidth=1.5)
+            ax.set_ylim((np.min(maxEval), np.max(maxEval)))
+            ax.set_ylabel('Real Part of the Largest Eigenvalue [1/s]')
         else:
             wea, cap, cas = bicycle.sort_modes(evals, evecs)
 
             # imaginary components
-            plt.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
-                     label=legend[0], linestyle='--')
-            plt.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsizeColor,
-                     label=legend[1], linestyle='--')
-            plt.plot(speeds, np.abs(np.imag(cas['evals'])), color=casterColor,
-                     label=legend[2], linestyle='--')
+            ax.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
+                    label=legend[0], linestyle='--')
+            ax.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsizeColor,
+                    label=legend[1], linestyle='--')
+            ax.plot(speeds, np.abs(np.imag(cas['evals'])), color=casterColor,
+                    label=legend[2], linestyle='--')
 
             # x axis line
-            plt.plot(speeds, np.zeros_like(speeds), 'k-',
-                     label='_nolegend_', linewidth=1.5)
+            ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
+                    linewidth=1.5)
 
             # plot the real parts of the eigenvalues
-            plt.plot(speeds, np.real(wea['evals']),
-                     color=weaveColor, label=legend[3])
-            plt.plot(speeds, np.real(cap['evals']),
-                     color=capsizeColor, label=legend[4])
-            plt.plot(speeds, np.real(cas['evals']),
-                     color=casterColor, label=legend[5])
+            ax.plot(speeds, np.real(wea['evals']), color=weaveColor,
+                    label=legend[3])
+            ax.plot(speeds, np.real(cap['evals']), color=capsizeColor,
+                    label=legend[4])
+            ax.plot(speeds, np.real(cas['evals']), color=casterColor,
+                    label=legend[5])
 
             # set labels and limits
-            plt.ylim((np.min(np.real(evals)),
-                      np.max(np.imag(evals))))
-            plt.ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
+            ax.set_ylim((np.min(np.real(evals)), np.max(np.imag(evals))))
+            ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
 
-        plt.xlim((speeds[0], speeds[-1]))
-        plt.xlabel('Speed [m/s]')
+        ax.set_xlim((speeds[0], speeds[-1]))
+        ax.set_xlabel('Speed [m/s]')
 
         if generic:
-            plt.title('Eigenvalues vs Speed')
+            ax.set_title('Eigenvalues vs Speed')
         else:
-            plt.title('%s\nEigenvalues vs Speed' % self.bicycleName)
-            plt.legend()
+            ax.set_title('%s\nEigenvalues vs Speed' % self.bicycleName)
+            ax.legend()
 
         if show:
-            plt.show()
+            fig.show()
 
         return fig
 
