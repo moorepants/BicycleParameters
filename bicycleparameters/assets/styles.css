@@ -1,7 +1,7 @@
 html {
-	background-color: rgb(30, 90, 30);
+	background-color: rgb(30, 30, 30);
 	background-size: contain;
-	background-image: url(https://images.pexels.com/photos/686230/pexels-photo-686230.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260);
+	background-image: url(https://images.pexels.com/photos/686230/pexels-photo-686230.jpeg);
 }
 
 #main-header {
