@@ -930,8 +930,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
             ax.plot(speeds, maxEval, color=color, label=maxLabel,
                     linestyle=linestyle, linewidth=1.5)
             # x axis line
-            ax.plot(speeds, np.zeros_like(speeds), 'k-',
-                     label='_nolegend_', linewidth=1.5)
+            ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
+                    linewidth=1.5)
             ax.set_ylim((np.min(maxEval), np.max(maxEval)))
             ax.set_ylabel('Real Part of the Largest Eigenvalue [1/s]')
         else:
@@ -939,27 +939,26 @@ correct directory or reset the pathToData argument.""".format(bicycleName,
 
             # imaginary components
             ax.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
-                     label=legend[0], linestyle='--')
+                    label=legend[0], linestyle='--')
             ax.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsizeColor,
-                     label=legend[1], linestyle='--')
+                    label=legend[1], linestyle='--')
             ax.plot(speeds, np.abs(np.imag(cas['evals'])), color=casterColor,
-                     label=legend[2], linestyle='--')
+                    label=legend[2], linestyle='--')
 
             # x axis line
-            ax.plot(speeds, np.zeros_like(speeds), 'k-',
-                     label='_nolegend_', linewidth=1.5)
+            ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
+                    linewidth=1.5)
 
             # plot the real parts of the eigenvalues
-            ax.plot(speeds, np.real(wea['evals']),
-                     color=weaveColor, label=legend[3])
-            ax.plot(speeds, np.real(cap['evals']),
-                     color=capsizeColor, label=legend[4])
-            ax.plot(speeds, np.real(cas['evals']),
-                     color=casterColor, label=legend[5])
+            ax.plot(speeds, np.real(wea['evals']), color=weaveColor,
+                    label=legend[3])
+            ax.plot(speeds, np.real(cap['evals']), color=capsizeColor,
+                    label=legend[4])
+            ax.plot(speeds, np.real(cas['evals']), color=casterColor,
+                    label=legend[5])
 
             # set labels and limits
-            ax.set_ylim((np.min(np.real(evals)),
-                      np.max(np.imag(evals))))
+            ax.set_ylim((np.min(np.real(evals)), np.max(np.imag(evals))))
             ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
 
         ax.set_xlim((speeds[0], speeds[-1]))
