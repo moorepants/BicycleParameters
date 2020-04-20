@@ -3,60 +3,93 @@ html {
 }
 
 #main-header {
-	color :rgb(230, 150, 0);
+	color:rgb(230, 150, 0);
 	text-align: center; 
-	width: 35%;
+	width: 450px;
 	margin: 5px auto;
 	padding: 15px;
-	background-color: rgb(30, 30, 30);
 	border: 5px ridge rgb(60, 60, 90);
+	font-size: 30px;
 }
 
 u {
 	color: rgb(200, 100, 30);
 }
 
+H2 {
+	text-align: center;
+	font-size: 20px;
+	color: rgb(230, 150, 0);
+	margin: auto;
+	margin-bottom: 5px;
+}
+
+#selection-bin {
+	margin: auto;
+	width: 100%;
+}
+
 #dropdown-bin {
-	width: 30%;
-	margin: 0 auto;
+	width: 300px;
+	margin: 5px auto;
 	border: 5px ridge rgb(60, 60, 90);
+	padding: 5px;
 }
 
 #bike-dropdown {
 	width: 100%;
-	margin: 0 auto;
+	margin: auto;
+}
+
+#slider-bin {
+	width: 700px;
+	margin: 5px auto;
+	border: 5px ridge rgb(60, 60, 90);
+	padding: 5px;
+}
+
+#range-slider {
+	background-color: white;
+	margin: auto;
+	width: 90%;
 }
 
 #plot-bin {
-	margin: 5px auto;
+	margin: auto;
 	width: 100%;
+	text-align: center;
+}
+
+#geometry-bin {
+	border: 5px ridge rgb(60, 60, 90);	
+	margin: 5px auto;
+	width: 600px;
+	padding: 5px;
+	display: inline-block;
+}
+
+#eigen-bin {
+	border: 5px ridge rgb(60, 60, 90);	
+	margin: 5px auto;
+	width: 600px;
+	padding: 5px;
+	display: inline-block;
 }
 
 img {
 	width: 600px;
 	height: 370px;
-	border: 5px ridge rgb(60, 60, 90);
-	background-color: white;	
-	margin: 0 auto;
-}
-
-#range-slider {
 	background-color: white;
-	margin: 0 auto;
-	width: 50%;
-	height: 20px;
-	border: 5px ridge rgb(60, 60, 90);
-}
-
-#reset-button {
-	margin-top: 5px;
-	margin-left: 25%;
-	width: 100px;
-	font-size: 15px;
 }
 
 #table-bin {
-	margin: 0 auto;
-	width: 50%;
-	background-color: rgb(211, 211, 211);
+	width: 600px;
+	margin: 5px auto;
+	border: 5px ridge rgb(60, 60, 90);
+	padding: 5px;
+}
+
+#reset-button {
+	width: 100px;
+	font-size: 15px;
 }
