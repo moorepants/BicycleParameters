@@ -1,7 +1,5 @@
 html {
 	background-color: rgb(30, 30, 30);
-	background-size: contain;
-	background-image: url(https://images.pexels.com/photos/686230/pexels-photo-686230.jpeg);
 }
 
 #main-header {
@@ -53,9 +51,8 @@ img {
 #reset-button {
 	margin-top: 5px;
 	margin-left: 25%;
-	width: 10%;
+	width: 100px;
 	font-size: 15px;
-
 }
 
 #table-bin {
