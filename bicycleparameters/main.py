@@ -713,7 +713,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
             y_low = -np.ceil(np.abs(min_y))
         ax.set_ylim((y_low, np.ceil(max_y)))
 
-        ax.set_title(self.bicycleName)
+        ax.set_title("{}\nBicycle Geometry".format(self.bicycleName))
 
         if show:
             fig.show()
@@ -997,7 +997,6 @@ the pathToData argument.""".format(bicycleName, pathToData)
                     label=legend[5])
 
             # set labels and limits
-            ax.set_ylim((np.min(np.real(evals)), np.max(np.imag(evals))))
             ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
 
         ax.set_xlim((speeds[0], speeds[-1]))
