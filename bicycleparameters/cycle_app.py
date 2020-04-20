@@ -99,7 +99,7 @@ app.layout = html.Div([
                                               40: {'label': '40 m/s', 'style': {'color': '#000000'}}},
                                        allowCross=False)]),
     html.Div(id='table-bin',
-             children=[html.H2('Whipple Bicycle Model Parameters'),
+             children=[html.H2('Whipple Model Bicycle Parameters'),
                        html.Button('Reset Table',
                                    id='reset-button',
                                    type='button',
