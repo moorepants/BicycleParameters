@@ -259,7 +259,8 @@ def plot_update(value, wheel, frame, general, slider):
 
     # create eigen-plot image
     eigen_fake = io.BytesIO()
-    eigen_plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False)
+    eigen_plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False,
+            grid=True)
     eigen_plot.savefig(eigen_fake)
     eigen_image = base64.b64encode(eigen_fake.getvalue())
     plt.close(eigen_plot)
