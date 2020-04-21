@@ -428,8 +428,14 @@ class BenchmarkParameterSet(ParameterSet):
 
 
 class PrincipalParameterSet(ParameterSet):
-    """Represents the parameters of the benchmark bicycle presented in
-    Moore2019."""
+    """Represents the parameters of the benchmark bicycle presented in [1]_
+
+    .. [1] Moore, Jason K.; Hubbard, Mont (2019): Expanded Optimization for
+       Discovering Optimal Lateral Handling Bicycles. Proceedings of Bicycle
+       and Motorcycle Dynamics 2019: A Symposium on the Dynamics and Control of
+       Single Track Vehicles https://doi.org/10.6084/m9.figshare.9942938.v1
+
+    """
 
     non_min_par_strings = {
         'alphaF': r'\alpha_F',
