@@ -715,6 +715,9 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
         ax.set_title("{}\nBicycle Geometry".format(self.bicycleName))
 
+        ax.set_xlabel('x [m]')
+        ax.set_ylabel('-z [m]')
+
         if show:
             fig.show()
 
