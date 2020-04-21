@@ -33,8 +33,8 @@ OPTIONS = ['Benchmark',
            'Yellowrev']
 
 WHEEL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text'},
-                 {'name': 'Front Wheel', 'id': 'fW', 'type': 'numeric'},
-                 {'name': 'Rear Wheel', 'id': 'rW', 'type': 'numeric'}]
+                 {'name': 'Front Wheel [F]', 'id': 'fW', 'type': 'numeric'},
+                 {'name': 'Rear Wheel [R]', 'id': 'rW', 'type': 'numeric'}]
 
 WHEEL_LABELS = ['Radius',
                 'Mass',
@@ -42,11 +42,11 @@ WHEEL_LABELS = ['Radius',
                 'Moment Iyy']
 
 FRAME_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text'},
-                 {'name': 'Rear Body', 'id': 'rB', 'type': 'numeric'},
-                 {'name': 'Front Assembly', 'id': 'fA', 'type': 'numeric'}]
+                 {'name': 'Rear Body [B]', 'id': 'rB', 'type': 'numeric'},
+                 {'name': 'Front Assembly [H]', 'id': 'fA', 'type': 'numeric'}]
 
-FRAME_LABELS = ['Center-of-Mass X',
-                'Center-of-Mass Y',
+FRAME_LABELS = ['Center of Mass X',
+                'Center of Mass Y',
                 'Total Mass',
                 'Moment Ixx',
                 'Moment Iyy',
@@ -68,7 +68,7 @@ app.layout = html.Div([
     html.U(html.B(html.H1('Bicycle Dynamics Analysis App',
                           id='main-header'))),
     html.Div(id='dropdown-bin',
-             children=[html.H2('Choose a Bicycle Model:'),
+             children=[html.H2('Choose a Parameter Set:'),
                        dcc.Dropdown(id='bike-dropdown',
                                     value='Benchmark',
                                     options=[{'label': i, 'value': i} for i in OPTIONS])]),
@@ -99,7 +99,7 @@ app.layout = html.Div([
                                               40: {'label': '40 m/s', 'style': {'color': '#000000'}}},
                                        allowCross=False)]),
     html.Div(id='table-bin',
-             children=[html.H2('Whipple Bicycle Model Parameters'),
+             children=[html.H2('Whipple-Carvallo Model Parameters'),
                        html.Button('Reset Table',
                                    id='reset-button',
                                    type='button',
