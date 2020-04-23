@@ -104,8 +104,8 @@ app.layout = html.Div([
                                    id='reset-button',
                                    type='button',
                                    n_clicks=0),
-                       tbl.DataTable(id='wheel-table',
-                                     columns=WHEEL_COLUMNS,
+                       tbl.DataTable(id='general-table',
+                                     columns=GENERAL_COLUMNS,
                                      data=[],
                                      style_cell={'minWidth': '50px', 'width': '50px', 'maxWidth': '50px',
                                                  'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'},
@@ -120,8 +120,8 @@ app.layout = html.Div([
                                      style_header={
                                          'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
                                      editable=True),
-                       tbl.DataTable(id='general-table',
-                                     columns=GENERAL_COLUMNS,
+                       tbl.DataTable(id='wheel-table',
+                                     columns=WHEEL_COLUMNS,
                                      data=[],
                                      style_cell={'minWidth': '50px', 'width': '50px', 'maxWidth': '50px',
                                                  'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'},
@@ -259,12 +259,8 @@ def plot_update(value, wheel, frame, general, slider):
 
     # create eigen-plot image
     eigen_fake = io.BytesIO()
-<<<<<<< HEAD
-    eigen_plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False, grid=True)
-=======
-    eigen_plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False,
-            grid=True)
->>>>>>> master
+    eigen_plot = currentBike.plot_eigenvalues_vs_speed(
+        speeds, show=False, grid=True)
     eigen_plot.savefig(eigen_fake)
     eigen_image = base64.b64encode(eigen_fake.getvalue())
     plt.close(eigen_plot)
