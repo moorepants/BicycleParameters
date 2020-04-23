@@ -53,7 +53,7 @@ FRAME_LABELS = ['Center of Mass X:',
                 'Moment Izz:',
                 'Moment Ixz:']
 
-GENERAL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False},
+GENERAL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False}, # 'format': {'locale': {'symbol':['',' [m]']}, 'specifier': '$.0f'}
                    {'name': 'Contextual Parameters', 'id': 'con', 'type': 'numeric'}]
 
 GENERAL_LABELS = ['Wheel Base:',
