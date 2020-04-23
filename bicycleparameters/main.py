@@ -715,6 +715,9 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
         ax.set_title("{}\nBicycle Geometry".format(self.bicycleName))
 
+        ax.set_xlabel('x [m]')
+        ax.set_ylabel('-z [m]')
+
         if show:
             fig.show()
 
@@ -893,7 +896,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
     def plot_eigenvalues_vs_speed(self, speeds, fig=None, generic=False,
                                   color='black', show=False, largest=False,
-                                  linestyle='-'):
+                                  linestyle='-', grid=False):
         """Returns a plot of the eigenvalues versus speed for the current
         benchmark parameters.
 
@@ -910,6 +913,13 @@ the pathToData argument.""".format(bicycleName, pathToData)
             If generic is true this will be the color of the plot lines.
         largest : boolean
             If true, only the largest eigenvalue is plotted.
+        grid : boolean, optional
+            If true, displays a grid on the plot.
+
+        Returns
+        -------
+        fig : matpolib.pyplot.Figure
+            The figure.
 
         Notes
         -----
@@ -1007,6 +1017,9 @@ the pathToData argument.""".format(bicycleName, pathToData)
         else:
             ax.set_title('%s\nEigenvalues vs Speed' % self.bicycleName)
             ax.legend()
+
+        if grid:
+            ax.grid()
 
         if show:
             fig.show()
