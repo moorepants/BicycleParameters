@@ -54,7 +54,7 @@ FRAME_LABELS = ['Center of Mass X [m]:',
                 'Moment Ixz [kg*m²]:']
 
 GENERAL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False},
-                   {'name': 'Contextual Parameters', 'id': 'con', 'type': 'numeric'}]
+                   {'name': 'Parameters', 'id': 'con', 'type': 'numeric'}]
 
 GENERAL_LABELS = ['Wheel Base [m]:',
                   'Trail [m]:',
