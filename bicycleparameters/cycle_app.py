@@ -36,30 +36,30 @@ WHEEL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False},
                  {'name': 'Front Wheel [F]', 'id': 'fW', 'type': 'numeric'},
                  {'name': 'Rear Wheel [R]', 'id': 'rW', 'type': 'numeric'}]
 
-WHEEL_LABELS = ['Radius:',
-                'Mass:',
-                'Moment Ixx:',
-                'Moment Iyy:']
+WHEEL_LABELS = ['Radius [m]:',
+                'Mass [kg]:',
+                'Moment Ixx [kg*m²]:',
+                'Moment Iyy [kg*m²]:']
 
 FRAME_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False},
                  {'name': 'Rear Body [B]', 'id': 'rB', 'type': 'numeric'},
                  {'name': 'Front Assembly [H]', 'id': 'fA', 'type': 'numeric'}]
 
-FRAME_LABELS = ['Center of Mass X:',
-                'Center of Mass Y:',
-                'Total Mass:',
-                'Moment Ixx:',
-                'Moment Iyy:',
-                'Moment Izz:',
-                'Moment Ixz:']
+FRAME_LABELS = ['Center of Mass X [m]:',
+                'Center of Mass Y [m]:',
+                'Total Mass [kg]:',
+                'Moment Ixx [kg*m²]:',
+                'Moment Iyy [kg*m²]:',
+                'Moment Izz [kg*m²]:',
+                'Moment Ixz [kg*m²]:']
 
-GENERAL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False}, # 'format': {'locale': {'symbol':['',' [m]']}, 'specifier': '$.0f'}
+GENERAL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False},
                    {'name': 'Contextual Parameters', 'id': 'con', 'type': 'numeric'}]
 
-GENERAL_LABELS = ['Wheel Base:',
-                  'Trail:',
-                  'Steer Axis Tilt:',
-                  'Gravity:']
+GENERAL_LABELS = ['Wheel Base [m]:',
+                  'Trail [m]:',
+                  'Steer Axis Tilt [degrees]:',
+                  'Gravity [N/kg]:']
 
 app = dash.Dash(__name__)
 server = app.server  # needed for heroku
