@@ -8,6 +8,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table as tbl
+import time
 from dash.dependencies import Input, Output, State
 
 import bicycleparameters as bp
@@ -72,15 +73,17 @@ app.layout = html.Div([
                        dcc.Dropdown(id='bike-dropdown',
                                     value='Benchmark',
                                     options=[{'label': i, 'value': i} for i in OPTIONS])]),
-    html.Div(id='plot-bin',
-             children=[html.Div(id='geometry-bin',
-                                children=[html.Img(src='',
-                                                   alt='May take a moment to load...',
-                                                   id='geometry-plot')]),
-                       html.Div(id='eigen-bin',
-                                children=[html.Img(src='',
-                                                   alt='May take a moment to load...',
-                                                   id='eigen-plot')])]),
+    dcc.Loading(id='plot-load',
+                type='circle',
+                children=html.Div(id='plot-bin',
+                                  children=[html.Div(id='geometry-bin',
+                                                     children=[html.Img(src='',
+                                                                        alt='May take a moment to load...',
+                                                                        id='geometry-plot')]),
+                                            html.Div(id='eigen-bin',
+                                                     children=[html.Img(src='',
+                                                                        alt='May take a moment to load...',
+                                                                        id='eigen-plot')])])),
     html.Div(id='slider-bin',
              children=[html.H2('Set the Eigenvalue Speed Range:'),
                        dcc.RangeSlider(id='range-slider',
@@ -260,12 +263,20 @@ def plot_update(value, wheel, frame, general, slider):
     # create eigen-plot image
     eigen_fake = io.BytesIO()
     eigen_plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False,
-            grid=True)
+                                                       grid=True)
     eigen_plot.savefig(eigen_fake)
     eigen_image = base64.b64encode(eigen_fake.getvalue())
     plt.close(eigen_plot)
 
     return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
+
+    # sets loading notification for the plots
+
+
+@app.callback(Output("plot-load", "children"), [Input("plot-bin", "children")])
+def input_triggers_spinner(value):
+    time.sleep(0.1)
+    return value
 
 
 if __name__ == '__main__':
