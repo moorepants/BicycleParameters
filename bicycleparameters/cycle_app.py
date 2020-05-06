@@ -73,17 +73,15 @@ app.layout = html.Div([
                        dcc.Dropdown(id='bike-dropdown',
                                     value='Benchmark',
                                     options=[{'label': i, 'value': i} for i in OPTIONS])]),
-    dcc.Loading(id='plot-load',
-                type='circle',
-                children=html.Div(id='plot-bin',
-                                  children=[html.Div(id='geometry-bin',
-                                                     children=[html.Img(src='',
-                                                                        alt='May take a moment to load...',
-                                                                        id='geometry-plot')]),
-                                            html.Div(id='eigen-bin',
-                                                     children=[html.Img(src='',
-                                                                        alt='May take a moment to load...',
-                                                                        id='eigen-plot')])])),
+    html.Div(id='plot-bin',
+             children=[dcc.Loading(id='plot-load',
+                                   type='dot',
+                                   children=[html.Div(id='geometry-bin',
+                                                      children=[html.Img(src='',
+                                                                         id='geometry-plot')]),
+                                             html.Div(id='eigen-bin',
+                                                      children=[html.Img(src='',
+                                                                         id='eigen-plot')])])]),
     html.Div(id='slider-bin',
              children=[html.H2('Set the EigenValue Speed Range:'),
                        dcc.RangeSlider(id='range-slider',
@@ -273,9 +271,9 @@ def plot_update(value, wheel, frame, general, slider):
     # sets loading notification for the plots
 
 
-@app.callback(Output("plot-load", "children"), [Input("plot-bin", "children")])
+@app.callback(Output("plot-load", "children"), [Input("geometry-bin", "children"), Input('eigen-bin','children')])
 def input_triggers_spinner(value):
-    time.sleep(0.1)
+    time.sleep(1)
     return value
 
 
