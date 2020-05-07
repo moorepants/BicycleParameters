@@ -222,6 +222,13 @@ def plot_update(value, wheel, frame, general, slider):
     frameData = ctx.inputs.get('frame-table.data')
     genData = ctx.inputs.get('general-table.data')
     rangeSliderData = ctx.inputs.get('range-slider.value')
+    print(ctx.triggered)
+
+    if ctx.triggered['prop_id'] != 'bike-dropdown.value':
+        print(ctx.triggered)
+        degrees = genData[2]
+        print(degrees)
+    
 
     # sets the speed range for eigen-plot based on range-slider
     minBound = rangeSliderData[0]
