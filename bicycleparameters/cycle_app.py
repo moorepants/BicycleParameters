@@ -1,6 +1,7 @@
 import io
 import base64
 import os
+import math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -198,6 +199,13 @@ def populate_wheel_data(value, n_clicks):
         genLabels.append({'label': i})
     for i in range(8, 12):
         con.append({'con': genPure.get(pList[i])})
+
+    # converts radians to degrees for display in the table
+    lamD = con[2]
+    radians = lamD.get('con')
+    degrees = (radians*180)/math.pi
+    con[2] = {'con': int(degrees)}
+
     for c, d in zip(genLabels, con):
         zipped = {}
         zipped.update(c)
@@ -224,6 +232,12 @@ def plot_update(value, wheel, frame, general, slider):
     genData = ctx.inputs.get('general-table.data')
     rangeSliderData = ctx.inputs.get('range-slider.value')
 
+    # convert to radians if recieving user input
+    if ctx.triggered[0].get('prop_id') != 'bike-dropdown.value':
+        degrees = float(genData[2].get('con'))
+        radians = float((degrees*math.pi)/180)
+        genData[2]['con'] = radians
+
     # sets the speed range for eigen-plot based on range-slider
     minBound = rangeSliderData[0]
     maxBound = rangeSliderData[1]
@@ -234,7 +248,6 @@ def plot_update(value, wheel, frame, general, slider):
     newP = []
     for p in range(8):
         if p < 4:
-            # index out of range error, but print(newP) yields expected result?
             newP.extend([pList[p], wheelData[p].get('fW')])
         else:
             newP.extend([pList[p], wheelData[p-4].get('rW')])
