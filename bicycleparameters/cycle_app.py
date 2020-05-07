@@ -1,6 +1,7 @@
 import io
 import base64
 import os
+import math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -32,34 +33,34 @@ OPTIONS = ['Benchmark',
            'Yellow',
            'Yellowrev']
 
-WHEEL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text'},
+WHEEL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False},
                  {'name': 'Front Wheel [F]', 'id': 'fW', 'type': 'numeric'},
                  {'name': 'Rear Wheel [R]', 'id': 'rW', 'type': 'numeric'}]
 
-WHEEL_LABELS = ['Radius',
-                'Mass',
-                'Moment Ixx',
-                'Moment Iyy']
+WHEEL_LABELS = ['Radius [m]:',
+                'Mass [kg]:',
+                'Moment Ixx [kg*m²]:',
+                'Moment Iyy [kg*m²]:']
 
-FRAME_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text'},
+FRAME_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False},
                  {'name': 'Rear Body [B]', 'id': 'rB', 'type': 'numeric'},
                  {'name': 'Front Assembly [H]', 'id': 'fA', 'type': 'numeric'}]
 
-FRAME_LABELS = ['Center of Mass X',
-                'Center of Mass Y',
-                'Total Mass',
-                'Moment Ixx',
-                'Moment Iyy',
-                'Moment Izz',
-                'Moment Ixz']
+FRAME_LABELS = ['Center of Mass X [m]:',
+                'Center of Mass Y [m]:',
+                'Total Mass [kg]:',
+                'Moment Ixx [kg*m²]:',
+                'Moment Iyy [kg*m²]:',
+                'Moment Izz [kg*m²]:',
+                'Moment Ixz [kg*m²]:']
 
-GENERAL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text'},
-                   {'name': 'Contextual Parameters', 'id': 'con', 'type': 'numeric'}]
+GENERAL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False},
+                   {'name': 'Parameters', 'id': 'con', 'type': 'numeric'}]
 
-GENERAL_LABELS = ['Wheel Base',
-                  'Trail',
-                  'Steer Axis Tilt',
-                  'Gravity']
+GENERAL_LABELS = ['Wheel Base [m]:',
+                  'Trail [m]:',
+                  'Steer Axis Tilt [degrees]:',
+                  'Gravity [N/kg]:']
 
 app = dash.Dash(__name__)
 server = app.server  # needed for heroku
@@ -82,7 +83,7 @@ app.layout = html.Div([
                                                    alt='May take a moment to load...',
                                                    id='eigen-plot')])]),
     html.Div(id='slider-bin',
-             children=[html.H2('Set the Eigenvalue Speed Range:'),
+             children=[html.H2('Set the EigenValue Speed Range:'),
                        dcc.RangeSlider(id='range-slider',
                                        min=-45,
                                        max=45,
@@ -104,8 +105,8 @@ app.layout = html.Div([
                                    id='reset-button',
                                    type='button',
                                    n_clicks=0),
-                       tbl.DataTable(id='wheel-table',
-                                     columns=WHEEL_COLUMNS,
+                       tbl.DataTable(id='general-table',
+                                     columns=GENERAL_COLUMNS,
                                      data=[],
                                      style_cell={'minWidth': '50px', 'width': '50px', 'maxWidth': '50px',
                                                  'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'},
@@ -120,8 +121,8 @@ app.layout = html.Div([
                                      style_header={
                                          'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
                                      editable=True),
-                       tbl.DataTable(id='general-table',
-                                     columns=GENERAL_COLUMNS,
+                       tbl.DataTable(id='wheel-table',
+                                     columns=WHEEL_COLUMNS,
                                      data=[],
                                      style_cell={'minWidth': '50px', 'width': '50px', 'maxWidth': '50px',
                                                  'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'},
@@ -197,6 +198,13 @@ def populate_wheel_data(value, n_clicks):
         genLabels.append({'label': i})
     for i in range(8, 12):
         con.append({'con': genPure.get(pList[i])})
+
+    # converts radians to degrees for display in the table
+    lamD = con[2]
+    radians = lamD.get('con')
+    degrees = (radians*180)/math.pi
+    con[2] = {'con': int(degrees)}
+
     for c, d in zip(genLabels, con):
         zipped = {}
         zipped.update(c)
@@ -223,6 +231,12 @@ def plot_update(value, wheel, frame, general, slider):
     genData = ctx.inputs.get('general-table.data')
     rangeSliderData = ctx.inputs.get('range-slider.value')
 
+    # convert to radians if recieving user input
+    if ctx.triggered[0].get('prop_id') != 'bike-dropdown.value':
+        degrees = float(genData[2].get('con'))
+        radians = float((degrees*math.pi)/180)
+        genData[2]['con'] = radians
+
     # sets the speed range for eigen-plot based on range-slider
     minBound = rangeSliderData[0]
     maxBound = rangeSliderData[1]
@@ -233,7 +247,6 @@ def plot_update(value, wheel, frame, general, slider):
     newP = []
     for p in range(8):
         if p < 4:
-            # index out of range error, but print(newP) yields expected result?
             newP.extend([pList[p], wheelData[p].get('fW')])
         else:
             newP.extend([pList[p], wheelData[p-4].get('rW')])
@@ -259,8 +272,8 @@ def plot_update(value, wheel, frame, general, slider):
 
     # create eigen-plot image
     eigen_fake = io.BytesIO()
-    eigen_plot = currentBike.plot_eigenvalues_vs_speed(speeds, show=False,
-            grid=True)
+    eigen_plot = currentBike.plot_eigenvalues_vs_speed(
+        speeds, show=False, grid=True)
     eigen_plot.savefig(eigen_fake)
     eigen_image = base64.b64encode(eigen_fake.getvalue())
     plt.close(eigen_plot)
