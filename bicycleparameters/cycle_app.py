@@ -129,6 +129,12 @@ app.layout = html.Div([
                                      style_header={
                                          'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
                                      editable=True)]),
+    html.Ul(children=[html.Li('BicycleParameters v{}'.format(bp.__version__)),
+                      html.Li('Dash v{}'.format(dash.__version__)),
+                      html.Li('NumPy v{}'.format(np.__version__)),
+                      html.Li('Pandas v{}'.format(pd.__version__)),
+                      html.Li('Matplolib v{}'.format(matplotlib.__version__)),
+                      ]),
 ])
 
 # creates generic set of Benchmark parameters
