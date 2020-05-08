@@ -129,12 +129,17 @@ app.layout = html.Div([
                                      style_header={
                                          'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
                                      editable=True)]),
-    html.Ul(children=[html.Li('BicycleParameters v{}'.format(bp.__version__)),
-                      html.Li('Dash v{}'.format(dash.__version__)),
-                      html.Li('NumPy v{}'.format(np.__version__)),
-                      html.Li('Pandas v{}'.format(pd.__version__)),
-                      html.Li('Matplolib v{}'.format(matplotlib.__version__)),
-                      ]),
+    html.Div(id='version-bin',
+             children=[html.Ul(children=[html.Li('BicycleParameters v{}'.format(bp.__version__)),
+                                         html.Li('Dash v{}'.format(
+                                             dash.__version__)),
+                                         html.Li('NumPy v{}'.format(
+                                             np.__version__)),
+                                         html.Li('Pandas v{}'.format(
+                                             pd.__version__)),
+                                         html.Li('Matplolib v{}'.format(
+                                             matplotlib.__version__)),
+                                         ])]),
 ])
 
 # creates generic set of Benchmark parameters
@@ -236,6 +241,7 @@ def plot_update(value, wheel, frame, general, slider):
     frameData = ctx.inputs.get('frame-table.data')
     genData = ctx.inputs.get('general-table.data')
     rangeSliderData = ctx.inputs.get('range-slider.value')
+    print(ctx.triggered)
 
     # convert to radians if recieving user input
     if ctx.triggered[0].get('prop_id') != 'bike-dropdown.value':

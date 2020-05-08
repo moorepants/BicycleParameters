@@ -96,3 +96,9 @@ img {
 #wheel-table, #frame-table, #general-table {
 	background-color: rgb(211, 211, 211);
 }
+
+#version-bin {
+	width: 250px;
+	margin: 5px;
+	border: 5px ridge rgb(60, 60, 90);
+}
