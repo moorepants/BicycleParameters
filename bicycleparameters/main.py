@@ -896,7 +896,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
     def plot_eigenvalues_vs_speed(self, speeds, fig=None, generic=False,
                                   color='black', show=False, largest=False,
-                                  linestyle='-', grid=False):
+                                  linestyle='-', grid=False, showLegend=True):
         """Returns a plot of the eigenvalues versus speed for the current
         benchmark parameters.
 
@@ -1016,7 +1016,8 @@ the pathToData argument.""".format(bicycleName, pathToData)
             ax.set_title('Eigenvalues vs Speed')
         else:
             ax.set_title('%s\nEigenvalues vs Speed' % self.bicycleName)
-            ax.legend()
+            if showLegend:
+                ax.legend()
 
         if grid:
             ax.grid()
