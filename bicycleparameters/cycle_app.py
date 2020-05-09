@@ -1,7 +1,6 @@
 import io
 import base64
 import os
-import math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -129,12 +128,17 @@ app.layout = html.Div([
                                      style_header={
                                          'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
                                      editable=True)]),
-    html.Ul(children=[html.Li('BicycleParameters v{}'.format(bp.__version__)),
-                      html.Li('Dash v{}'.format(dash.__version__)),
-                      html.Li('NumPy v{}'.format(np.__version__)),
-                      html.Li('Pandas v{}'.format(pd.__version__)),
-                      html.Li('Matplolib v{}'.format(matplotlib.__version__)),
-                      ]),
+    html.Div(id='version-bin',
+             children=[html.Ul(children=[html.Li('BicycleParameters v{}'.format(bp.__version__)),
+                                         html.Li('Dash v{}'.format(
+                                             dash.__version__)),
+                                         html.Li('NumPy v{}'.format(
+                                             np.__version__)),
+                                         html.Li('Pandas v{}'.format(
+                                             pd.__version__)),
+                                         html.Li('Matplolib v{}'.format(
+                                             matplotlib.__version__)),
+                                         ])]),
 ])
 
 # creates generic set of Benchmark parameters
@@ -208,7 +212,7 @@ def populate_wheel_data(value, n_clicks):
     # converts radians to degrees for display in the table
     lamD = con[2]
     radians = lamD.get('con')
-    degrees = (radians*180)/math.pi
+    degrees = np.rad2deg(radians)
     con[2] = {'con': int(degrees)}
 
     for c, d in zip(genLabels, con):
@@ -237,54 +241,79 @@ def plot_update(value, wheel, frame, general, slider):
     genData = ctx.inputs.get('general-table.data')
     rangeSliderData = ctx.inputs.get('range-slider.value')
 
-    # convert to radians if recieving user input
-    if ctx.triggered[0].get('prop_id') != 'bike-dropdown.value':
-        degrees = float(genData[2].get('con'))
-        radians = float((degrees*math.pi)/180)
-        genData[2]['con'] = radians
-
     # sets the speed range for eigen-plot based on range-slider
     minBound = rangeSliderData[0]
     maxBound = rangeSliderData[1]
     steps = (maxBound-minBound)/0.1
     speeds = np.linspace(minBound, maxBound, num=int(steps))
 
-    # creates an alternating list of [parameter,value] from table data
-    newP = []
-    for p in range(8):
-        if p < 4:
-            newP.extend([pList[p], wheelData[p].get('fW')])
-        else:
-            newP.extend([pList[p], wheelData[p-4].get('rW')])
-    for p in range(12, len(pList)):
-        if p < 19:
-            newP.extend([pList[p], frameData[p-12].get('rB')])
-        else:
-            newP.extend([pList[p], frameData[p-19].get('fA')])
-    for p in range(8, 12):
-        newP.extend([pList[p], genData[p-8].get('con')])
+    # Case 1: Recieves direct bicycle data if bicycle is selected from the dropdown menu
+    if ctx.triggered[0].get('prop_id') == 'bike-dropdown.value':
 
-    # edits bicycle parameters based on table data
-    currentBike = bp.Bicycle(value, pathToData=path_to_app_data)
-    for i in range(0, len(newP), 2):
-        currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
+        dropdownBike = bp.Bicycle(value, pathToData=path_to_app_data)
 
-    # create geometry-plot image
-    geo_fake = io.BytesIO()
-    geo_plot = currentBike.plot_bicycle_geometry(show=False)
-    geo_plot.savefig(geo_fake)
-    geo_image = base64.b64encode(geo_fake.getvalue())
-    plt.close(geo_plot)
+        # create geometry-plot image
+        geo_fake = io.BytesIO()
+        geo_plot = dropdownBike.plot_bicycle_geometry(show=False)
+        geo_plot.savefig(geo_fake)
+        geo_image = base64.b64encode(geo_fake.getvalue())
+        plt.close(geo_plot)
 
-    # create eigen-plot image
-    eigen_fake = io.BytesIO()
-    eigen_plot = currentBike.plot_eigenvalues_vs_speed(
-        speeds, show=False, grid=True)
-    eigen_plot.savefig(eigen_fake)
-    eigen_image = base64.b64encode(eigen_fake.getvalue())
-    plt.close(eigen_plot)
+        # create eigen-plot image
+        eigen_fake = io.BytesIO()
+        eigen_plot = dropdownBike.plot_eigenvalues_vs_speed(
+            speeds, show=False, grid=True)
+        eigen_plot.savefig(eigen_fake)
+        eigen_image = base64.b64encode(eigen_fake.getvalue())
+        plt.close(eigen_plot)
 
-    return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
+        return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
+
+    # Case 2: Recieves values from the displayed table in every other case
+    else:
+
+        # convert to radians
+        if ctx.triggered[0].get('prop_id') == 'wheel-table.data' or ctx.triggered[0].get('prop_id') == 'frame-table.data' or ctx.triggered[0].get('prop_id') == 'general-table.data' or ctx.triggered[0].get('prop_id') == 'range-slider.value':
+            degrees = float(genData[2].get('con'))
+            radians = np.deg2rad(degrees)
+            genData[2]['con'] = radians
+
+        # creates an alternating list of [parameter,value] from table data
+        newP = []
+        for p in range(8):
+            if p < 4:
+                newP.extend([pList[p], wheelData[p].get('fW')])
+            else:
+                newP.extend([pList[p], wheelData[p-4].get('rW')])
+        for p in range(12, len(pList)):
+            if p < 19:
+                newP.extend([pList[p], frameData[p-12].get('rB')])
+            else:
+                newP.extend([pList[p], frameData[p-19].get('fA')])
+        for p in range(8, 12):
+            newP.extend([pList[p], genData[p-8].get('con')])
+
+        # edits bicycle parameters based on table data
+        currentBike = bp.Bicycle(value, pathToData=path_to_app_data)
+        for i in range(0, len(newP), 2):
+            currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
+
+        # create geometry-plot image
+        geo_fake = io.BytesIO()
+        geo_plot = currentBike.plot_bicycle_geometry(show=False)
+        geo_plot.savefig(geo_fake)
+        geo_image = base64.b64encode(geo_fake.getvalue())
+        plt.close(geo_plot)
+
+        # create eigen-plot image
+        eigen_fake = io.BytesIO()
+        eigen_plot = currentBike.plot_eigenvalues_vs_speed(
+            speeds, show=False, grid=True)
+        eigen_plot.savefig(eigen_fake)
+        eigen_image = base64.b64encode(eigen_fake.getvalue())
+        plt.close(eigen_plot)
+
+        return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
 
 
 if __name__ == '__main__':
