@@ -915,6 +915,8 @@ the pathToData argument.""".format(bicycleName, pathToData)
             If true, only the largest eigenvalue is plotted.
         grid : boolean, optional
             If true, displays a grid on the plot.
+        show_legend: boolean, optional
+            If true, displays a legend describing the different parts of the solution shown.
 
         Returns
         -------
