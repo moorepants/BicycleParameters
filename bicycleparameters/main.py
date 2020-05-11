@@ -896,7 +896,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
     def plot_eigenvalues_vs_speed(self, speeds, fig=None, generic=False,
                                   color='black', show=False, largest=False,
-                                  linestyle='-', grid=False):
+                                  linestyle='-', grid=False, show_legend=True):
         """Returns a plot of the eigenvalues versus speed for the current
         benchmark parameters.
 
@@ -915,6 +915,8 @@ the pathToData argument.""".format(bicycleName, pathToData)
             If true, only the largest eigenvalue is plotted.
         grid : boolean, optional
             If true, displays a grid on the plot.
+        show_legend: boolean, optional
+            If true, displays a legend describing the different parts of the solution shown.
 
         Returns
         -------
@@ -1016,7 +1018,8 @@ the pathToData argument.""".format(bicycleName, pathToData)
             ax.set_title('Eigenvalues vs Speed')
         else:
             ax.set_title('%s\nEigenvalues vs Speed' % self.bicycleName)
-            ax.legend()
+            if show_legend:
+                ax.legend()
 
         if grid:
             ax.grid()
