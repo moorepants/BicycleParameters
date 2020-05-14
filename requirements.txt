@@ -1,6 +1,6 @@
 # build dependencies for running the app on heroku
 DynamicistToolKit
-dash==1.12.0
+dash
 gunicorn
 matplotlib
 numpy
