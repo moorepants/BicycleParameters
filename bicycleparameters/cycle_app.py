@@ -64,10 +64,10 @@ GENERAL_LABELS = ['Wheel Base [m]:',
 
 app = dash.Dash(__name__)
 app.title='Bicycle Dynamics Analysis App'
-server = app.server  # needed for heroku
+server=app.server  # needed for heroku
 
 app.layout = html.Div([
-    html.B(html.H1('Bicycle Dynamics Analysis App',
+    html.B(html.H1(app.title,
                    id='main-header')),
     html.Div(id='dropdown-bin',
              children=[html.H2('Choose a Parameter Set:'),
