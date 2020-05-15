@@ -130,15 +130,21 @@ app.layout = html.Div([
                                          'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
                                      editable=True)]),
     html.Div(id='version-bin',
-             children=[html.Ul(children=[html.Li('BicycleParameters v{}'.format(bp.__version__)),
-                                         html.Li('Dash v{}'.format(
-                                             dash.__version__)),
-                                         html.Li('NumPy v{}'.format(
-                                             np.__version__)),
-                                         html.Li('Pandas v{}'.format(
-                                             pd.__version__)),
-                                         html.Li('Matplolib v{}'.format(
-                                             matplotlib.__version__)),
+             children=[html.Ul(children=[html.A(href='https://github.com/moorepants/BicycleParameters',
+                                                target='_blank',
+                                                children=html.Li('BicycleParameters v{}'.format(bp.__version__))),
+                                         html.A(href='https://dash.plotly.com/',
+                                                target='_blank',
+                                                children=html.Li('Dash v{}'.format(dash.__version__))),
+                                         html.A(href='https://numpy.org/devdocs/',
+                                                target='_blank',
+                                                children=html.Li('NumPy v{}'.format(np.__version__))),
+                                         html.A(href='https://pandas.pydata.org/pandas-docs/stable/',
+                                                target='_blank',
+                                                children=html.Li('Pandas v{}'.format(pd.__version__))),
+                                         html.A(href='https://matplotlib.org/contents.html',
+                                                target='_blank',
+                                                children=html.Li('Matplolib v{}'.format(matplotlib.__version__))),
                                          ])]),
 ])
 
