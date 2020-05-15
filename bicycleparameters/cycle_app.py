@@ -63,6 +63,7 @@ GENERAL_LABELS = ['Wheel Base [m]:',
                   'Gravity [N/kg]:']
 
 app = dash.Dash(__name__)
+app.title='Bicycle Dynamics Analysis App'
 server = app.server  # needed for heroku
 
 app.layout = html.Div([
