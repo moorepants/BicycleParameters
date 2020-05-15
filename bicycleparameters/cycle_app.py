@@ -66,8 +66,8 @@ app = dash.Dash(__name__)
 server = app.server  # needed for heroku
 
 app.layout = html.Div([
-    html.U(html.B(html.H1('Bicycle Dynamics Analysis App',
-                          id='main-header'))),
+    html.B(html.H1('Bicycle Dynamics Analysis App',
+                   id='main-header')),
     html.Div(id='dropdown-bin',
              children=[html.H2('Choose a Parameter Set:'),
                        dcc.Dropdown(id='bike-dropdown',
@@ -319,7 +319,7 @@ def plot_update(value, wheel, frame, general, slider):
     # sets loading notification for the plots
 
 
-@app.callback(Output("plot-load", "children"), [Input("geometry-bin", "children"), Input('eigen-bin','children')])
+@app.callback(Output("plot-load", "children"), [Input("geometry-bin", "children"), Input('eigen-bin', 'children')])
 def input_triggers_spinner(value):
     time.sleep(1)
     return value
