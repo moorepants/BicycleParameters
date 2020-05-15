@@ -63,11 +63,12 @@ GENERAL_LABELS = ['Wheel Base [m]:',
                   'Gravity [N/kg]:']
 
 app = dash.Dash(__name__)
+app.title = 'Bicycle Dynamics Analysis App'
 server = app.server  # needed for heroku
 
 app.layout = html.Div([
-    html.U(html.B(html.H1('Bicycle Dynamics Analysis App',
-                          id='main-header'))),
+    html.B(html.H1(app.title,
+                   id='main-header')),
     html.Div(id='dropdown-bin',
              children=[html.H2('Choose a Parameter Set:'),
                        dcc.Dropdown(id='bike-dropdown',
@@ -130,15 +131,21 @@ app.layout = html.Div([
                                          'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
                                      editable=True)]),
     html.Div(id='version-bin',
-             children=[html.Ul(children=[html.Li('BicycleParameters v{}'.format(bp.__version__)),
-                                         html.Li('Dash v{}'.format(
-                                             dash.__version__)),
-                                         html.Li('NumPy v{}'.format(
-                                             np.__version__)),
-                                         html.Li('Pandas v{}'.format(
-                                             pd.__version__)),
-                                         html.Li('Matplolib v{}'.format(
-                                             matplotlib.__version__)),
+             children=[html.Ul(children=[html.A(href='https://github.com/moorepants/BicycleParameters',
+                                                target='_blank',
+                                                children=html.Li('BicycleParameters v{}'.format(bp.__version__))),
+                                         html.A(href='https://dash.plotly.com/',
+                                                target='_blank',
+                                                children=html.Li('Dash v{}'.format(dash.__version__))),
+                                         html.A(href='https://numpy.org/devdocs/',
+                                                target='_blank',
+                                                children=html.Li('NumPy v{}'.format(np.__version__))),
+                                         html.A(href='https://pandas.pydata.org/pandas-docs/stable/',
+                                                target='_blank',
+                                                children=html.Li('Pandas v{}'.format(pd.__version__))),
+                                         html.A(href='https://matplotlib.org/contents.html',
+                                                target='_blank',
+                                                children=html.Li('Matplolib v{}'.format(matplotlib.__version__))),
                                          ])]),
 ])
 
@@ -319,7 +326,7 @@ def plot_update(value, wheel, frame, general, slider):
     # sets loading notification for the plots
 
 
-@app.callback(Output("plot-load", "children"), [Input("geometry-bin", "children"), Input('eigen-bin','children')])
+@app.callback(Output("plot-load", "children"), [Input("geometry-bin", "children"), Input('eigen-bin', 'children')])
 def input_triggers_spinner(value):
     time.sleep(1)
     return value
