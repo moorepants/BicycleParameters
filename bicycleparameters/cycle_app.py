@@ -297,10 +297,9 @@ def plot_update(value, wheel, frame, general, options, slider):
     else:
 
         # convert to radians
-        if ctx.triggered[0].get('prop_id') == 'wheel-table.data' or ctx.triggered[0].get('prop_id') == 'frame-table.data' or ctx.triggered[0].get('prop_id') == 'general-table.data' or ctx.triggered[0].get('prop_id') == 'range-slider.value':
-            degrees = float(genData[2].get('con'))
-            radians = np.deg2rad(degrees)
-            genData[2]['con'] = radians
+        degrees = float(genData[2].get('con'))
+        radians = np.deg2rad(degrees)
+        genData[2]['con'] = radians
 
         # creates an alternating list of [parameter,value] from table data
         newP = []
