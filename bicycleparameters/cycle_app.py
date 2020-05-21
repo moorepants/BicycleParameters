@@ -247,20 +247,28 @@ def populate_wheel_data(value, n_clicks):
                Input('wheel-table', 'data'),
                Input('frame-table', 'data'),
                Input('general-table', 'data'),
+               Input('geometry-checklist', 'value'),
                Input('range-slider', 'value')])
-def plot_update(value, wheel, frame, general, slider):
+def plot_update(value, wheel, frame, general, options, slider):
     # accesses Input properties to avoid redundancies
     ctx = dash.callback_context
     wheelData = ctx.inputs.get('wheel-table.data')
     frameData = ctx.inputs.get('frame-table.data')
     genData = ctx.inputs.get('general-table.data')
+    checklistData = ctx.inputs.get('geometry-checklist.value')
     rangeSliderData = ctx.inputs.get('range-slider.value')
+
+    # construct flags for selected values of the geometry plot display options
+    mass_boolean = 'centers' in checklistData
+    ellipse_boolean = 'ellipse' in checklistData
 
     # sets the speed range for eigen-plot based on range-slider
     minBound = rangeSliderData[0]
     maxBound = rangeSliderData[1]
     steps = (maxBound-minBound)/0.1
     speeds = np.linspace(minBound, maxBound, num=int(steps))
+
+    print(ctx.triggered)
 
     # Case 1: Recieves direct bicycle data if bicycle is selected from the dropdown menu
     if ctx.triggered[0].get('prop_id') == 'bike-dropdown.value':
@@ -269,7 +277,8 @@ def plot_update(value, wheel, frame, general, slider):
 
         # create geometry-plot image
         geo_fake = io.BytesIO()
-        geo_plot = dropdownBike.plot_bicycle_geometry(show=False)
+        geo_plot = dropdownBike.plot_bicycle_geometry(
+            show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
         geo_plot.savefig(geo_fake)
         geo_image = base64.b64encode(geo_fake.getvalue())
         plt.close(geo_plot)
@@ -315,7 +324,8 @@ def plot_update(value, wheel, frame, general, slider):
 
         # create geometry-plot image
         geo_fake = io.BytesIO()
-        geo_plot = currentBike.plot_bicycle_geometry(show=False)
+        geo_plot = currentBike.plot_bicycle_geometry(
+            show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
         geo_plot.savefig(geo_fake)
         geo_image = base64.b64encode(geo_fake.getvalue())
         plt.close(geo_plot)
