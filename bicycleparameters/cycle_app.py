@@ -271,6 +271,7 @@ def plot_update(value, wheel, frame, general, options, slider):
 
     Bike = bp.Bicycle(value, pathToData=path_to_app_data)
 
+    # must convert steer axis tilt into radians when recieving values from the datatables
     if ctx.triggered[0].get('prop_id') != 'bike-dropdown.value':
 
         # convert to radians
