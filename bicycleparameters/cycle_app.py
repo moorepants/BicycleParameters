@@ -250,6 +250,7 @@ def populate_wheel_data(value, n_clicks):
                Input('geometry-checklist', 'value'),
                Input('range-slider', 'value')])
 def plot_update(value, wheel, frame, general, options, slider):
+
     # accesses Input properties to avoid redundancies
     ctx = dash.callback_context
     wheelData = ctx.inputs.get('wheel-table.data')
@@ -268,40 +269,16 @@ def plot_update(value, wheel, frame, general, options, slider):
     steps = (maxBound-minBound)/0.1
     speeds = np.linspace(minBound, maxBound, num=int(steps))
 
-    print(ctx.triggered)
+    Bike = bp.Bicycle(value, pathToData=path_to_app_data)
 
-    # Case 1: Recieves direct bicycle data if bicycle is selected from the dropdown menu
-    if ctx.triggered[0].get('prop_id') == 'bike-dropdown.value':
-
-        dropdownBike = bp.Bicycle(value, pathToData=path_to_app_data)
-
-        # create geometry-plot image
-        geo_fake = io.BytesIO()
-        geo_plot = dropdownBike.plot_bicycle_geometry(
-            show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
-        geo_plot.savefig(geo_fake)
-        geo_image = base64.b64encode(geo_fake.getvalue())
-        plt.close(geo_plot)
-
-        # create eigen-plot image
-        eigen_fake = io.BytesIO()
-        eigen_plot = dropdownBike.plot_eigenvalues_vs_speed(
-            speeds, show=False, grid=True, show_legend=False)
-        eigen_plot.savefig(eigen_fake)
-        eigen_image = base64.b64encode(eigen_fake.getvalue())
-        plt.close(eigen_plot)
-
-        return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
-
-    # Case 2: Recieves values from the displayed table in every other case
-    else:
+    if ctx.triggered[0].get('prop_id') != 'bike-dropdown.value':
 
         # convert to radians
         degrees = float(genData[2].get('con'))
         radians = np.deg2rad(degrees)
         genData[2]['con'] = radians
 
-        # creates an alternating list of [parameter,value] from table data
+       # creates an alternating list of [parameter,value] from table data
         newP = []
         for p in range(8):
             if p < 4:
@@ -317,27 +294,26 @@ def plot_update(value, wheel, frame, general, options, slider):
             newP.extend([pList[p], genData[p-8].get('con')])
 
         # edits bicycle parameters based on table data
-        currentBike = bp.Bicycle(value, pathToData=path_to_app_data)
         for i in range(0, len(newP), 2):
-            currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
+            Bike.parameters['Benchmark'][newP[i]] = newP[i+1]
 
-        # create geometry-plot image
-        geo_fake = io.BytesIO()
-        geo_plot = currentBike.plot_bicycle_geometry(
-            show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
-        geo_plot.savefig(geo_fake)
-        geo_image = base64.b64encode(geo_fake.getvalue())
-        plt.close(geo_plot)
+    # create geometry-plot image
+    geo_fake = io.BytesIO()
+    geo_plot = Bike.plot_bicycle_geometry(
+        show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
+    geo_plot.savefig(geo_fake)
+    geo_image = base64.b64encode(geo_fake.getvalue())
+    plt.close(geo_plot)
 
-        # create eigen-plot image
-        eigen_fake = io.BytesIO()
-        eigen_plot = currentBike.plot_eigenvalues_vs_speed(
-            speeds, show=False, grid=True, show_legend=False)
-        eigen_plot.savefig(eigen_fake)
-        eigen_image = base64.b64encode(eigen_fake.getvalue())
-        plt.close(eigen_plot)
+    # create eigen-plot image
+    eigen_fake = io.BytesIO()
+    eigen_plot = Bike.plot_eigenvalues_vs_speed(
+        speeds, show=False, grid=True, show_legend=False)
+    eigen_plot.savefig(eigen_fake)
+    eigen_image = base64.b64encode(eigen_fake.getvalue())
+    plt.close(eigen_plot)
 
-        return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
+    return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
 
     # sets loading notification for the plots
 
