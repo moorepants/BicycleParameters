@@ -71,10 +71,9 @@ img {
 #checklist-bin{
 	width: 350px;
 	height: 48px;
-	margin: 5px;
+	margin: 5px auto;
 	border: 5px ridge rgb(60,60,90);
 	padding: 5px;
-	display: inline-block;
 }
 
 #geometry-checklist {
@@ -86,10 +85,9 @@ img {
 #slider-bin {
 	width: 700px;
 	height: 67px;
-	margin: 5px;
+	margin: 5px auto;
 	border: 5px ridge rgb(60, 60, 90);
 	padding: 5px;
-	display: inline-block;
 }
 
 #range-slider {
