@@ -83,23 +83,30 @@ app.layout = html.Div([
                                              html.Div(id='eigen-bin',
                                                       children=[html.Img(src='',
                                                                          id='eigen-plot')])])]),
-    html.Div(id='slider-bin',
-             children=[html.H2('Set the EigenValue Speed Range:'),
-                       dcc.RangeSlider(id='range-slider',
-                                       min=-45,
-                                       max=45,
-                                       step=5,
-                                       value=[0, 10],
-                                       marks={-40: {'label': '-40 m/s', 'style': {'color': '#000000'}},
-                                              -30: {'label': '-30 m/s', 'style': {'color': '#000000'}},
-                                              -20: {'label': '-20 m/s', 'style': {'color': '#000000'}},
-                                              -10: {'label': '-10 m/s', 'style': {'color': '#000000'}},
-                                              0: {'label': '0 m/s', 'style': {'color': '#000000'}},
-                                              10: {'label': '10 m/s', 'style': {'color': '#000000'}},
-                                              20: {'label': '20 m/s', 'style': {'color': '#000000'}},
-                                              30: {'label': '30 m/s', 'style': {'color': '#000000'}},
-                                              40: {'label': '40 m/s', 'style': {'color': '#000000'}}},
-                                       allowCross=False)]),
+    html.Div(id='options-bin',
+             children=[html.Div(id='checklist-bin',
+                                children=[html.H2('Bicycle Geometry Plot Display Options'),
+                                          dcc.Checklist(id='geometry-checklist',
+                                                        options=[{'label': 'Show Centers of Mass ', 'value': 'centers'},
+                                                                 {'label': 'Show Inertia Ellipsoids ', 'value': 'ellipse'}],
+                                                        value=['centers'])]),
+                       html.Div(id='slider-bin',
+                                children=[html.H2('Set the EigenValue Speed Range:'),
+                                          dcc.RangeSlider(id='range-slider',
+                                                          min=-45,
+                                                          max=45,
+                                                          step=5,
+                                                          value=[0, 10],
+                                                          marks={-40: {'label': '-40 m/s', 'style': {'color': '#000000'}},
+                                                                 -30: {'label': '-30 m/s', 'style': {'color': '#000000'}},
+                                                                 -20: {'label': '-20 m/s', 'style': {'color': '#000000'}},
+                                                                 -10: {'label': '-10 m/s', 'style': {'color': '#000000'}},
+                                                                 0: {'label': '0 m/s', 'style': {'color': '#000000'}},
+                                                                 10: {'label': '10 m/s', 'style': {'color': '#000000'}},
+                                                                 20: {'label': '20 m/s', 'style': {'color': '#000000'}},
+                                                                 30: {'label': '30 m/s', 'style': {'color': '#000000'}},
+                                                                 40: {'label': '40 m/s', 'style': {'color': '#000000'}}},
+                                                          allowCross=False)])]),
     html.Div(id='table-bin',
              children=[html.H2('Whipple-Carvallo Model Parameters'),
                        html.Button('Reset Table',
@@ -240,14 +247,21 @@ def populate_wheel_data(value, n_clicks):
                Input('wheel-table', 'data'),
                Input('frame-table', 'data'),
                Input('general-table', 'data'),
+               Input('geometry-checklist', 'value'),
                Input('range-slider', 'value')])
-def plot_update(value, wheel, frame, general, slider):
+def plot_update(value, wheel, frame, general, options, slider):
+
     # accesses Input properties to avoid redundancies
     ctx = dash.callback_context
     wheelData = ctx.inputs.get('wheel-table.data')
     frameData = ctx.inputs.get('frame-table.data')
     genData = ctx.inputs.get('general-table.data')
+    checklistData = ctx.inputs.get('geometry-checklist.value')
     rangeSliderData = ctx.inputs.get('range-slider.value')
+
+    # construct flags for selected values of the geometry plot display options
+    mass_boolean = 'centers' in checklistData
+    ellipse_boolean = 'ellipse' in checklistData
 
     # sets the speed range for eigen-plot based on range-slider
     minBound = rangeSliderData[0]
@@ -255,38 +269,17 @@ def plot_update(value, wheel, frame, general, slider):
     steps = (maxBound-minBound)/0.1
     speeds = np.linspace(minBound, maxBound, num=int(steps))
 
-    # Case 1: Recieves direct bicycle data if bicycle is selected from the dropdown menu
-    if ctx.triggered[0].get('prop_id') == 'bike-dropdown.value':
+    Bike = bp.Bicycle(value, pathToData=path_to_app_data)
 
-        dropdownBike = bp.Bicycle(value, pathToData=path_to_app_data)
-
-        # create geometry-plot image
-        geo_fake = io.BytesIO()
-        geo_plot = dropdownBike.plot_bicycle_geometry(show=False)
-        geo_plot.savefig(geo_fake)
-        geo_image = base64.b64encode(geo_fake.getvalue())
-        plt.close(geo_plot)
-
-        # create eigen-plot image
-        eigen_fake = io.BytesIO()
-        eigen_plot = dropdownBike.plot_eigenvalues_vs_speed(
-            speeds, show=False, grid=True, show_legend=False)
-        eigen_plot.savefig(eigen_fake)
-        eigen_image = base64.b64encode(eigen_fake.getvalue())
-        plt.close(eigen_plot)
-
-        return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
-
-    # Case 2: Recieves values from the displayed table in every other case
-    else:
+    # must convert steer axis tilt into radians when recieving values from the datatables
+    if ctx.triggered[0].get('prop_id') != 'bike-dropdown.value':
 
         # convert to radians
-        if ctx.triggered[0].get('prop_id') == 'wheel-table.data' or ctx.triggered[0].get('prop_id') == 'frame-table.data' or ctx.triggered[0].get('prop_id') == 'general-table.data' or ctx.triggered[0].get('prop_id') == 'range-slider.value':
-            degrees = float(genData[2].get('con'))
-            radians = np.deg2rad(degrees)
-            genData[2]['con'] = radians
+        degrees = float(genData[2].get('con'))
+        radians = np.deg2rad(degrees)
+        genData[2]['con'] = radians
 
-        # creates an alternating list of [parameter,value] from table data
+       # creates an alternating list of [parameter,value] from table data
         newP = []
         for p in range(8):
             if p < 4:
@@ -302,26 +295,26 @@ def plot_update(value, wheel, frame, general, slider):
             newP.extend([pList[p], genData[p-8].get('con')])
 
         # edits bicycle parameters based on table data
-        currentBike = bp.Bicycle(value, pathToData=path_to_app_data)
         for i in range(0, len(newP), 2):
-            currentBike.parameters['Benchmark'][newP[i]] = newP[i+1]
+            Bike.parameters['Benchmark'][newP[i]] = newP[i+1]
 
-        # create geometry-plot image
-        geo_fake = io.BytesIO()
-        geo_plot = currentBike.plot_bicycle_geometry(show=False)
-        geo_plot.savefig(geo_fake)
-        geo_image = base64.b64encode(geo_fake.getvalue())
-        plt.close(geo_plot)
+    # create geometry-plot image
+    geo_fake = io.BytesIO()
+    geo_plot = Bike.plot_bicycle_geometry(
+        show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
+    geo_plot.savefig(geo_fake)
+    geo_image = base64.b64encode(geo_fake.getvalue())
+    plt.close(geo_plot)
 
-        # create eigen-plot image
-        eigen_fake = io.BytesIO()
-        eigen_plot = currentBike.plot_eigenvalues_vs_speed(
-            speeds, show=False, grid=True, show_legend=False)
-        eigen_plot.savefig(eigen_fake)
-        eigen_image = base64.b64encode(eigen_fake.getvalue())
-        plt.close(eigen_plot)
+    # create eigen-plot image
+    eigen_fake = io.BytesIO()
+    eigen_plot = Bike.plot_eigenvalues_vs_speed(
+        speeds, show=False, grid=True, show_legend=False)
+    eigen_plot.savefig(eigen_fake)
+    eigen_image = base64.b64encode(eigen_fake.getvalue())
+    plt.close(eigen_plot)
 
-        return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
+    return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
 
     # sets loading notification for the plots
 
