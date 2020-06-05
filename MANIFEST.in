@@ -1,3 +1,4 @@
 include *.rst
 include *.txt
+include bicycleparameters/app-explanation.md
 recursive-include docs *.rst

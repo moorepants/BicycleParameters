@@ -15,8 +15,8 @@ import bicycleparameters as bp
 import matplotlib
 matplotlib.use('Agg')
 
-path_to_app_data = os.path.join(os.path.dirname(
-    os.path.abspath(__file__)), 'app-data')
+path_to_this_file = os.path.dirname(os.path.abspath(__file__))
+path_to_app_data = os.path.join(path_to_this_file, 'app-data')
 
 pList = ['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
          'w', 'c', 'lam', 'g',
@@ -137,6 +137,7 @@ app.layout = html.Div([
                                      style_header={
                                          'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
                                      editable=True)]),
+    dcc.Markdown(open(os.path.join(path_to_this_file, 'app-explanation.md')).read()),
     html.Div(id='version-bin',
              children=[html.Ul(children=[html.A(href='https://github.com/moorepants/BicycleParameters',
                                                 target='_blank',
