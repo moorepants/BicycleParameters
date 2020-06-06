@@ -4,8 +4,9 @@ This web application computes the eigenvalues of the Whipple-Carvallo [1,2]
 linearized bicycle model about the upright constant speed equilibrium state.
 The eigenvalues are a function of 27 parameters as defined in [3]. The
 eigenvalues can be used to assess the uncontrolled stability of a given bicycle
-design as well as characterize growth and decay rates and oscillatory nature of
-the two degrees of freedom: roll angle and steer angle.
+design as well as characterize the growth and decay rates and oscillatory
+nature of the time evolutions of the two degrees of freedom: roll angle and
+steer angle.
 
 # Inputs
 
@@ -15,6 +16,7 @@ Several pre-defined bicycles are provided and can be selected for analysis.
 These bicycles and the methods of obtaining the parameter values are described
 in detail in [4,5].
 
+- Benchmark: Benchmark parameter set in [3]. Note this includes the rider.
 - Batavus Browser: Urban bicycle with swept back handlebars
 - Rigid: Instrumented bicycle
 - Batavus Crescendo Deluxe: Urban bicycle with swept back handlebars
@@ -73,19 +75,19 @@ Contributions and issue reports are welcome!
 # References
 
 1. F. J. W. Whipple, "The stability of the motion of a bicycle," Quarterly
-    Journal of Pure and Applied Mathematics, vol. 30, pp. 312–348, 1899.
+   Journal of Pure and Applied Mathematics, vol. 30, pp. 312–348, 1899.
 2. E. Carvallo, Théorie du mouvement du monocycle et de la bicyclette. Paris,
-    France: Gauthier- Villars, 1899.
+   France: Gauthier- Villars, 1899.
 3. J.P Meijaard, Jim M Papadopoulos, Andy Ruina and A.L Schwab. 2007.
-    Linearized dynamics equations for the balance and steer of a bicycle: a
-    benchmark and review. Proc. R. Soc. A.4631955–1982
-    http://doi.org/10.1098/rspa.2007.1857
+   Linearized dynamics equations for the balance and steer of a bicycle: a
+   benchmark and review. Proc. R. Soc. A.4631955–1982
+   http://doi.org/10.1098/rspa.2007.1857
 4. J. K. Moore, "Human Control of a Bicycle," Doctor of Philosophy, University
-    of California, Davis, CA, 2012.
+   of California, Davis, CA, 2012.
 5. J. K. Moore, M. Hubbard, D. L. Peterson, A. L. Schwab, and J. D. G.
-    Kooijman, "An Accurate Method of Measuring and Comparing a Bicycle’s
-    Physical Parameters," in Proceedings of Bicycle and Motorcycle Dynamics:
-    Symposium on the Dynamics and Control of Single Track Vehicles, Delft,
-    Netherlands, Oct.  2010.
+   Kooijman, "An Accurate Method of Measuring and Comparing a Bicycle’s
+   Physical Parameters," in Proceedings of Bicycle and Motorcycle Dynamics:
+   Symposium on the Dynamics and Control of Single Track Vehicles, Delft,
+   Netherlands, Oct.  2010.
 6. Kooijman, J. D. G., Schwab, A. L. & Meijaard, J. P. 2007 Experimental
    validation of a model of an uncontrolled bicycle.
