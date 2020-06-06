@@ -18,7 +18,7 @@ in detail in [4,5].
 
 - Benchmark: Benchmark parameter set in [3]. Note this includes the rider.
 - Batavus Browser: Urban bicycle with swept back handlebars
-- Rigid: Instrumented bicycle
+- Rigid: Instrumented bicycle used in [4]
 - Batavus Crescendo Deluxe: Urban bicycle with swept back handlebars
 - Batavus Stratos Deluxe: Urban bicycle with straight handlebars
 - Gary Fisher: Mountain bike
@@ -83,7 +83,7 @@ Contributions and issue reports are welcome!
    benchmark and review. Proc. R. Soc. A.4631955–1982
    http://doi.org/10.1098/rspa.2007.1857
 4. J. K. Moore, "Human Control of a Bicycle," Doctor of Philosophy, University
-   of California, Davis, CA, 2012.
+   of California, Davis, CA, 2012. http://moorepants.github.io/dissertation
 5. J. K. Moore, M. Hubbard, D. L. Peterson, A. L. Schwab, and J. D. G.
    Kooijman, "An Accurate Method of Measuring and Comparing a Bicycle’s
    Physical Parameters," in Proceedings of Bicycle and Motorcycle Dynamics:
