@@ -48,7 +48,7 @@ FRAME_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False},
                  {'name': 'Front Assembly [H]', 'id': 'fA', 'type': 'numeric'}]
 
 FRAME_LABELS = ['Center of Mass X [m]:',
-                'Center of Mass Y [m]:',
+                'Center of Mass Z [m]:',
                 'Total Mass [kg]:',
                 'Moment Ixx [kg*m²]:',
                 'Moment Iyy [kg*m²]:',
