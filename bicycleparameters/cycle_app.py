@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 import dash_table as tbl
 import time
 from dash.dependencies import Input, Output, State
@@ -110,9 +111,11 @@ app.layout = html.Div([
                                                           allowCross=False)])]),
     html.Div(id='table-bin',
              children=[html.H2('Whipple-Carvallo Model Parameters'),
-                       html.Button('Reset Table',
+                       dbc.Button('Reset Table',
                                    id='reset-button',
-                                   type='button',
+                                   outline=True,
+                                   color='secondary',
+                                   size='sm',
                                    n_clicks=0),
                        tbl.DataTable(id='general-table',
                                      columns=GENERAL_COLUMNS,
