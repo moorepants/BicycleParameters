@@ -1,7 +1,5 @@
 /* Sets the primary colors for the page */
-body {
-	color: rgb(230, 150, 0);
-}
+
 
 a:link {
 	color: white;
@@ -19,28 +17,20 @@ a:active {
   color: gray;
 }
 
-.outer-border{
-	border: 5px ridge rgb(60, 60, 90);
-	padding: 5px;
+.margin-5px{
+	margin: 5px auto;
 }
 
-.inner-border{
-	border: 5px outset rgb(60, 60, 90);
-	padding: 5px;
-}
-
-.row-margin{
-	margin: 5px;
+.margin-2px{
+	margin: 2px auto;
 }
 
 H1 {
 	font-size: 30px;
-	text-align: center;
 }
 
 H2 {
-	font-size: 20px;
-	text-align: center;
+	font-size: 15px;
 }
 
 #geometry-checklist {
