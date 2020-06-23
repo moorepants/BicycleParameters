@@ -69,12 +69,12 @@ app.title = 'Bicycle Dynamics Analysis App'
 server = app.server  # needed for heroku
 
 app.layout = html.Div([
-    dbc.Container(fluid=True,
+    dbc.Container(fluid=False,
                   children=[
                       dbc.Row([dbc.Col(html.B(html.H1(app.title,
                                                       id='main-header')),
                                        width='auto',
-                                       className='mb-3')
+                                       className='my-2')
                                ],
                               justify='center'),
                       dbc.Row([dbc.Col(dcc.Loading(id='geo-load',
@@ -107,7 +107,8 @@ app.layout = html.Div([
                                                  ],
                                        lg=2)],
                               justify='center',
-                              no_gutters=True),
+                              no_gutters=True,
+                              className="my-2"),
                       dbc.Row([dbc.Col(tbl.DataTable(id='frame-table',
                                                      columns=FRAME_COLUMNS,
                                                      data=[],
@@ -152,11 +153,13 @@ app.layout = html.Div([
                                                                                 editable=True))])
                                                  ],
                                        lg=8,
-                                       align='end')
-                               ]),
+                                       align='end'),
+                               ], className="my-2"),
                       dcc.Markdown(
                           open(os.path.join(path_to_assets,
-                                            'app-explanation.md')).read()),
+                                            'app-explanation.md')).read(),
+                          className="my-2",
+                      ),
                       html.Div(id='version-bin',
                                children=[html.Ul(children=[html.A(href='https://github.com/moorepants/BicycleParameters',
                                                                   target='_blank',
