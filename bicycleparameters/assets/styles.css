@@ -17,37 +17,10 @@ a:active {
   color: gray;
 }
 
-.margin-5px{
-	margin: 5px auto;
-}
-
-.margin-2px{
-	margin: 2px auto;
-}
-
-H1 {
-	font-size: 30px;
-}
-
-H2 {
-	font-size: 15px;
-}
-
-#geometry-checklist {
-	color: rgb(211, 211, 211);
-}
-
-
 #range-slider {
-	background-color: white;
+	color: white;
 }
 
 #wheel-table, #frame-table, #general-table {
 	background-color: rgb(211, 211, 211);
-}
-
-#version-bin {
-	width: 250px;
-	margin: 5px;
-	color: rgb(211, 211, 211);
 }
