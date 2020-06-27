@@ -77,23 +77,24 @@ app.layout = html.Div([
                                        width='auto',
                                        className='my-2')],
                               justify='center'),
-                      dbc.Row([dbc.Col(dcc.Loading(id='geo-load',
+                      dbc.Row([dbc.Col(dcc.Loading(id='geometry-load',
                                                    type='dot',
                                                    children=[html.Div(id='geometry-bin',
-                                                   children=[html.Img(src='',
-                                                                      id='geometry-plot',
-                                                                      className='img-fluid')])]),
+                                                                      children=[html.Img(src='',
+                                                                                         id='geometry-plot',
+                                                                                         className='img-fluid')])]),
                                        lg=5,
                                        width=12),
                                dbc.Col(dcc.Loading(id='eigen-load',
                                                    type='dot',
                                                    children=[html.Div(id='eigen-bin',
-                                                   children=[html.Img(src='',
-                                                                      id='eigen-plot',
-                                                                      className='img-fluid')])]),
+                                                                      children=[html.Img(src='',
+                                                                                         id='eigen-plot',
+                                                                                         className='img-fluid')])]),
                                        lg=5,
                                        width=12),
-                               dbc.Col(children=[html.H5('Choose a Parameter Set:'),
+                               dbc.Col(children=[html.H5('Choose a Parameter Set:',
+                                                         className='centered'),
                                                  dcc.Dropdown(id='bike-dropdown',
                                                               value='Benchmark',
                                                               options=[
@@ -109,7 +110,6 @@ app.layout = html.Div([
                                                             size='lg',
                                                             n_clicks=0)],
                                        lg=2)],
-                              justify='center',
                               no_gutters=True,
                               className="my-2"),
                       dbc.Row([dbc.Col(tbl.DataTable(id='frame-table',
@@ -121,7 +121,8 @@ app.layout = html.Div([
                                                          'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
                                                      editable=True),
                                        lg=4),
-                               dbc.Col(children=[html.H5('Set the EigenValue Speed Range [m/s]:'),
+                               dbc.Col(children=[html.H5('Set the EigenValue Speed Range [m/s]:',
+                                                         className='centered'),
                                                  dcc.RangeSlider(id='range-slider',
                                                                  min=-45,
                                                                  max=45,
@@ -159,26 +160,8 @@ app.layout = html.Div([
                               className="my-2"),
                       dbc.Row([dbc.Col(dcc.Markdown(open(os.path.join(path_to_assets, 'app-explanation.md')).read()),
                                        width='auto',
-                                       className='my-2')],
-                              justify='center'),
-                      dbc.Row([dbc.Col(html.Ul(children=[html.A(href='https://github.com/moorepants/BicycleParameters',
-                                                                target='_blank',
-                                                                children=html.Li('BicycleParameters v{}'.format(bp.__version__))),
-                                                         html.A(href='https://dash.plotly.com/',
-                                                                target='_blank',
-                                                                children=html.Li('Dash v{}'.format(dash.__version__))),
-                                                         html.A(href='https://numpy.org/devdocs/',
-                                                                target='_blank',
-                                                                children=html.Li('NumPy v{}'.format(np.__version__))),
-                                                         html.A(href='https://pandas.pydata.org/pandas-docs/stable/',
-                                                                target='_blank',
-                                                                children=html.Li('Pandas v{}'.format(pd.__version__))),
-                                                         html.A(href='https://matplotlib.org/contents.html',
-                                                                target='_blank',
-                                                                children=html.Li('Matplolib v{}'.format(matplotlib.__version__))),
-                                                         ]),
-                                       width='auto',
-                                       className='my-2')]),
+                                       className='my-2')
+                               ])
                   ])])
 
 # creates generic set of Benchmark parameters
@@ -199,6 +182,7 @@ def new_par(bike_name):
               [Input('bike-dropdown', 'value'),
                Input('reset-button', 'n_clicks')])
 def populate_wheel_data(value, n_clicks):
+
     # generates data for wheel-table
     wheelPure = new_par(value)
     wheelData = []
@@ -344,13 +328,13 @@ def plot_update(value, wheel, frame, general, options, slider):
     # sets loading notification for the geometry plot
 
 
-@app.callback(Output("geo-load", "children"), [Input("geometry-bin", "children")])
+@app.callback(Output("geometry-load", "children"), [Input("geometry-bin", "children")])
 def input_triggers_spinner1(value):
     time.sleep(1)
     return value
 
 
-@app.callback(Output("eigen-load", "children"), [Input('eigen-bin', 'children')])
+@app.callback(Output("eigen-load", "children"), [Input("eigen-bin", "children")])
 def input_triggers_spinner2(value):
     time.sleep(1)
     return value
