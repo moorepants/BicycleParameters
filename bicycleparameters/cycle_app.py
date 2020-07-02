@@ -116,9 +116,16 @@ app.layout = html.Div([
                                                      columns=FRAME_COLUMNS,
                                                      data=[],
                                                      style_cell={
-                                                         'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white', 'border': '1px solid white'},
+                                                         'backgroundColor': 'rgb(50, 50, 50)',
+                                                         'color': 'white',
+                                                         'border': '1px solid white',
+                                                         'whiteSpace': 'normal',
+                                                         'height': 'auto'
+                                                     },
                                                      style_header={
-                                                         'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
+                                                         'textAlign': 'center',
+                                                         'backgroundColor': 'rgb(30, 30, 30)'
+                                                     },
                                                      editable=True),
                                        lg=4),
                                dbc.Col(children=[html.H5('Set the EigenValue Speed Range [m/s]:',
@@ -143,18 +150,34 @@ app.layout = html.Div([
                                                                                 columns=WHEEL_COLUMNS,
                                                                                 data=[],
                                                                                 style_cell={
-                                                                                    'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white', 'border': '1px solid white'},
+                                                                                    'backgroundColor': 'rgb(50, 50, 50)',
+                                                                                    'color': 'white',
+                                                                                    'border': '1px solid white',
+                                                                                    'whiteSpace': 'normal',
+                                                                                    'height': 'auto'
+                                                                                },
                                                                                 style_header={
-                                                                                    'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
+                                                                                    'textAlign': 'center',
+                                                                                    'backgroundColor': 'rgb(30, 30, 30)'
+                                                                                },
                                                                                 editable=True)),
                                                           dbc.Col(tbl.DataTable(id='general-table',
                                                                                 columns=GENERAL_COLUMNS,
                                                                                 data=[],
                                                                                 style_cell={
-                                                                                    'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white', 'border': '1px solid white'},
+                                                                                    'backgroundColor': 'rgb(50, 50, 50)',
+                                                                                    'color': 'white',
+                                                                                    'border': '1px solid white',
+                                                                                    'whiteSpace': 'normal',
+                                                                                    'height': 'auto'
+                                                                                },
                                                                                 style_header={
-                                                                                    'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
-                                                                                editable=True))])],
+                                                                                    'textAlign': 'center',
+                                                                                    'backgroundColor': 'rgb(30, 30, 30)'
+                                                                                },
+                                                                                editable=True))
+                                                          ])
+                                                 ],
                                        lg=8,
                                        align='end')],
                               className="my-2"),
