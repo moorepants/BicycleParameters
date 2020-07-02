@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 import dash_table as tbl
 import time
 from dash.dependencies import Input, Output, State
@@ -63,100 +64,128 @@ GENERAL_LABELS = ['Wheel Base [m]:',
                   'Steer Axis Tilt [degrees]:',
                   'Gravity [N/kg]:']
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
 app.title = 'Bicycle Dynamics Analysis App'
 server = app.server  # needed for heroku
 
 app.layout = html.Div([
-    html.B(html.H1(app.title,
-                   id='main-header')),
-    html.Div(id='dropdown-bin',
-             children=[html.H2('Choose a Parameter Set:'),
-                       dcc.Dropdown(id='bike-dropdown',
-                                    value='Benchmark',
-                                    options=[{'label': i, 'value': i} for i in OPTIONS])]),
-    html.Div(id='plot-bin',
-             children=[dcc.Loading(id='plot-load',
-                                   type='dot',
-                                   children=[html.Div(id='geometry-bin',
-                                                      children=[html.Img(src='',
-                                                                         id='geometry-plot')]),
-                                             html.Div(id='eigen-bin',
-                                                      children=[html.Img(src='',
-                                                                         id='eigen-plot')])])]),
-    html.Div(id='options-bin',
-             children=[html.Div(id='checklist-bin',
-                                children=[html.H2('Bicycle Geometry Plot Display Options'),
-                                          dcc.Checklist(id='geometry-checklist',
-                                                        options=[{'label': 'Show Centers of Mass ', 'value': 'centers'},
-                                                                 {'label': 'Show Inertia Ellipsoids ', 'value': 'ellipse'}],
-                                                        value=['centers'])]),
-                       html.Div(id='slider-bin',
-                                children=[html.H2('Set the EigenValue Speed Range:'),
-                                          dcc.RangeSlider(id='range-slider',
-                                                          min=-45,
-                                                          max=45,
-                                                          step=5,
-                                                          value=[0, 10],
-                                                          marks={-40: {'label': '-40 m/s', 'style': {'color': '#000000'}},
-                                                                 -30: {'label': '-30 m/s', 'style': {'color': '#000000'}},
-                                                                 -20: {'label': '-20 m/s', 'style': {'color': '#000000'}},
-                                                                 -10: {'label': '-10 m/s', 'style': {'color': '#000000'}},
-                                                                 0: {'label': '0 m/s', 'style': {'color': '#000000'}},
-                                                                 10: {'label': '10 m/s', 'style': {'color': '#000000'}},
-                                                                 20: {'label': '20 m/s', 'style': {'color': '#000000'}},
-                                                                 30: {'label': '30 m/s', 'style': {'color': '#000000'}},
-                                                                 40: {'label': '40 m/s', 'style': {'color': '#000000'}}},
-                                                          allowCross=False)])]),
-    html.Div(id='table-bin',
-             children=[html.H2('Whipple-Carvallo Model Parameters'),
-                       html.Button('Reset Table',
-                                   id='reset-button',
-                                   type='button',
-                                   n_clicks=0),
-                       tbl.DataTable(id='general-table',
-                                     columns=GENERAL_COLUMNS,
-                                     data=[],
-                                     style_cell={'minWidth': '50px', 'width': '50px', 'maxWidth': '50px',
-                                                 'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'},
-                                     style_header={
-                                         'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
-                                     editable=True),
-                       tbl.DataTable(id='frame-table',
-                                     columns=FRAME_COLUMNS,
-                                     data=[],
-                                     style_cell={'minWidth': '50px', 'width': '50px', 'maxWidth': '50px',
-                                                 'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'},
-                                     style_header={
-                                         'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
-                                     editable=True),
-                       tbl.DataTable(id='wheel-table',
-                                     columns=WHEEL_COLUMNS,
-                                     data=[],
-                                     style_cell={'minWidth': '50px', 'width': '50px', 'maxWidth': '50px',
-                                                 'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'},
-                                     style_header={
-                                         'textAlign': 'center', 'backgroundColor': 'rgb(30, 30, 30)'},
-                                     editable=True)]),
-    dcc.Markdown(open(os.path.join(path_to_assets, 'app-explanation.md')).read()),
-    html.Div(id='version-bin',
-             children=[html.Ul(children=[html.A(href='https://github.com/moorepants/BicycleParameters',
-                                                target='_blank',
-                                                children=html.Li('BicycleParameters v{}'.format(bp.__version__))),
-                                         html.A(href='https://dash.plotly.com/',
-                                                target='_blank',
-                                                children=html.Li('Dash v{}'.format(dash.__version__))),
-                                         html.A(href='https://numpy.org/devdocs/',
-                                                target='_blank',
-                                                children=html.Li('NumPy v{}'.format(np.__version__))),
-                                         html.A(href='https://pandas.pydata.org/pandas-docs/stable/',
-                                                target='_blank',
-                                                children=html.Li('Pandas v{}'.format(pd.__version__))),
-                                         html.A(href='https://matplotlib.org/contents.html',
-                                                target='_blank',
-                                                children=html.Li('Matplolib v{}'.format(matplotlib.__version__))),
-                                         ])]),
-])
+    dbc.Container(fluid=False,
+                  children=[
+                      dbc.Row([dbc.Col(dbc.NavbarSimple(brand='Bicycle Dynamics Analysis App',
+                                                        dark=True,
+                                                        color='info'),
+                                       width='auto',
+                                       className='my-2')],
+                              justify='center'),
+                      dbc.Row([dbc.Col(dcc.Loading(id='geometry-load',
+                                                   type='dot',
+                                                   children=[html.Div(id='geometry-bin',
+                                                                      children=[html.Img(src='',
+                                                                                         id='geometry-plot',
+                                                                                         className='img-fluid')])]),
+                                       lg=5,
+                                       width=12),
+                               dbc.Col(dcc.Loading(id='eigen-load',
+                                                   type='dot',
+                                                   children=[html.Div(id='eigen-bin',
+                                                                      children=[html.Img(src='',
+                                                                                         id='eigen-plot',
+                                                                                         className='img-fluid')])]),
+                                       lg=5,
+                                       width=12),
+                               dbc.Col(children=[html.H5('Choose a Parameter Set:',
+                                                         className='centered'),
+                                                 dcc.Dropdown(id='bike-dropdown',
+                                                              value='Benchmark',
+                                                              options=[
+                                                                  {'label': i, 'value': i} for i in OPTIONS],
+                                                              style={'color': 'black'}),
+                                                 dcc.Checklist(id='geometry-checklist',
+                                                               options=[{'label': 'Show Centers of Mass ', 'value': 'centers'},
+                                                                        {'label': 'Show Inertia Ellipsoids ', 'value': 'ellipse'}],
+                                                               value=['centers']),
+                                                 dbc.Button('Reset Table',
+                                                            id='reset-button',
+                                                            color='primary',
+                                                            size='lg',
+                                                            n_clicks=0)],
+                                       lg=2)],
+                              no_gutters=True,
+                              className="my-2"),
+                      dbc.Row([dbc.Col(tbl.DataTable(id='frame-table',
+                                                     columns=FRAME_COLUMNS,
+                                                     data=[],
+                                                     style_cell={
+                                                         'backgroundColor': 'rgb(50, 50, 50)',
+                                                         'color': 'white',
+                                                         'border': '1px solid white',
+                                                         'whiteSpace': 'normal',
+                                                         'height': 'auto'
+                                                     },
+                                                     style_header={
+                                                         'textAlign': 'center',
+                                                         'backgroundColor': 'rgb(30, 30, 30)'
+                                                     },
+                                                     editable=True),
+                                       lg=4),
+                               dbc.Col(children=[html.H5('Set the EigenValue Speed Range [m/s]:',
+                                                         className='centered'),
+                                                 dcc.RangeSlider(id='range-slider',
+                                                                 min=-45,
+                                                                 max=45,
+                                                                 step=5,
+                                                                 value=[
+                                                                     0, 10],
+                                                                 marks={-40: {'label': '-40', 'style': {'color': '#ffffff'}},
+                                                                        -30: {'label': '-30', 'style': {'color': '#ffffff'}},
+                                                                        -20: {'label': '-20', 'style': {'color': '#ffffff'}},
+                                                                        -10: {'label': '-10', 'style': {'color': '#ffffff'}},
+                                                                        0: {'label': '0', 'style': {'color': '#ffffff'}},
+                                                                        10: {'label': '10', 'style': {'color': '#ffffff'}},
+                                                                        20: {'label': '20', 'style': {'color': '#ffffff'}},
+                                                                        30: {'label': '30', 'style': {'color': '#ffffff'}},
+                                                                        40: {'label': '40', 'style': {'color': '#ffffff'}}},
+                                                                 allowCross=False),
+                                                 dbc.Row([dbc.Col(tbl.DataTable(id='wheel-table',
+                                                                                columns=WHEEL_COLUMNS,
+                                                                                data=[],
+                                                                                style_cell={
+                                                                                    'backgroundColor': 'rgb(50, 50, 50)',
+                                                                                    'color': 'white',
+                                                                                    'border': '1px solid white',
+                                                                                    'whiteSpace': 'normal',
+                                                                                    'height': 'auto'
+                                                                                },
+                                                                                style_header={
+                                                                                    'textAlign': 'center',
+                                                                                    'backgroundColor': 'rgb(30, 30, 30)'
+                                                                                },
+                                                                                editable=True)),
+                                                          dbc.Col(tbl.DataTable(id='general-table',
+                                                                                columns=GENERAL_COLUMNS,
+                                                                                data=[],
+                                                                                style_cell={
+                                                                                    'backgroundColor': 'rgb(50, 50, 50)',
+                                                                                    'color': 'white',
+                                                                                    'border': '1px solid white',
+                                                                                    'whiteSpace': 'normal',
+                                                                                    'height': 'auto'
+                                                                                },
+                                                                                style_header={
+                                                                                    'textAlign': 'center',
+                                                                                    'backgroundColor': 'rgb(30, 30, 30)'
+                                                                                },
+                                                                                editable=True))
+                                                          ])
+                                                 ],
+                                       lg=8,
+                                       align='end')],
+                              className="my-2"),
+                      dbc.Row([dbc.Col(dcc.Markdown(open(os.path.join(path_to_assets, 'app-explanation.md')).read()),
+                                       width='auto',
+                                       className='my-2')
+                               ])
+                  ])])
 
 # creates generic set of Benchmark parameters
 
@@ -176,6 +205,7 @@ def new_par(bike_name):
               [Input('bike-dropdown', 'value'),
                Input('reset-button', 'n_clicks')])
 def populate_wheel_data(value, n_clicks):
+
     # generates data for wheel-table
     wheelPure = new_par(value)
     wheelData = []
@@ -318,11 +348,17 @@ def plot_update(value, wheel, frame, general, options, slider):
 
     return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
 
-    # sets loading notification for the plots
+    # sets loading notification for the geometry plot
 
 
-@app.callback(Output("plot-load", "children"), [Input("geometry-bin", "children"), Input('eigen-bin', 'children')])
-def input_triggers_spinner(value):
+@app.callback(Output("geometry-load", "children"), [Input("geometry-bin", "children")])
+def input_triggers_spinner1(value):
+    time.sleep(1)
+    return value
+
+
+@app.callback(Output("eigen-load", "children"), [Input("eigen-bin", "children")])
+def input_triggers_spinner2(value):
     time.sleep(1)
     return value
 

@@ -1,138 +1,33 @@
-/* Sets the primary colors for the page */
-body {
-	background-color: rgb(30, 30, 30);
-	color: rgb(230, 150, 0);
+.dash-table-container .row {
+    display: block;
+    margin: 0px;
 }
 
-a:link {
-	color: white;
+.h1, h1 {
+    font-size: 2.5rem;
+    text-align: center;
 }
 
-a:visited {
-  color: gray;
+.h2, h2 {
+    font-size: 2rem;
 }
 
-a:hover {
-  color: gray;
+.h3, h3 {
+    font-size: 1.75rem;
 }
 
-a:active {
-  color: gray;
+.h4, h4 {
+    font-size: 1.5rem;
 }
 
-#main-header {
-	color:rgb(230, 150, 0);
-	text-align: center;
-	width: 450px;
-	margin: 5px auto;
-	padding: 15px;
-	border: 5px ridge rgb(60, 60, 90);
-	font-size: 30px;
+.h5, h5 {
+    font-size: 1.25rem;
 }
 
-H2 {
-	text-align: center;
-	font-size: 20px;
-	color: rgb(230, 150, 0);
-	margin: auto;
-	margin-bottom: 5px;
+.h6, h6 {
+    font-size: 1rem;
 }
 
-#dropdown-bin {
-	width: 300px;
-	margin: 5px auto;
-	border: 5px ridge rgb(60, 60, 90);
-	padding: 5px;
-}
-
-#bike-dropdown {
-	width: 100%;
-	margin: auto;
-}
-
-#plot-bin {
-	margin: auto;
-	width: 100%;
-	text-align: center;
-}
-
-#geometry-bin {
-	border: 5px ridge rgb(60, 60, 90);
-	margin: 5px auto;
-	width: 600px;
-	height: 370px;
-	padding: 5px;
-	display: inline-block;
-}
-
-#eigen-bin {
-	border: 5px ridge rgb(60, 60, 90);
-	margin: 5px auto;
-	width: 600px;
-	height: 370px;
-	padding: 5px;
-	display: inline-block;
-}
-
-img {
-	width: 600px;
-	height: 370px;
-	background-color: white;
-}
-
-#options-bin {
-	margin: auto;
-	width: 100%;
-	text-align: center;
-}
-
-#checklist-bin{
-	width: 350px;
-	height: 48px;
-	margin: 5px auto;
-	border: 5px ridge rgb(60,60,90);
-	padding: 5px;
-}
-
-#geometry-checklist {
-	color: rgb(211, 211, 211);
-	margin: auto;
-	width: 100%;
-}
-
-#slider-bin {
-	width: 700px;
-	height: 67px;
-	margin: 5px auto;
-	border: 5px ridge rgb(60, 60, 90);
-	padding: 5px;
-}
-
-#range-slider {
-	background-color: white;
-	margin: auto;
-	width: 90%;
-}
-
-#table-bin {
-	width: 600px;
-	margin: 5px auto;
-	border: 5px ridge rgb(60, 60, 90);
-	padding: 5px;
-}
-
-#reset-button {
-	width: 100px;
-	font-size: 15px;
-}
-
-#wheel-table, #frame-table, #general-table {
-	background-color: rgb(211, 211, 211);
-}
-
-#version-bin {
-	width: 250px;
-	margin: 5px;
-	border: 5px ridge rgb(60, 60, 90);
-	color: rgb(211, 211, 211);
+.centered {
+    text-align: center;
 }
