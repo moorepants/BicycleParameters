@@ -126,6 +126,12 @@ app.layout = html.Div([
                                                          'textAlign': 'center',
                                                          'backgroundColor': 'rgb(30, 30, 30)'
                                                      },
+                                                     style_data_conditional=[
+                                                         {
+                                                             'if': {'column_editable': False},
+                                                             'cursor': 'not-allowed'
+                                                         },
+                                                     ],
                                                      editable=True),
                                        lg=4),
                                dbc.Col(children=[html.H5('Set the EigenValue Speed Range [m/s]:',
@@ -160,6 +166,12 @@ app.layout = html.Div([
                                                                                     'textAlign': 'center',
                                                                                     'backgroundColor': 'rgb(30, 30, 30)'
                                                                                 },
+                                                                                style_data_conditional=[
+                                                                                    {
+                                                                                        'if': {'column_editable': False},
+                                                                                        'cursor': 'not-allowed'
+                                                                                    },
+                                                                                ],
                                                                                 editable=True)),
                                                           dbc.Col(tbl.DataTable(id='general-table',
                                                                                 columns=GENERAL_COLUMNS,
@@ -175,6 +187,12 @@ app.layout = html.Div([
                                                                                     'textAlign': 'center',
                                                                                     'backgroundColor': 'rgb(30, 30, 30)'
                                                                                 },
+                                                                                style_data_conditional=[
+                                                                                    {
+                                                                                        'if': {'column_editable': False},
+                                                                                        'cursor': 'not-allowed'
+                                                                                    },
+                                                                                ],
                                                                                 editable=True))
                                                           ])
                                                  ],
