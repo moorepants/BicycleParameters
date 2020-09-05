@@ -44,5 +44,4 @@ Here are some resources that I found very useful when first developing this appl
  - [w3schools.com](https://www.w3schools.com/). Has great HTML/CSS reference pages as well as tutorials. Also has some for [python](https://www.w3schools.com/python/default.asp).
  - This [Software Carpentery](https://carpentries.github.io/workshop-template/) site. Has nice general programming tutorials as well as an in-depth [git tutorial](https://swcarpentry.github.io/git-novice/reference).
 
- Feel free to extend this list as you develop and learn. Overall, I ended up needing to learn and use web development skills far more than I needed to really understand python itself. Program in whichever way brings you the most joy, I wish you future devs the best!
-
+ Feel free to extend this list as you develop and learn. Overall, I ended up needing to learn and use web development skills far more than I needed to really understand Python itself. Program in whichever way brings you the most joy. I wish you the best, future devs!
