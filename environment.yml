@@ -1,0 +1,13 @@
+# navigate to the directory which contains this file and run `conda env create -f environment.yml` to build
+name: bp
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - bicycleparameters
+  - dash-bootstrap-components
+  - pandas
+  - dynamicisttoolkit
+  - yeadon 
+  - matplotlib
+  - uncertainties
