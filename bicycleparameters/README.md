@@ -2,9 +2,10 @@
 
 The Bicycle Dynamics Analysis App provides a GUI for using the BicycleParameters Python program on the web. Using Dash, we transform Python code into HTML and CSS which is nicely rendered within a web browser. The application is available at https://bicycleparameters.herokuapp.com/.
 
+
 # Directory Structure
 
-Within the `BicycleParameters/bicycleparameters/` directory, the primary module for the application is `cycle_app.py`. The `/assets/` folder contains files which are to be displayed by the app, and the `/data/` folder contains raw bicycle measurement data. You can read more about the purpose of the `/assets/` folder on the [Dash documentation](https://dash.plotly.com/external-resources).
+Within the `BicycleParameters/bicycleparameters/` directory, the primary module for the application is `cycle_app.py` and it is written entirely in Python. The `/assets/` folder contains files which are to be displayed by the app, and the `/data/` folder contains raw bicycle measurement data. Some custom CSS is contained within `/assets/styles.css`, but most of the CSS can be written directly in `cycle_app.py` using `dash-bootstrap-components`. You can read more about the purpose of the `/assets/` folder on the [Dash documentation](https://dash.plotly.com/external-resources). 
 
 # Development
 
@@ -37,6 +38,7 @@ Now if you navigate to http://127.0.0.1:8050/, you should see your local version
 Here are some resources that I found very useful when first developing this application:
 
  - The offical [Dash documentation](https://dash.plotly.com/). Just about every single link on this page will have useful information for you.
+ - [Dash Bootstrap Components documentation](https://dash-bootstrap-components.opensource.faculty.ai/docs/components/). This is used to write [CSS Bootstraps](https://getbootstrap.com/docs/3.3/css/) using the Python language.
  - The [Mozilla Web Development guide](https://developer.mozilla.org/en-US/docs/Learn). I highly recommened this guide for learning about HTML, CSS, and general web development.
  - The [example usage](https://pythonhosted.org/BicycleParameters/examples.html) page for Bicycle Parameters. Useful for understanding how the backend code works. 
  - [w3schools.com](https://www.w3schools.com/). Has great HTML/CSS reference pages as well as tutorials. Also has some for [python](https://www.w3schools.com/python/default.asp).
