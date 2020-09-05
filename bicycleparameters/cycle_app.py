@@ -353,7 +353,7 @@ def plot_update(value, wheel, frame, general, options, slider):
         for p in range(8, 12):
             newP.extend([pList[p], genData[p-8].get('data')])
 
-        # inserts user edited data into the default bike created earlier
+        # inserts user edited data into the default Bike created earlier
         for i in range(0, len(newP), 2):
             Bike.parameters['Benchmark'][newP[i]] = newP[i+1]
 
@@ -394,4 +394,4 @@ def input_triggers_spinner2(value):
 
 if __name__ == '__main__':                         # omit the `dev_tools_ui` parameter to display debug info 
     app.run_server(debug=True, dev_tools_ui=False) # in the browser rather than in the terminal
-                                                
+    
