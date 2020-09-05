@@ -327,7 +327,7 @@ def plot_update(value, wheel, frame, general, options, slider):
     steps = (maxBound-minBound)/0.1
     speeds = np.linspace(minBound, maxBound, num=int(steps))
 
-    # create bike using default data based on dropdown menu value
+    # create Bike using default data based on dropdown menu value
     Bike = bp.Bicycle(value, pathToData=path_to_app_data)
 
     # convert steer axis tilt into radians if recieving values from datatable edits

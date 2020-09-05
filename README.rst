@@ -227,7 +227,7 @@ this application:
    code works.
 -  `w3schools.com <https://www.w3schools.com/>`__. Has great HTML/CSS
    reference pages as well as tutorials. Also has some for
-   `python <https://www.w3schools.com/python/default.asp>`__.
+   `Python <https://www.w3schools.com/python/default.asp>`__.
 -  This `Software
    Carpentery <https://carpentries.github.io/workshop-template/>`__
    site. Has nice general programming tutorials as well as an in-depth
