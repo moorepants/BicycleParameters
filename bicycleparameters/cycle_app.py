@@ -65,7 +65,7 @@ GENERAL_LABELS = ['Wheel Base [m]:',
                   'Gravity [N/kg]:']
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
-app.title = 'Bicycle Dynamics Analysis App'
+app.title = 'New Title'
 server = app.server  # needed for heroku
 
 app.layout = html.Div([
