@@ -14,15 +14,20 @@ from dash.dependencies import Input, Output, State
 
 import bicycleparameters as bp
 import matplotlib
-matplotlib.use('Agg')
+
+matplotlib.use('Agg') # prevents pop-up windows when calling plotting functions
 
 path_to_this_file = os.path.dirname(os.path.abspath(__file__))
 path_to_app_data = os.path.join(path_to_this_file, 'app-data')
 path_to_assets = os.path.join(path_to_this_file, 'assets')
 
+# list of all the whipple-carvello parameters
+
 pList = ['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
          'w', 'c', 'lam', 'g',
          'xB', 'zB', 'mB', 'IBxx', 'IByy', 'IBzz', 'IBxz', 'xH', 'zH', 'mH', 'IHxx', 'IHyy', 'IHzz', 'IHxz']
+
+# list of bicycle models in the dropdown menu
 
 OPTIONS = ['Benchmark',
            'Browser',
@@ -57,7 +62,7 @@ FRAME_LABELS = ['Center of Mass X [m]:',
                 'Moment Ixz [kg*m²]:']
 
 GENERAL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False},
-                   {'name': 'Parameters', 'id': 'con', 'type': 'numeric'}]
+                   {'name': 'Parameters', 'id': 'data', 'type': 'numeric'}]
 
 GENERAL_LABELS = ['Wheel Base [m]:',
                   'Trail [m]:',
@@ -67,6 +72,9 @@ GENERAL_LABELS = ['Wheel Base [m]:',
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
 app.title = 'Bicycle Dynamics Analysis App'
 server = app.server  # needed for heroku
+
+
+# app.layout defines the visual GUI elements on the website
 
 app.layout = html.Div([
     dbc.Container(fluid=False,
@@ -205,8 +213,8 @@ app.layout = html.Div([
                                ])
                   ])])
 
-# creates generic set of Benchmark parameters
 
+# create a set of Benchmark parameters with uncertainties removed
 
 def new_par(bike_name):
     bike = bp.Bicycle(bike_name, pathToData=path_to_app_data)
@@ -214,8 +222,8 @@ def new_par(bike_name):
     parPure = bp.io.remove_uncertainties(par)
     return parPure
 
-# populates all data tables with bicycleparameters data
 
+# populates all data tables with bicycleparameters data
 
 @app.callback([Output('wheel-table', 'data'),
                Output('frame-table', 'data'),
@@ -268,19 +276,19 @@ def populate_wheel_data(value, n_clicks):
     genPure = new_par(value)
     genData = []
     genLabels = []
-    con = []
+    data = []
     for i in GENERAL_LABELS:
         genLabels.append({'label': i})
     for i in range(8, 12):
-        con.append({'con': genPure.get(pList[i])})
+        data.append({'data': genPure.get(pList[i])})
 
     # converts radians to degrees for display in the table
-    lamD = con[2]
-    radians = lamD.get('con')
+    lamD = data[2]
+    radians = lamD.get('data')
     degrees = np.rad2deg(radians)
-    con[2] = {'con': int(degrees)}
+    data[2] = {'data': int(degrees)}
 
-    for c, d in zip(genLabels, con):
+    for c, d in zip(genLabels, data):
         zipped = {}
         zipped.update(c)
         zipped.update(d)
@@ -288,8 +296,8 @@ def populate_wheel_data(value, n_clicks):
 
     return wheelData, frameData, genData
 
-    # updates geometry-plot & eigen-plot path with Dropdown value or edited DataTable values
 
+# updates geometry-plot & eigen-plot path with Dropdown value or edited DataTable values
 
 @app.callback([Output('geometry-plot', 'src'),
                Output('eigen-plot', 'src')],
@@ -319,15 +327,16 @@ def plot_update(value, wheel, frame, general, options, slider):
     steps = (maxBound-minBound)/0.1
     speeds = np.linspace(minBound, maxBound, num=int(steps))
 
+    # create Bike using default data based on dropdown menu value
     Bike = bp.Bicycle(value, pathToData=path_to_app_data)
 
-    # must convert steer axis tilt into radians when recieving values from the datatables
+    # convert steer axis tilt into radians if recieving values from datatable edits
     if ctx.triggered[0].get('prop_id') != 'bike-dropdown.value':
 
         # convert to radians
-        degrees = float(genData[2].get('con'))
+        degrees = float(genData[2].get('data'))
         radians = np.deg2rad(degrees)
-        genData[2]['con'] = radians
+        genData[2]['data'] = radians
 
        # creates an alternating list of [parameter,value] from table data
         newP = []
@@ -342,9 +351,9 @@ def plot_update(value, wheel, frame, general, options, slider):
             else:
                 newP.extend([pList[p], frameData[p-19].get('fA')])
         for p in range(8, 12):
-            newP.extend([pList[p], genData[p-8].get('con')])
+            newP.extend([pList[p], genData[p-8].get('data')])
 
-        # edits bicycle parameters based on table data
+        # inserts user edited data into the default Bike created earlier
         for i in range(0, len(newP), 2):
             Bike.parameters['Benchmark'][newP[i]] = newP[i+1]
 
@@ -366,8 +375,8 @@ def plot_update(value, wheel, frame, general, options, slider):
 
     return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
 
-    # sets loading notification for the geometry plot
 
+# sets loading notification for the geometry plot
 
 @app.callback(Output("geometry-load", "children"), [Input("geometry-bin", "children")])
 def input_triggers_spinner1(value):
@@ -375,11 +384,14 @@ def input_triggers_spinner1(value):
     return value
 
 
+# sets loading notification for the eigenvalue plot
+
 @app.callback(Output("eigen-load", "children"), [Input("eigen-bin", "children")])
 def input_triggers_spinner2(value):
     time.sleep(1)
     return value
 
 
-if __name__ == '__main__':
-    app.run_server(debug=True, dev_tools_ui=False)
+if __name__ == '__main__':                         # omit the `dev_tools_ui` parameter to display debug info 
+    app.run_server(debug=True, dev_tools_ui=False) # in the browser rather than in the terminal
+    
