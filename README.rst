@@ -155,11 +155,11 @@ Development
 Developing the application is quite simple. First, you need to have an
 environment which contains all the necessary dependencies for running
 ``cycle_app.py``. If you are using ``conda``, you can use the
-``environment.yml`` located in the top-level ``BicycleParameters/``
+``cycle-app-environment.yml`` located in the top-level ``BicycleParameters/``
 directory to `build a conda
 environment <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file>`__
 which contains all the packages you need to develop and run this code.
-Alternatively, you can simply view the contents of ``environment.yml``
+Alternatively, you can simply view the contents of ``cycle-app-environment.yml``
 and install those packages accordingly or use the ``requirements.txt``
 file available in the same location.
 
