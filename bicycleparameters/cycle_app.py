@@ -136,6 +136,14 @@ app.layout = html.Div([
                                                      },
                                                      style_data_conditional=[
                                                          {
+                                                             'if': {'state': 'selected'},
+                                                             'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'
+                                                         },
+                                                         {
+                                                             'if': {'state': 'active'},
+                                                             'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'
+                                                         },
+                                                         {
                                                              'if': {'column_editable': False},
                                                              'cursor': 'not-allowed'
                                                          },
@@ -176,6 +184,14 @@ app.layout = html.Div([
                                                                                 },
                                                                                 style_data_conditional=[
                                                                                     {
+                                                                                        'if': {'state': 'selected'},
+                                                                                        'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'
+                                                                                    },
+                                                                                    {
+                                                                                        'if': {'state': 'active'},
+                                                                                        'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'
+                                                                                    },
+                                                                                    {
                                                                                         'if': {'column_editable': False},
                                                                                         'cursor': 'not-allowed'
                                                                                     },
@@ -196,6 +212,14 @@ app.layout = html.Div([
                                                                                     'backgroundColor': 'rgb(30, 30, 30)'
                                                                                 },
                                                                                 style_data_conditional=[
+                                                                                    {
+                                                                                        'if': {'state': 'selected'},
+                                                                                        'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'
+                                                                                    },
+                                                                                    {
+                                                                                        'if': {'state': 'active'},
+                                                                                        'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'
+                                                                                    },
                                                                                     {
                                                                                         'if': {'column_editable': False},
                                                                                         'cursor': 'not-allowed'
