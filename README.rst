@@ -127,8 +127,6 @@ not necessarily reflect the views of the National Science Foundation.
 
 .. _Grant No. 0928339: https://www.nsf.gov/awardsearch/showAward?AWD_ID=0928339
 
-
-=============================
 Bicycle Dynamics Analysis App
 =============================
 
@@ -139,7 +137,7 @@ browser. The application is available at
 https://bicycleparameters.herokuapp.com/.
 
 Directory Structure
-===================
+-------------------
 
 Within the ``BicycleParameters/bicycleparameters/`` directory, the
 primary module for the application is ``cycle_app.py`` and it is written
@@ -152,7 +150,7 @@ about the purpose of the ``/assets/`` folder on the `Dash
 documentation <https://dash.plotly.com/external-resources>`__.
 
 Development
-===========
+-----------
 
 Developing the application is quite simple. First, you need to have an
 environment which contains all the necessary dependencies for running
@@ -204,7 +202,7 @@ I recommend using the inspect element tool available with most browsers
 to debug things live within your browser.
 
 Additional Resources
-====================
+--------------------
 
 Here are some resources that I found very useful when first developing
 this application:
@@ -238,4 +236,3 @@ Feel free to extend this list as you develop and learn. Overall, I ended
 up needing to learn and use web development skills far more than I
 needed to really understand Python itself. Program in whichever way
 brings you the most joy. I wish you the best, future devs!
-
