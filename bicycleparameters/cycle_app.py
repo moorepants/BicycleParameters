@@ -128,7 +128,7 @@ app.layout = html.Div([
                                                      },
                                                      style_data_conditional=[
                                                          {
-                                                            "if": {"state": "selected"},              # 'active' | 'selected'
+                                                            "if": {"state": "selected"},              
                                                             "backgroundColor": "rgb(255,255,255)",
                                                             'color': 'black',
                                                             "border": "1px solid black",
@@ -170,7 +170,7 @@ app.layout = html.Div([
                                                                                 },
                                                                                 style_data_conditional=[
                                                                                     {
-                                                                                        "if": {"state": "selected"},              # 'active' | 'selected'
+                                                                                        "if": {"state": "selected"},              
                                                                                         "backgroundColor": "rgb(255,255,255)",
                                                                                         'color': 'black',
                                                                                         "border": "1px solid black",
@@ -193,7 +193,7 @@ app.layout = html.Div([
                                                                                 },
                                                                                 style_data_conditional=[
                                                                                     {
-                                                                                        "if": {"state": "selected"},              # 'active' | 'selected'
+                                                                                        "if": {"state": "selected"},              
                                                                                         "backgroundColor": "rgb(255,255,255)",
                                                                                         'color': 'black',
                                                                                         "border": "1px solid black",
