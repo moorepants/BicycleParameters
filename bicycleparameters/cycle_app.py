@@ -128,8 +128,10 @@ app.layout = html.Div([
                                                      },
                                                      style_data_conditional=[
                                                          {
-                                                             'if': {'column_editable': False},
-                                                             'cursor': 'not-allowed'
+                                                            "if": {"state": "selected"},              # 'active' | 'selected'
+                                                            "backgroundColor": "rgb(255,255,255)",
+                                                            'color': 'black',
+                                                            "border": "1px solid black",
                                                          },
                                                      ],
                                                      editable=True),
@@ -168,8 +170,10 @@ app.layout = html.Div([
                                                                                 },
                                                                                 style_data_conditional=[
                                                                                     {
-                                                                                        'if': {'column_editable': False},
-                                                                                        'cursor': 'not-allowed'
+                                                                                        "if": {"state": "selected"},              # 'active' | 'selected'
+                                                                                        "backgroundColor": "rgb(255,255,255)",
+                                                                                        'color': 'black',
+                                                                                        "border": "1px solid black",
                                                                                     },
                                                                                 ],
                                                                                 editable=True)),
@@ -189,8 +193,10 @@ app.layout = html.Div([
                                                                                 },
                                                                                 style_data_conditional=[
                                                                                     {
-                                                                                        'if': {'column_editable': False},
-                                                                                        'cursor': 'not-allowed'
+                                                                                        "if": {"state": "selected"},              # 'active' | 'selected'
+                                                                                        "backgroundColor": "rgb(255,255,255)",
+                                                                                        'color': 'black',
+                                                                                        "border": "1px solid black",
                                                                                     },
                                                                                 ],
                                                                                 editable=True))
