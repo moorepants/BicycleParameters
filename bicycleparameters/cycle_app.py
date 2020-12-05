@@ -11,7 +11,7 @@ import dash_bootstrap_components as dbc
 import dash_table as tbl
 import time
 from dash.dependencies import Input, Output, State
-
+import urllib
 import bicycleparameters as bp
 import matplotlib
 matplotlib.use('Agg')
@@ -108,7 +108,13 @@ app.layout = html.Div([
                                                             id='reset-button',
                                                             color='primary',
                                                             size='lg',
-                                                            n_clicks=0)],
+                                                            n_clicks=0),
+                                                 html.A('Download Profile',
+                                                        id='download-button',
+                                                        href='/download_excel/',
+                                                        className='btn btn-primary',
+                                                        target='_blank',
+                                                        download='eigenvalues and eigenvectors')],
                                        lg=2)],
                               no_gutters=True,
                               className="my-2"),
@@ -128,7 +134,7 @@ app.layout = html.Div([
                                                      },
                                                      style_data_conditional=[
                                                          {
-                                                            "if": {"state": "selected"},              
+                                                            "if": {"state": "selected"},             
                                                             "backgroundColor": "rgb(255,255,255)",
                                                             'color': 'black',
                                                             "border": "1px solid black",
@@ -213,7 +219,14 @@ app.layout = html.Div([
 
 # creates generic set of Benchmark parameters
 
-
+@app.callback(
+    dash.dependencies.Output('download-button', 'href'),
+    [dash.dependencies.Input('bike-dropdown', 'value')])
+def update_download_link(filter_value):
+    dff = bicycle.eig(Benchmark)
+    csv_string = dff.to_csv(index=False, encoding='utf-8')
+    csv_string = "data:text/csv;charset=utf-8," + urllib.quote(csv_string)
+    return csv_string
 def new_par(bike_name):
     bike = bp.Bicycle(bike_name, pathToData=path_to_app_data)
     par = bike.parameters['Benchmark']
