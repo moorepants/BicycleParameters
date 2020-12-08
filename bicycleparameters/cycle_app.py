@@ -152,6 +152,36 @@ app.layout = html.Div([
                                                                         30: {'label': '30', 'style': {'color': '#ffffff'}},
                                                                         40: {'label': '40', 'style': {'color': '#ffffff'}}},
                                                                  allowCross=False),
+                               dbc.Col(children=[html.H5('Real and imaginary parts of the Eigenvalue [1/s]:',
+                                                         className='centered'),
+                                                 dcc.YRangeSlider(id='Yrange-slider',
+                                                                 min=-100,
+                                                                 max=100,
+                                                                 step=10,
+                                                                 value=[
+                                                                     0, 10],
+                                                                 marks={-100: {'label': '-100', 'style': {'color': '#ffffff'}},
+                                                                        -90: {'label': '-90', 'style': {'color': '#ffffff'}},
+                                                                        -80: {'label': '-80', 'style': {'color': '#ffffff'}},
+                                                                        -70: {'label': '-70', 'style': {'color': '#ffffff'}},
+                                                                        -60: {'label': '-60', 'style': {'color': '#ffffff'}},
+                                                                        -50: {'label': '-50', 'style': {'color': '#ffffff'}},
+                                                                        -40: {'label': '-40', 'style': {'color': '#ffffff'}},
+                                                                        -30: {'label': '-30', 'style': {'color': '#ffffff'}},
+                                                                        -20: {'label': '-20', 'style': {'color': '#ffffff'}},
+                                                                        -10: {'label': '-10', 'style': {'color': '#ffffff'}},
+                                                                        0: {'label': '0', 'style': {'color': '#ffffff'}},
+                                                                        10: {'label': '10', 'style': {'color': '#ffffff'}},
+                                                                        20: {'label': '20', 'style': {'color': '#ffffff'}},
+                                                                        30: {'label': '30', 'style': {'color': '#ffffff'}},
+                                                                        40: {'label': '40', 'style': {'color': '#ffffff'}},
+                                                                        50: {'label': '50', 'style': {'color': '#ffffff'}},
+                                                                        60: {'label': '60', 'style': {'color': '#ffffff'}},
+                                                                        70: {'label': '70', 'style': {'color': '#ffffff'}},
+                                                                        80: {'label': '80', 'style': {'color': '#ffffff'}},
+                                                                        90: {'label': '90', 'style': {'color': '#ffffff'}},
+                                                                        100: {'label': '100', 'style': {'color': '#ffffff'}},
+                                                                 allowCross=False),
                                                  dbc.Row([dbc.Col(tbl.DataTable(id='wheel-table',
                                                                                 columns=WHEEL_COLUMNS,
                                                                                 data=[],
@@ -299,7 +329,8 @@ def populate_wheel_data(value, n_clicks):
                Input('general-table', 'data'),
                Input('geometry-checklist', 'value'),
                Input('range-slider', 'value')])
-def plot_update(value, wheel, frame, general, options, slider):
+               Input('Yrange-slider', 'value')])
+def plot_update(value, wheel, frame, general, options, slider, YRangeSlider):
 
     # accesses Input properties to avoid redundancies
     ctx = dash.callback_context
@@ -308,6 +339,7 @@ def plot_update(value, wheel, frame, general, options, slider):
     genData = ctx.inputs.get('general-table.data')
     checklistData = ctx.inputs.get('geometry-checklist.value')
     rangeSliderData = ctx.inputs.get('range-slider.value')
+    YrangeSliderData = ctx.inputs.get('Yrange-slider.value')
 
     # construct flags for selected values of the geometry plot display options
     mass_boolean = 'centers' in checklistData
@@ -316,6 +348,12 @@ def plot_update(value, wheel, frame, general, options, slider):
     # sets the speed range for eigen-plot based on range-slider
     minBound = rangeSliderData[0]
     maxBound = rangeSliderData[1]
+    steps = (maxBound-minBound)/0.1
+    speeds = np.linspace(minBound, maxBound, num=int(steps))
+
+    ## My attempt to set Eigenvalue range based on Yrange-slider
+    minBound = YrangeSliderData[0]
+    maxBound = YrangeSliderData[1]
     steps = (maxBound-minBound)/0.1
     speeds = np.linspace(minBound, maxBound, num=int(steps))
 
