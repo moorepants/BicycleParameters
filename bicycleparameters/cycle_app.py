@@ -152,15 +152,17 @@ app.layout = html.Div([
                                                                         30: {'label': '30', 'style': {'color': '#ffffff'}},
                                                                         40: {'label': '40', 'style': {'color': '#ffffff'}}},
                                                                  allowCross=False),
-                               dbc.Col(children=[html.H5('Real and imaginary parts of the Eigenvalue [1/s]:',
+                               dbc.Col(children=[html.H5('Set the Eigenvalue Range [1/s]:',
                                                          className='centered'),
-                                                 dcc.YRangeSlider(id='Yrange-slider',
+                                                 dcc.RangeSlider(id='Yrange-slider',
                                                                  min=-100,
                                                                  max=100,
-                                                                 step=10,
+                                                                 step=5,
                                                                  value=[
                                                                      0, 10],
-                                                                 marks={-100: {'label': '-100', 'style': {'color': '#ffffff'}},
+                                                                 marks={-120: {'label': '-120', 'style': {'color': '#ffffff'}},
+                                                                        -110: {'label': '-110', 'style': {'color': '#ffffff'}},
+                                                                        -100: {'label': '-100', 'style': {'color': '#ffffff'}},
                                                                         -90: {'label': '-90', 'style': {'color': '#ffffff'}},
                                                                         -80: {'label': '-80', 'style': {'color': '#ffffff'}},
                                                                         -70: {'label': '-70', 'style': {'color': '#ffffff'}},
@@ -181,6 +183,8 @@ app.layout = html.Div([
                                                                         80: {'label': '80', 'style': {'color': '#ffffff'}},
                                                                         90: {'label': '90', 'style': {'color': '#ffffff'}},
                                                                         100: {'label': '100', 'style': {'color': '#ffffff'}},
+                                                                        110: {'label': '110', 'style': {'color': '#ffffff'}},
+                                                                        120: {'label': '120', 'style': {'color': '#ffffff'}}},
                                                                  allowCross=False),
                                                  dbc.Row([dbc.Col(tbl.DataTable(id='wheel-table',
                                                                                 columns=WHEEL_COLUMNS,
@@ -236,7 +240,6 @@ app.layout = html.Div([
                   ])])
 
 # creates generic set of Benchmark parameters
-
 
 def new_par(bike_name):
     bike = bp.Bicycle(bike_name, pathToData=path_to_app_data)
@@ -330,7 +333,7 @@ def populate_wheel_data(value, n_clicks):
                Input('geometry-checklist', 'value'),
                Input('range-slider', 'value')])
                Input('Yrange-slider', 'value')])
-def plot_update(value, wheel, frame, general, options, slider, YRangeSlider):
+def plot_update(value, wheel, frame, general, options, slider, YRangeslider):
 
     # accesses Input properties to avoid redundancies
     ctx = dash.callback_context
@@ -355,7 +358,7 @@ def plot_update(value, wheel, frame, general, options, slider, YRangeSlider):
     minBound = YrangeSliderData[0]
     maxBound = YrangeSliderData[1]
     steps = (maxBound-minBound)/0.1
-    speeds = np.linspace(minBound, maxBound, num=int(steps))
+    Yrange = np.linspace(minBound, maxBound, num=int(steps))
 
     Bike = bp.Bicycle(value, pathToData=path_to_app_data)
 
@@ -398,6 +401,7 @@ def plot_update(value, wheel, frame, general, options, slider, YRangeSlider):
     eigen_fake = io.BytesIO()
     eigen_plot = Bike.plot_eigenvalues_vs_speed(
         speeds, show=False, grid=True, show_legend=False)
+        Yrange, show=False, grid=True, show_legend=False)
     eigen_plot.savefig(eigen_fake)
     eigen_image = base64.b64encode(eigen_fake.getvalue())
     plt.close(eigen_plot)
