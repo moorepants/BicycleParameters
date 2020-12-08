@@ -12,6 +12,7 @@ import dash_table as tbl
 import time
 from dash.dependencies import Input, Output, State
 import urllib
+import urllib.parse
 import bicycleparameters as bp
 import matplotlib
 matplotlib.use('Agg')
@@ -222,11 +223,14 @@ app.layout = html.Div([
 @app.callback(
     dash.dependencies.Output('download-button', 'href'),
     [dash.dependencies.Input('bike-dropdown', 'value')])
-def update_download_link(filter_value):
-    dff = bicycle.eig(Benchmark)
-    csv_string = dff.to_csv(index=False, encoding='utf-8')
-    csv_string = "data:text/csv;charset=utf-8," + urllib.quote(csv_string)
+def update_download_link(value):
+    bicycle = bp.Bicycle('Benchmark', pathToData=path_to_app_data)
+    w,v = bicycle.eig(4)
+    w = pd.DataFrame(w)
+    csv_string = w.to_csv(index=False, encoding='utf-8')
+    csv_string = "data:text/csv;charset=utf-8," +  urllib.parse.quote(csv_string)
     return csv_string
+
 def new_par(bike_name):
     bike = bp.Bicycle(bike_name, pathToData=path_to_app_data)
     par = bike.parameters['Benchmark']
