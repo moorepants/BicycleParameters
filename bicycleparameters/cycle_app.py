@@ -13,6 +13,7 @@ import time
 from dash.dependencies import Input, Output, State
 import urllib
 import urllib.parse
+import cmath
 import bicycleparameters as bp
 import matplotlib
 matplotlib.use('Agg')
@@ -112,7 +113,7 @@ app.layout = html.Div([
                                                             n_clicks=0),
                                                  html.A('Download Profile',
                                                         id='download-button',
-                                                        href='/download_excel/',
+                                                        href='',
                                                         className='btn btn-primary',
                                                         target='_blank',
                                                         download='eigenvalues and eigenvectors')],
@@ -220,14 +221,30 @@ app.layout = html.Div([
 
 # creates generic set of Benchmark parameters
 
-@app.callback(
-    dash.dependencies.Output('download-button', 'href'),
-    [dash.dependencies.Input('bike-dropdown', 'value')])
-def update_download_link(value):
-    bicycle = bp.Bicycle('Benchmark', pathToData=path_to_app_data)
-    w,v = bicycle.eig(4)
-    w = pd.DataFrame(w)
-    csv_string = w.to_csv(index=False, encoding='utf-8')
+@app.callback(Output('download-button', 'href'),
+              [Input('bike-dropdown', 'value'),
+               Input('range-slider', 'value')])
+
+def update_download_link(value,slider):
+    bicycle = bp.Bicycle(value, pathToData=path_to_app_data)
+    ctx = dash.callback_context
+    rangeSliderData = ctx.inputs.get('range-slider.value')
+    minBound = rangeSliderData[0]
+    maxBound = rangeSliderData[1]
+    steps = maxBound-minBound
+    speeds = np.linspace(minBound, maxBound, num=int(steps))
+    w,v = bicycle.eig(speeds)
+    result = np.dstack(
+        np.apply_along_axis(
+            lambda x: [x.real, x.imag], 0, w)
+        ).flatten().reshape(len(w),8)
+    header = np.array(['speed','eval1_real','eval2_real','eval3_real','eval4_real','eval1_imag','eval2_imag','eval3_imag','eval4_imag'])
+    header.shape = (1,len(header))
+    speeds.shape = (len(speeds),1)
+    result = np.hstack((speeds,result))
+    result = np.vstack((header,result))
+    result = pd.DataFrame(result)
+    csv_string = result.to_csv(index=False, encoding='utf-8')
     csv_string = "data:text/csv;charset=utf-8," +  urllib.parse.quote(csv_string)
     return csv_string
 
