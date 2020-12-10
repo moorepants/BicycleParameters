@@ -169,7 +169,7 @@ app.layout = html.Div([
                                                                   max=100,
                                                                   step=5,
                                                                   value=[
-                                                                      0, 10],
+                                                                      -20, 20],
                                                                  marks={ -100: {'label': '-100', 'style': {'color': '#ffffff'}},
                                                                          -90: {'label': '-90', 'style': {'color': '#ffffff'}},
                                                                          -80: {'label': '-80', 'style': {'color': '#ffffff'}},
