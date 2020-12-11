@@ -116,7 +116,7 @@ app.layout = html.Div([
                                                         href='',
                                                         className='btn btn-primary',
                                                         target='_blank',
-                                                        download='eigenvalues and eigenvectors')],
+                                                        download='eigenvalues.csv')],
                                        lg=2)],
                               no_gutters=True,
                               className="my-2"),
@@ -238,12 +238,10 @@ def update_download_link(value,slider):
         np.apply_along_axis(
             lambda x: [x.real, x.imag], 0, w)
         ).flatten().reshape(len(w),8)
-    header = np.array(['speed','eval1_real','eval2_real','eval3_real','eval4_real','eval1_imag','eval2_imag','eval3_imag','eval4_imag'])
-    header.shape = (1,len(header))
     speeds.shape = (len(speeds),1)
     result = np.hstack((speeds,result))
-    result = np.vstack((header,result))
     result = pd.DataFrame(result)
+    result = result.set_axis(['speed','eval1_real','eval2_real','eval3_real','eval4_real','eval1_imag','eval2_imag','eval3_imag','eval4_imag'],axis = 1, inplace = False)
     csv_string = result.to_csv(index=False, encoding='utf-8')
     csv_string = "data:text/csv;charset=utf-8," +  urllib.parse.quote(csv_string)
     return csv_string
