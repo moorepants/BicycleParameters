@@ -11,9 +11,7 @@ import dash_bootstrap_components as dbc
 import dash_table as tbl
 import time
 from dash.dependencies import Input, Output, State
-import urllib
 import urllib.parse
-import cmath
 import bicycleparameters as bp
 import matplotlib
 matplotlib.use('Agg')
@@ -242,6 +240,7 @@ def update_download_link(value,slider):
     result = np.hstack((speeds,result))
     result = pd.DataFrame(result)
     result = result.set_axis(['speed','eval1_real','eval2_real','eval3_real','eval4_real','eval1_imag','eval2_imag','eval3_imag','eval4_imag'],axis = 1, inplace = False)
+    np.set_printoptions(formatter=dict(float=lambda t: "%14.14f" % t))
     csv_string = result.to_csv(index=False, encoding='utf-8')
     csv_string = "data:text/csv;charset=utf-8," +  urllib.parse.quote(csv_string)
     return csv_string
