@@ -1,0 +1,53 @@
+parameterization: principal
+parameters: browserjason
+rider: True
+description: |
+  Jason riding the Batavus browser.
+values:
+  alphaD: 1.1722
+  alphaH: 0.36995
+  alphaP: 0.18618
+  c: 0.068581
+  g: 9.8100
+  kDaa: 0.28587
+  kDbb: 0.22079
+  kDyy: 0.36539
+  kFyy: 0.27179
+  kFaa: 0.20917
+  kFbb: 0.20917
+  kHaa: 0.29556
+  kHbb: 0.14493
+  kHyy: 0.27630
+  kPaa: 0.36797
+  kPbb: 0.15276
+  kPyy: 0.36717
+  kRyy: 0.22136
+  kRaa: 0.17050
+  kRbb: 0.17050
+  lP: 1.7280
+  lam: 0.39968
+  mD: 9.8600
+  mF: 2.0200
+  mH: 3.2200
+  mP: 83.500
+  mR: 3.1100
+  rF: 0.34353
+  rR: 0.34096
+  v: 3.0
+  w: 1.1210
+  wP: 0.48300
+  xD: 0.27595
+  xF: 1.1210
+  xH: 0.86695
+  xP: 0.31577
+  xR: 0.0
+  yD: 0.0
+  yF: 0.0
+  yH: 0.0
+  yP: 0.0
+  yR: 0.0
+  zD: -0.53784
+  zF: -0.34353
+  zH: -0.74824
+  zP: -1.0990
+  zR: -0.34096

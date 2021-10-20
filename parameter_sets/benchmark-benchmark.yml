@@ -1,0 +1,35 @@
+parameterization: benchmark  # the set of symbols
+parameters: benchmark  # the specific parameter values tied to a bicycle(+rider)
+rider: True  # if the parameter values include a rider lumped into the rear frame
+description: |
+        These are the benchmark numerical parameters for the benchmark
+        parameterization from Meijaard2007. In particular, the minimal set of
+        non-zero parameters.
+values:
+        IBxx: 9.2
+        IBxz: 2.4
+        IByy: 11.0
+        IBzz: 2.8
+        IFxx: 0.1405
+        IFyy: 0.28
+        IHxx: 0.05892
+        IHxz: -0.00756
+        IHyy: 0.06
+        IHzz: 0.00708
+        IRxx: 0.0603
+        IRyy: 0.12
+        c: 0.08
+        g: 9.81
+        lam: 0.31415926535897932385
+        mB: 85.0
+        mF: 3.0
+        mH: 4.0
+        mR: 2.0
+        rF: 0.35
+        rR: 0.3
+        v: 5.0
+        w: 1.02
+        xB: 0.3
+        xH: 0.9
+        zB: -0.9
+        zH: -0.7

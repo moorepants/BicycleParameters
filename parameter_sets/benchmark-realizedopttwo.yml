@@ -1,0 +1,30 @@
+# These are the parameters derived from the CAD drawing of the second realized
+# optimal handling bicycle. The parameters are based on the Pista with Jason as
+# a rider with four parameters optimized for handling.
+IBxx: 5.9257
+IBxz: -1.0621
+IByy: 8.0774
+IBzz: 3.5778
+IFxx: 0.0314
+IFyy: 0.0623
+IHxx: 0.5110
+IHxz: 0.0799
+IHyy: 0.7750
+IHzz: 0.3559
+IRxx: 0.0157
+IRyy: 0.078
+c: 0.75461
+g: 9.81
+lam: -0.05486
+mB: 65.4813
+mF: 1.5477
+mH: 6.7292
+mR: 5.3486
+rF: 0.226
+rR: 0.332
+v: 3.0
+w: 0.41
+xB: 0.2275
+xH: 0.9309
+zB: -0.9044
+zH: -0.4385

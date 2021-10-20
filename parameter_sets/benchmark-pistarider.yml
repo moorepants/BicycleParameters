@@ -1,0 +1,32 @@
+# Parameters taken from HumanControl of the Pista + a rider. I am not quite
+# sure how I calculated the addition of the rider because I can't find any of
+# the related rider files in the BicycleParameters directory. I had to somehow
+# add a rider to all the bike in Hess2012. I may have simply added the same
+# rider in the same configuration to all the bikes in that repository.
+IBxx: 9.97823319202
+IBxz: -2.12302552044
+IByy: 10.2705785413
+IBzz: 2.64767743966
+IFxx: 0.0552267034481
+IFyy: 0.10618332427
+IHxx: 0.0979880530249
+IHxz: -0.0044084941665
+IHyy: 0.069253053453
+IHzz: 0.0396106018108
+IRxx: 0.0553472759338
+IRyy: 0.0764143975968
+c: 0.0617300113263
+g: 9.81
+lam: 0.275762021815
+mB: 76.49
+mF: 1.58
+mH: 2.27
+mR: 1.38
+rF: 0.333838861345
+rR: 0.332088156971
+v: 3.0
+w: 0.989
+xB: 0.296304188576
+xH: 0.906321313298
+zB: -1.07198359651
+zH: -0.732376356772

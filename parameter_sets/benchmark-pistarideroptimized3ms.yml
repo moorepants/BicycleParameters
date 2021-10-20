@@ -1,0 +1,30 @@
+# Parameters taken from HumanControl of the Pista + a rider and then run
+# through the four parameer optimization procedure for v = 3 m/s. This is the
+# target parameter set for the second realized bicycle we constructed.
+IBxx: 9.97823319202
+IBxz: -2.12302552044
+IByy: 10.2705785413
+IBzz: 2.64767743966
+IFxx: 0.0552267034481
+IFyy: 0.0617
+IHxx: 0.0979880530249
+IHxz: -0.0044084941665
+IHyy: 0.069253053453
+IHzz: 0.0396106018108
+IRxx: 0.0553472759338
+IRyy: 0.0764143975968
+c: 0.75461
+g: 9.81
+lam: -0.05486
+mB: 76.49
+mF: 1.58
+mH: 2.27
+mR: 1.38
+rF: 0.226
+rR: 0.332088156971
+v: 3.0
+w: 0.41
+xB: 0.296304188576
+xH: 0.906321313298
+zB: -1.07198359651
+zH: -0.732376356772

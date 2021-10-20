@@ -1,0 +1,33 @@
+# A set of parameters derived from the Jason+Browser initial guess for the BMD
+# 2019 conference paper.
+IBxx: 54.349
+IBxz: -3.3611
+IByy: 64.693
+IBzz: 13.535
+IFxx: 0.0040323
+IFyy: 0.016129
+IFzz: 0.0040323
+IHxx: 1.9875e-05
+IHxz: -2.5611e-05
+IHyy: 0.0
+IHzz: 6.3938e-05
+IRxx: 3.2812
+IRyy: 13.125
+IRzz: 3.2812
+c: 0.042100
+g: 9.8100
+lam: -0.89910
+mB: 90.746
+mF: 1.0
+mH: 0.25000
+mR: 12.568
+rF: 0.12700
+rR: 1.0219
+v: 3.0
+w: 1.2419
+xB: 0.50769
+xH: 3.4103
+yB: 0.0
+yH: 0.0
+zB: -0.55646
+zH: -1.8086
