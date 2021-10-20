@@ -2,7 +2,7 @@ import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..parameter_sets import BenchmarkParameterSet, PrincipalParameterSet
+from ..parameter_sets import Meijaard2007ParameterSet, Moore2019ParameterSet
 
 with open('parameter_sets/benchmark-benchmark.yml', 'r') as f:
     benchmark_benchmark = yaml.load(f)['values']
@@ -23,8 +23,8 @@ with open('parameter_sets/benchmark-pistarideroptimized3ms.yml', 'r') as f:
     benchmark_pistarideroptimized3ms = yaml.load(f)
 
 
-def test_BenchmarkParameterSet(plot=False):
-    pset = BenchmarkParameterSet(benchmark_benchmark, True)
+def test_Meijaard2007ParameterSet(plot=False):
+    pset = Meijaard2007ParameterSet(benchmark_benchmark, True)
     assert pset.includes_rider is True
     assert pset.parameters['v'] == 5.0
     expected_tensor = np.array([[0.05892, 0.0, -0.00756],
@@ -38,14 +38,14 @@ def test_BenchmarkParameterSet(plot=False):
 
     pause
 
-    pset = BenchmarkParameterSet(browser_par, False)
-    pset = BenchmarkParameterSet(benchmark_pista, False)
+    pset = Meijaard2007ParameterSet(browser_par, False)
+    pset = Meijaard2007ParameterSet(benchmark_pista, False)
 
-    pset = BenchmarkParameterSet(extendedoptc_par, True)
+    pset = Meijaard2007ParameterSet(extendedoptc_par, True)
 
-    pset = BenchmarkParameterSet(benchmark_pistarider, True)
-    pset = BenchmarkParameterSet(benchmark_pistarideroptimized3ms, True)
-    pset = BenchmarkParameterSet(benchmark_realizedopttwo, True)
+    pset = Meijaard2007ParameterSet(benchmark_pistarider, True)
+    pset = Meijaard2007ParameterSet(benchmark_pistarideroptimized3ms, True)
+    pset = Meijaard2007ParameterSet(benchmark_realizedopttwo, True)
 
     ax = pset.plot_geometry()
     ax = pset.plot_principal_radii_of_gyration(ax=ax)
@@ -170,7 +170,7 @@ with open('parameter_sets/principal-extendedoptf.yml', 'r') as f:
 def test_conversion(plot=False):
     with open('parameter_sets/principal-browserjason.yml', 'r') as f:
         par_dict = yaml.load(f)['values']
-    pset = PrincipalParameterSet(par_dict)
+    pset = Moore2019ParameterSet(par_dict)
     pset.plot_all()
     bench_pset = pset.to_benchmark()
     bench_pset.plot_all()
@@ -180,7 +180,7 @@ def test_conversion(plot=False):
 
 def test_PrincipalParameterSet(plot=False):
 
-    pset = PrincipalParameterSet(principal_extendedoptf)
+    pset = Moore2019ParameterSet(principal_extendedoptf)
 
     ax = pset.plot_geometry()
     ax = pset.plot_person_diamond(ax=ax)

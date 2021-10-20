@@ -1,3 +1,25 @@
+"""
+
+
+A model is a set of differential algebraic equations in time that have:
+constants and time varying (coordinates, speeds, and exongenous inputs). The
+model can be nonlinear, linear, have algebraic constraints, or not.
+
+A parameter set is a collection of constant-value pairs. These pairs are
+typically defined in a specific academic article, dissertation, book chapter or
+section.
+
+The model has to be in a particular configuration to convert one parameter set
+to another. For a bicycle alone, this nominal configuration is the upright,
+zero steer state. If rider configuration is included, then some nomial
+configuration would need to be defined.
+
+A parameter set is associated with a particular parameterization of one or more
+models.
+
+"""
+from abc import ABC
+
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
@@ -54,7 +76,29 @@ def _plot_geometry_from_benchmark(ax, parameters, show_steer_axis=True):
     return ax
 
 
-class ParameterSet(object):
+class ParameterSet(ABC):
+    """A parameter set is a collection of constants with associated floating
+    point values that are present in a set of differential algebraic equations
+    that represent a bicycle model. These pairs are typically defined in a
+    specific academic article, dissertation, book chapter or section and
+    subclasses should be named in a way that ties them to that written work.
+
+    Parameter sets can be converted to equivalent parameter sets, but only by
+    assuming a particular model configuration. The obvious configuration for a
+    bicycle model is the upright, zero steer state. But if, for example, a
+    rider configuration is included, then some nominal configuration would need
+    to be defined for conversion consistency.
+
+    A parameter set, or a subset of the parameters, can be used with multiple
+    different models.
+
+    Each parameter set should have a unique set of ASCII strings that represent
+    the constants in a model.
+
+    Inertial parameters can be associated with a specific rigid body present
+    (this inherently assumes a rigid body definition in the model).
+
+    """
 
     parameterization = None
 
@@ -111,11 +155,22 @@ class ParameterSet(object):
             f.write(text)
 
 
-class BenchmarkParameterSet(ParameterSet):
+class Meijaard2007ParameterSet(ParameterSet):
     """Represents the parameters of the benchmark bicycle presented in
-    Meijaard2007."""
+    [Meijaard2007]_.
 
-    parameterization = 'benchmark'
+
+    References
+    ==========
+
+    .. [Meijaard2007] Meijaard J.P, Papadopoulos Jim M, Ruina Andy and Schwab
+       A.L, 2007, Linearized dynamics equations for the balance and steer of a
+       bicycle: a benchmark and review, Proc. R. Soc. A., 463:1955–1982
+       http://doi.org/10.1098/rspa.2007.1857
+
+    """
+
+    parameterization = 'meijaard2007'
 
     # maps "Python" string to LaTeX version
     par_strings = {
@@ -156,7 +211,34 @@ class BenchmarkParameterSet(ParameterSet):
         Parameters
         ==========
         parameters : dictionary
-            A dictionary mapping variable names to values.
+            A dictionary mapping variable names to values that contains the
+            following keys:
+
+            - ``IBxx`` : x moment of inertia of the frame/rider [kg*m**2]
+            - ``IBxz`` : xz product of inertia of the frame/rider [kg*m**2]
+            - ``IBzz`` : z moment of inertia of the frame/rider [kg*m**2]
+            - ``IFxx`` : x moment of inertia of the front wheel [kg*m**2]
+            - ``IFyy`` : y moment of inertia of the front wheel [kg*m**2]
+            - ``IHxx`` : x moment of inertia of the handlebar/fork [kg*m**2]
+            - ``IHxz`` : xz product of inertia of the handlebar/fork [kg*m**2]
+            - ``IHzz`` : z moment of inertia of the handlebar/fork [kg*m**2]
+            - ``IRxx`` : x moment of inertia of the rear wheel [kg*m**2]
+            - ``IRyy`` : y moment of inertia of the rear wheel [kg*m**2]
+            - ``c`` : trail [m]
+            - ``g`` : acceleration due to gravity [m/s**2]
+            - ``lam`` : steer axis tilt [rad]
+            - ``mB`` : frame/rider mass [kg]
+            - ``mF`` : front wheel mass [kg]
+            - ``mH`` : handlebar/fork assembly mass [kg]
+            - ``mR`` : rear wheel mass [kg]
+            - ``rF`` : front wheel radius [m]
+            - ``rR`` : rear wheel radius [m]
+            - ``w`` : wheelbase [m]
+            - ``xB`` : x distance to the frame/rider center of mass [m]
+            - ``xH`` : x distance to the frame/rider center of mass [m]
+            - ``zB`` : z distance to the frame/rider center of mass [m]
+            - ``zH`` : z distance to the frame/rider center of mass [m]
+
         includes_rider : boolean
             True if body B is the combined rear frame and rider.
 
@@ -167,6 +249,7 @@ class BenchmarkParameterSet(ParameterSet):
         self._generate_body_colors()
 
     def _calc_derived_params(self):
+        # These parameters are needed but are not specified by the user.
         p = self.parameters
 
         pext = {}
@@ -243,7 +326,7 @@ class BenchmarkParameterSet(ParameterSet):
             return com
 
     def form_inertia_tensor(self, body):
-        """Returns the inertia tensor with respect to the benchmark coordinate
+        """Returns the inertia tensor with respect to the global coordinate
         system and the body's mass center."""
 
         p = self.parameters.copy()
@@ -254,11 +337,11 @@ class BenchmarkParameterSet(ParameterSet):
         Iyy = p['I{}yy'.format(body)]
         Izz = p['I{}zz'.format(body)]
 
-        I = np.array([[Ixx, 0.0, Ixz],
-                      [0.0, Iyy, 0.0],
-                      [Ixz, 0.0, Izz]])
+        inertia_tensor = np.array([[Ixx, 0.0, Ixz],
+                                   [0.0, Iyy, 0.0],
+                                   [Ixz, 0.0, Izz]])
 
-        return I
+        return inertia_tensor
 
     def plot_geometry(self, show_steer_axis=True, ax=None):
         """Returns a matplotlib axes with the simplest drawing of the bicycle's
@@ -333,7 +416,8 @@ class BenchmarkParameterSet(ParameterSet):
         x = p['x{}'.format(b)]
         z = p['z{}'.format(b)]
         radius = p['w'] / 10
-        ax = _com_symbol(ax, (x, z), radius, color=self.body_colors[b], label=b)
+        ax = _com_symbol(ax, (x, z), radius, color=self.body_colors[b],
+                         label=b)
 
         self._finalize_plot(ax)
 
@@ -473,7 +557,7 @@ class BenchmarkParameterSet(ParameterSet):
         ax = self.plot_mass_centers(ax=ax)
 
 
-class PrincipalParameterSet(ParameterSet):
+class Moore2019ParameterSet(ParameterSet):
     """Represents the parameters of the benchmark bicycle presented in [1]_
 
     .. [1] Moore, Jason K.; Hubbard, Mont (2019): Expanded Optimization for
@@ -482,6 +566,8 @@ class PrincipalParameterSet(ParameterSet):
        Single Track Vehicles https://doi.org/10.6084/m9.figshare.9942938.v1
 
     """
+
+    parameterization = 'moore2019'
 
     non_min_par_strings = {
         'alphaF': r'\alpha_F',
@@ -575,7 +661,7 @@ class PrincipalParameterSet(ParameterSet):
 
     def to_benchmark(self):
         b = convert_principal_to_benchmark(self.parameters)
-        return BenchmarkParameterSet(b, True)
+        return Meijaard2007ParameterSet(b, True)
 
     def plot_geometry(self, show_steer_axis=True, ax=None):
         """Returns a matplotlib axes with the simplest drawing of the bicycle's

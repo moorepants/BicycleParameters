@@ -35,7 +35,7 @@ benchmark_parameters = {  # dictionary of the parameters in Meijaard 2007
 }
 
 
-def test_MinimalLinearWhippleCarvalloModel():
+def test_MinimalLinearWhippleCarvalloModel(show=True):
 
     parameter_set = BenchmarkParameterSet(benchmark_parameters, True)
 
@@ -52,6 +52,7 @@ def test_MinimalLinearWhippleCarvalloModel():
     assert C1.shape == (5, 2, 2)
     assert K0.shape == (5, 2, 2)
     assert K2.shape == (5, 2, 2)
+    # only one parameter sweep is allowed at a time
     with assert_raises(ValueError):
         model.form_benchmark_canonical_matrices(w=np.linspace(0.5, 1.5),
                                                 v=np.linspace(1, 3))
@@ -76,3 +77,6 @@ def test_MinimalLinearWhippleCarvalloModel():
     assert evals.shape == (10, 4)
     assert evecs.shape == (10, 4, 4)
     model.plot_eigenvalue_parts(v=np.linspace(0, 10, num=10))
+    if show:
+        import matplotlib.pyplot as plt
+        plt.show()

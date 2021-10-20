@@ -5,14 +5,15 @@ import matplotlib.pyplot as plt
 
 from .bicycle import benchmark_par_to_canonical, ab_matrix, sort_modes
 
-
+#class MeijaardPapadopoulosRuinaSchwabModel(object):
+#class BenchmarkModel(object):
 class MinimalLinearWhippleCarvalloModel(object):
     """Whipple-Carvallo model presented in Meijaard2007. It is both linear and
     the minimal model in terms of states and coordinates that fully describe
     the vehicles dynamics."""
 
     def __init__(self, benchmark_parameter_set):
-        """Initializes the model with the provided parameters.abs
+        """Initializes the model with the provided parameters.
 
         Parameters
         ==========
@@ -24,7 +25,8 @@ class MinimalLinearWhippleCarvalloModel(object):
 
     def form_benchmark_canonical_matrices(self, **parameter_overrides):
         """Returns the canonical velocity and gravity independent matrices for
-        the Whipple bicycle model linearized about the nominal configuration.
+        the Whipple-Carvallo bicycle model linearized about the nominal
+        configuration.
 
         Returns
         -------
@@ -42,7 +44,7 @@ class MinimalLinearWhippleCarvalloModel(object):
 
         The canonical matrices complete the following equation:
 
-            M * q'' + v * C1 * q' + [g * K0 + v**2 * K2] * q = f
+            M*q'' + v*C1*q' + [g*K0 + v**2*K2]*q = f
 
         where:
 
@@ -58,7 +60,7 @@ class MinimalLinearWhippleCarvalloModel(object):
         Tdelta
             Steer torque.
         v
-            Bicylce speed.
+            Bicylce longitudinal speed.
 
         """
         par = self.parameter_set.parameters.copy()
