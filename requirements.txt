@@ -1,0 +1,10 @@
+# build dependencies for running the app on heroku
+DynamicistToolKit
+dash
+gunicorn
+matplotlib
+numpy
+pandas
+scipy
+uncertainties
+yeadon

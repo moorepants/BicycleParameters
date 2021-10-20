@@ -5,19 +5,31 @@ from .inertia import parallel_axis
 
 
 def _rotate_inertia_about_y(inertia, angle):
-    # ROTATE_INERTIA_ABOUT_Y - Returns inertia tensor rotated through angle
-    # about the Y axis.
-    #
-    # Inputs:
-    #   inertia - 3x3 double, inertia tensor
-    #   angle - 1x1 double, Angle in radians about the positive Y axis of which
-    #           to rotate the inertia tensor.
+    """Returns inertia tensor rotated through an angle about the Y axis.
+
+    Parameters
+    ==========
+    inertia : array_like, shape(3,3)
+        An inertia tensor of a single rigid body defined relative to an XYZ
+        Cartesian coordinate system.
+    angle : float
+        Angle in radians about the positive Y axis of which to rotate the
+        coordinate system.
+
+    Returns
+    =======
+    ndarray, shape(3,3)
+        An inertia tensor of a single rigid body expressed relative to a
+        rotated Cartesian coordinate system.
+
+    """
     ca = np.cos(angle)
     sa = np.sin(angle)
     C = np.array([[ca, 0.0, -sa],
                   [0.0, 1., 0.0],
                   [sa, 0.0, ca]])
     return C @ inertia @ C.T
+
 
 def _sum_central_inertias(m1, com1, I1, m2, com2, I2):
     # SUM_CENTRAL_INERTIAS - Returns the combined inertia of two bodies.
@@ -35,6 +47,7 @@ def _sum_central_inertias(m1, com1, I1, m2, com2, I2):
     #   I - combined central inertia tensor of both bodies
     m, com = total_com(np.vstack([com1, com2]).T, [m1, m2])
     return parallel_axis(I1, m1, com-com1) + parallel_axis(I2, m2, com-com2)
+
 
 def convert_principal_to_benchmark(principal_par):
     # CONVERT_PRINCIPAL_TO_BENCHMARK - Returns a structure containing the
@@ -87,9 +100,9 @@ def convert_principal_to_benchmark(principal_par):
     b["IBzz"] = IBxyz[2, 2]
     b["IBxz"] = IBxyz[0, 2]
 
-    ##############################################################################
+    ###########################################################################
     # front frame [H]
-    ##############################################################################
+    ###########################################################################
     b["mH"] = p["mH"]
     b["xH"] = p["xH"]
     b["yH"] = p["yH"]
@@ -103,9 +116,9 @@ def convert_principal_to_benchmark(principal_par):
     b["IHzz"] = IH[2, 2]
     b["IHxz"] = IH[0, 2]
 
-    ##############################################################################
+    ###########################################################################
     # rear wheel [R]
-    ##############################################################################
+    ###########################################################################
     b["rR"] = p["rR"]
     b["mR"] = p["mR"]
     # wheel is symmetric about XY, YZ, and XZ planes, thus no products of
@@ -114,9 +127,9 @@ def convert_principal_to_benchmark(principal_par):
     b["IRyy"] = p["mR"] * p["kRyy"]**2
     b["IRzz"] = p["mR"] * p["kRaa"]**2
 
-    ##############################################################################
+    ###########################################################################
     # front wheel [F]
-    ##############################################################################
+    ###########################################################################
     b["rF"] = p["rF"]
     b["mF"] = p["mF"]
     # wheel is symmetric about XY, YZ, and XZ planes, thus no prodcuts of

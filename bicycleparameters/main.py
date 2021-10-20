@@ -18,7 +18,9 @@ from . import io
 from . import geometry
 from . import period
 from . import rider
-#from plot import plot_eigenvalues
+
+GOLDEN_RATIO = (1.0 + np.sqrt(5.0))/2.0
+
 
 class Bicycle(object):
     """
@@ -28,28 +30,29 @@ class Bicycle(object):
     """
 
     def __new__(cls, bicycleName, pathToData='.', forceRawCalc=False,
-            forcePeriodCalc=False):
-        '''Returns a NoneType object if there is no directory for the bicycle.'''
+                forcePeriodCalc=False):
+        '''Returns a NoneType object if there is no directory for the
+        bicycle.'''
         # is there a data directory for this bicycle? if not, tell the user to
         # put some data in the folder so we have something to work with!
         try:
             pathToBicycle = os.path.join(pathToData, 'bicycles', bicycleName)
-            if os.path.isdir(pathToBicycle) == True:
+            if os.path.isdir(pathToBicycle):
                 print("We have foundeth a directory named: " +
                       "{0}.".format(pathToBicycle))
                 return super(Bicycle, cls).__new__(cls)
             else:
                 raise ValueError
         except:
-            mes = """Are you nuts?! Make a directory called '{0}' with basic data
-for your bicycle in this directory: '{1}'. Then I can actually
-create a bicycle object. You may either need to change to the
-correct directory or reset the pathToData argument.""".format(bicycleName, pathToData)
+            mes = """Are you nuts?! Make a directory called '{0}' with basic
+data for your bicycle in this directory: '{1}'. Then I can actually create a
+bicycle object. You may either need to change to the correct directory or reset
+the pathToData argument.""".format(bicycleName, pathToData)
             print(mes)
             return None
 
     def __init__(self, bicycleName, pathToData='.', forceRawCalc=False,
-            forcePeriodCalc=False):
+                 forcePeriodCalc=False):
         """
         Creates a bicycle object and sets the parameters based on the available
         data.
@@ -66,9 +69,9 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             and raw data are stored. The default is the current working
             directory.
         forceRawCalc : boolean
-            Forces a recalculation of the benchmark parameters from the measured
-            parameters. Otherwise it will only run the calculation if there is
-            no benchmark parameter file.
+            Forces a recalculation of the benchmark parameters from the
+            measured parameters. Otherwise it will only run the calculation if
+            there is no benchmark parameter file.
         forcePeriodCalc : boolean
             Forces a recalculation of the periods from the oscillation data.
 
@@ -100,7 +103,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                 bike, ptype = io.space_out_camel_case(fname, output='list')
                 # load the parameters
                 pathToFile = os.path.join(parDir, parFile)
-                self.parameters[ptype] = io.load_parameter_text_file(pathToFile)
+                self.parameters[ptype] = io.load_parameter_text_file(
+                    pathToFile)
 
         # this is where the raw data files from the pendulum oscillations are
         # stored
@@ -114,7 +118,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         if isRawDataDir:
             print("Found the RawData directory:", rawDataDir)
-            isMeasuredFile = bicycleName + 'Measured.txt' in os.listdir(rawDataDir)
+            fname = bicycleName + 'Measured.txt'
+            isMeasuredFile = fname in os.listdir(rawDataDir)
         else:
             isMeasuredFile = False
 
@@ -140,8 +145,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             stmt2 = "use forceRawCalc to recalculate."
             print((stmt1 + stmt2) % self.bicycleName)
             # load the measured.txt file if it exists
-            pathToRawFile = os.path.join(rawDataDir,
-                    self.bicycleName + 'Measured.txt')
+            pathToRawFile = os.path.join(rawDataDir, self.bicycleName +
+                                         'Measured.txt')
             try:
                 self.parameters['Measured'] = \
                         io.load_parameter_text_file(pathToRawFile)
@@ -156,7 +161,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
     def __str__(self):
         if self.hasRider:
             desc = "{0} with {1} on board.".format(self.bicycleName,
-                self.riderName)
+                                                   self.riderName)
         else:
             desc = "{0} with no one on board.".format(self.bicycleName)
         return desc
@@ -203,7 +208,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                 if self.hasRider:
                     pathToCombFile = os.path.join(pathToCombDir, fileName)
                     io.write_parameter_text_file(pathToCombFile,
-                                              self.parameters[pset])
+                                                 self.parameters[pset])
 
         elif filetype == 'matlab':
             # this should handle the uncertainties properly
@@ -228,10 +233,11 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                 print("There are no photos of your bicycle.")
         except:
             raise NotImplementedError("This works only works for linux with " +
-                    "Eye of Gnome installed.")
+                                      "Eye of Gnome installed.")
 
     def steer_assembly_moment_of_inertia(self, handlebar=True, fork=True,
-            wheel=True, aboutSteerAxis=False, nominal=False):
+                                         wheel=True, aboutSteerAxis=False,
+                                         nominal=False):
         """
         Returns the inertia tensor of the steer assembly with respect to a
         reference frame aligned with the steer axis.
@@ -272,8 +278,8 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         if 'mD' in par.keys():
             print("You have a flywheel defined. Beware that it is ignored in "
-                + "the calculations and the results do not reflect that it is "
-                + "there.")
+                  "the calculations and the results do not reflect that it is "
+                  "there.")
 
         # there should always be either an H (handlebar/fork) and sometimes
         # there is a G (handlebar) and S (fork) if the fork and handlebar were
@@ -340,11 +346,11 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             iAss = (inertia.parallel_axis(I, m, d) +
                     inertia.parallel_axis(IF, par['mF'], dF))
 
-            # this is the inertia of the assembly about a reference frame aligned with
-            # the steer axis and through the center of mass
+            # this is the inertia of the assembly about a reference frame
+            # aligned with the steer axis and through the center of mass
             iAssRot = inertia.rotate_inertia_tensor(iAss, par['lam'])
 
-        else: # don't add the wheel
+        else:  # don't add the wheel
             mAss = m
             cAss = np.array([x, 0., z])
             iAssRot = inertia.rotate_inertia_tensor(I, par['lam'])
@@ -352,11 +358,13 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         if aboutSteerAxis:
             # this is the distance from the assembly com to the steer axis
             distance = geometry.distance_to_steer_axis(par['w'], par['c'],
-                    par['lam'], cAss)
+                                                       par['lam'], cAss)
             print("handlebar cg distance", distance)
 
-            # now calculate the inertia about the steer axis of the rotated frame
-            iAss = inertia.parallel_axis(iAssRot, mAss, np.array([distance, 0., 0.]))
+            # now calculate the inertia about the steer axis of the rotated
+            # frame
+            iAss = inertia.parallel_axis(iAssRot, mAss,
+                                         np.array([distance, 0., 0.]))
         else:
             iAss = iAssRot
 
@@ -369,10 +377,12 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         '''Calculates the parameters from measured data.'''
 
         rawDataDir = os.path.join(self.directory, 'RawData')
-        pathToRawFile = os.path.join(rawDataDir, self.bicycleName + 'Measured.txt')
+        pathToRawFile = os.path.join(rawDataDir,
+                                     self.bicycleName + 'Measured.txt')
 
         # load the measured parameters
-        self.parameters['Measured'] = io.load_parameter_text_file(pathToRawFile)
+        self.parameters['Measured'] = io.load_parameter_text_file(
+            pathToRawFile)
 
         forkIsSplit = is_fork_split(self.parameters['Measured'])
 
@@ -380,16 +390,17 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         # see if enough data is actually available in the *Measured.txt file to
         # do the calculations
         if not forcePeriodCalc:
-            forcePeriodCalc = period.check_for_period(self.parameters['Measured'],
-                                               forkIsSplit)
+            forcePeriodCalc = period.check_for_period(
+                self.parameters['Measured'], forkIsSplit)
 
-        if forcePeriodCalc == True:
+        if forcePeriodCalc:
             # get the list of mat files associated with this bike
             matFiles = [x for x in os.listdir(rawDataDir)
                         if x.endswith('.mat')]
             matFiles.sort()
             # calculate the period for each file for this bicycle
-            periods = period.calc_periods_for_files(rawDataDir, matFiles, forkIsSplit)
+            periods = period.calc_periods_for_files(rawDataDir, matFiles,
+                                                    forkIsSplit)
             # add the periods to the measured parameters
             self.parameters['Measured'].update(periods)
 
@@ -416,10 +427,10 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         # can't draw the rider model without the human object
         if draw:
-            reCalc=True
+            reCalc = True
 
         # first check to see if a rider has already been added
-        if self.hasRider == True:
+        if self.hasRider:
             print(("D'oh! This bicycle already has {0} as a " +
                   "rider!").format(self.riderName))
         else:
@@ -432,7 +443,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             bicyclePar = self.parameters['Benchmark']
             bicycleName = self.bicycleName
 
-            if reCalc == True:
+            if reCalc:
                 print("Calculating the human configuration.")
                 # run the calculations
                 try:
@@ -444,10 +455,11 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                     raise
                 riderPar, human, bicycleRiderPar =\
                     rider.configure_rider(pathToRider, bicycleName, bicyclePar,
-                            measuredPar, draw)
+                                          measuredPar, draw)
             else:
                 pathToParFile = os.path.join(pathToRider, 'Parameters',
-                    riderName + self.bicycleName + 'Benchmark.txt')
+                                             riderName + self.bicycleName +
+                                             'Benchmark.txt')
                 try:
                     # load the parameter file
                     riderPar = io.load_parameter_text_file(pathToParFile)
@@ -458,17 +470,18 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                     try:
                         measuredPar = self.parameters['Measured']
                     except KeyError:
-                        print('The measured bicycle parameters need to be ' +
-                              'available, create your bicycle such that they ' +
+                        print('The measured bicycle parameters need to be '
+                              'available, create your bicycle such that they '
                               'are available.')
                         raise
                     riderPar, human, bicycleRiderPar =\
                         rider.configure_rider(pathToRider, bicycleName,
-                                bicyclePar, measuredPar, draw)
+                                              bicyclePar, measuredPar, draw)
                 else:
                     print("Loaded the precalculated parameters from " +
                           "{0}".format(pathToParFile))
-                    bicycleRiderPar = inertia.combine_bike_rider(bicyclePar, riderPar)
+                    bicycleRiderPar = inertia.combine_bike_rider(bicyclePar,
+                                                                 riderPar)
             # set the attributes
             self.riderPar['Benchmark'] = riderPar
             try:
@@ -481,27 +494,47 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
     def plot_bicycle_geometry(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
-        '''Returns a figure showing the basic bicycle geometry, the centers of
+        """Returns a figure showing the basic bicycle geometry, the centers of
         mass and the moments of inertia.
 
+        Parameters
+        ==========
+        show : boolean, optional
+            If true ``matplotlib.pyplot.show()`` will be called before exiting
+            the function.
+        pendulum : boolean, optional
+            If true the axes of the torsional pendulum will be displayed (only
+            useful if raw measurement data is availabe).
+        centerOfMass : boolean, optional
+            If true the mass center of each rigid body will be displayed.
+        inertiaEllipse : boolean optional
+            If true inertia ellipses for each rigid body will be displayed.
+
+        Returns
+        =======
+        fig : matplotlib.pyplot.Figure
+
         Notes
-        -----
+        =====
+
         If the flywheel is defined, it's center of mass corresponds to the
         front wheel and is not depicted in the plot.
 
-        '''
+        """
         par = io.remove_uncertainties(self.parameters['Benchmark'])
         parts = get_parts_in_parameters(par)
 
         try:
             slopes = io.remove_uncertainties(self.extras['slopes'])
             intercepts = io.remove_uncertainties(self.extras['intercepts'])
-            penInertias = io.remove_uncertainties(self.extras['pendulumInertias'])
+            penInertias = io.remove_uncertainties(
+                self.extras['pendulumInertias'])
         except AttributeError:
             pendulum = False
 
-        fig = plt.figure()
-        ax = plt.axes()
+        fig, ax = plt.subplots()
+
+        fig.set_size_inches([4.0*GOLDEN_RATIO, 4.0])
 
         # define some colors for the parts
         numColors = len(parts)
@@ -531,7 +564,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                 # remove the column and row associated with the y
                 C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
                 # make an ellipse
-                Imin =  Ip2D[0]
+                Imin = Ip2D[0]
                 Imax = Ip2D[1]
                 # get width and height of a ellipse with the major axis equal
                 # to one
@@ -550,7 +583,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         # plot the ground line
         x = np.array([-par['rR'],
                       par['w'] + par['rF']])
-        plt.plot(x, np.zeros_like(x), 'k')
+        ax.plot(x, np.zeros_like(x), 'k')
 
         # plot the rear wheel
         c = plt.Circle((0., par['rR']), radius=par['rR'], fill=False)
@@ -562,11 +595,11 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         # plot the fundamental bike
         deex, deez = geometry.fundamental_geometry_plot_data(par)
-        plt.plot(deex, -deez, 'k')
+        ax.plot(deex, -deez, 'k')
 
         # plot the steer axis
         dx3 = deex[2] + deez[2] * (deex[2] - deex[1]) / (deez[1] - deez[2])
-        plt.plot([deex[2], dx3],  [-deez[2], 0.], 'k--')
+        ax.plot([deex[2], dx3],  [-deez[2], 0.], 'k--')
 
         # don't plot the pendulum lines if a rider has been added because the
         # inertia has changed
@@ -581,15 +614,16 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
                 for i, m in enumerate(slopeSet):
                     b = intercepts[part][i]
                     xPoint, zPoint = geometry.project_point_on_line((m, b),
-                            (xcom, zcom))
+                                                                    (xcom,
+                                                                     zcom))
                     comLineLength = penInertias[part][i]
                     xPlus = comLineLength / 2. * np.cos(np.arctan(m))
                     x = np.array([xPoint - xPlus,
                                   xPoint + xPlus])
                     z = -m * x - b
-                    plt.plot(x, z, color=partColors[part])
+                    ax.plot(x, z, color=partColors[part])
                     # label the pendulum lines with a number
-                    plt.text(x[0], z[0], str(i + 1))
+                    ax.text(x[0], z[0], str(i + 1))
 
         if centerOfMass:
             # plot the center of mass location
@@ -610,65 +644,82 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             # front wheel CoM
             ax = com_symbol(ax, (par['w'], par['rF']), sRad,
                             color=partColors['F'])
-            plt.text(par['w'] + sRad, par['rF'] + sRad, 'F')
+            ax.text(par['w'] + sRad, par['rF'] + sRad, 'F')
             # rear wheel CoM
             ax = com_symbol(ax, (0., par['rR']), sRad,
                             color=partColors['R'])
-            plt.text(0. + sRad, par['rR'] + sRad, 'R')
+            ax.text(0. + sRad, par['rR'] + sRad, 'R')
             for j, part in enumerate([x for x in parts
                                       if x not in 'RFD']):
                 xcom = par['x' + part]
                 zcom = par['z' + part]
                 ax = com_symbol(ax, (xcom, -zcom), sRad,
                                 color=partColors[part])
-                plt.text(xcom + sRad, -zcom + sRad, part)
+                ax.text(xcom + sRad, -zcom + sRad, part)
             if 'H' not in parts:
                 ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
-                plt.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
-
-
-        plt.axis('equal')
-        plt.ylim((0., 1.))
-        plt.title(self.bicycleName)
+                ax.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
 
         # if there is a rider on the bike, make a simple stick figure
+        top_of_head = 0.0
         if self.human:
             human = self.human
             mpar = self.parameters['Measured']
             bpar = self.parameters['Benchmark']
             # K2: lower leg, tip of foot to knee
-            start = rider.yeadon_vec_to_bicycle_vec(human.K2.end_pos, mpar, bpar)
+            start = rider.yeadon_vec_to_bicycle_vec(human.K2.end_pos, mpar,
+                                                    bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
-            plt.plot([start[0, 0], end[0, 0]],
-                     [-start[2, 0], -end[2, 0]], 'k')
+            ax.plot([start[0, 0], end[0, 0]],
+                    [-start[2, 0], -end[2, 0]], 'k')
             # K1: upper leg, knee to hip
             start = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
-            plt.plot([start[0, 0], end[0, 0]],
-                     [-start[2, 0], -end[2, 0]], 'k')
+            ax.plot([start[0, 0], end[0, 0]],
+                    [-start[2, 0], -end[2, 0]], 'k')
             # torso
             start = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
-            plt.plot([start[0, 0], end[0, 0]],
-                     [-start[2, 0], -end[2, 0]], 'k')
+            ax.plot([start[0, 0], end[0, 0]],
+                    [-start[2, 0], -end[2, 0]], 'k')
             # B1: upper arm
             start = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.B2.pos, mpar, bpar)
-            plt.plot([start[0, 0], end[0, 0]],
-                     [-start[2, 0], -end[2, 0]], 'k')
+            ax.plot([start[0, 0], end[0, 0]],
+                    [-start[2, 0], -end[2, 0]], 'k')
             # B2: lower arm, elbow to tip of fingers
             start = rider.yeadon_vec_to_bicycle_vec(human.B2.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.B2.end_pos, mpar, bpar)
-            plt.plot([start[0, 0], end[0, 0]],
-                     [-start[2, 0], -end[2, 0]], 'k')
+            ax.plot([start[0, 0], end[0, 0]],
+                    [-start[2, 0], -end[2, 0]], 'k')
             # C: chest/head
             start = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.C.end_pos, mpar, bpar)
-            plt.plot([start[0, 0], end[0, 0]],
-                     [-start[2, 0], -end[2, 0]], 'k')
+            ax.plot([start[0, 0], end[0, 0]],
+                    [-start[2, 0], -end[2, 0]], 'k')
+            top_of_head = -end[2, 0]
+
+        ax.set_aspect('equal')
+
+        # set the y limits to encompass the bicycle and rider geometry
+        max_y = max([2*par['rR'],  # rear wheel diameter
+                     2*par['rF'],  # front wheel diameter
+                     max(-deez),  # max of Z values of bicycle geometry
+                     top_of_head])  # max of Z values of human head
+        min_y = min(-deez)
+        if min_y >= 0.0:
+            y_low = min([0.0, min_y])
+        else:
+            y_low = -np.ceil(np.abs(min_y))
+        ax.set_ylim((y_low, np.ceil(max_y)))
+
+        ax.set_title("{}\nBicycle Geometry".format(self.bicycleName))
 
         if show:
             fig.show()
+
+        # TODO : This should return ax instead of fig to follow typical
+        # practice in other Python libraries.
 
         return fig
 
@@ -872,23 +923,25 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
         speeds = np.sort(speeds)
 
         # figure properties
-        figwidth = 6. # in inches
-        goldenMean = (np.sqrt(5.0) - 1.0) / 2.0
-        figsize = [figwidth, figwidth * goldenMean]
-        params = {#'backend': 'ps',
+        fig_height = 4.0  # inches
+        figsize = [fig_height*GOLDEN_RATIO, fig_height]
+        params = {
             'axes.labelsize': 8,
+            # TODO : text.fontsize no longer supported in matplotlib
             #'text.fontsize': 10,
             'legend.fontsize': 8,
             'xtick.labelsize': 6,
             'ytick.labelsize': 6,
             'figure.figsize': figsize
             }
-        plt.rcParams.update(params)
+        try:
+            plt.rcParams.update(params)
+        except KeyError:
+            del params['text.fontsize']
+            plt.rcParams.update(params)
 
-        if not fig:
-            fig = plt.figure(figsize=figsize)
-
-        plt.axes([0.125, 0.2, 0.95 - 0.125, 0.85 - 0.2])
+        if fig is None:
+            fig, ax = plt.subplots(figsize=figsize)
 
         evals, evecs = self.eig(speeds)
 
@@ -913,52 +966,50 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
 
         if largest:
             maxEval = np.max(np.real(evals), axis=1)
-            plt.plot(speeds, maxEval, color=color, label=maxLabel,
-                     linestyle=linestyle, linewidth=1.5)
+            ax.plot(speeds, maxEval, color=color, label=maxLabel,
+                    linestyle=linestyle, linewidth=1.5)
             # x axis line
-            plt.plot(speeds, np.zeros_like(speeds), 'k-',
-                     label='_nolegend_', linewidth=1.5)
-            plt.ylim((np.min(maxEval), np.max(maxEval)))
-            plt.ylabel('Real Part of the Largest Eigenvalue [1/s]')
+            ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
+                    linewidth=1.5)
+            ax.set_ylim((np.min(maxEval), np.max(maxEval)))
+            ax.set_ylabel('Real Part of the Largest Eigenvalue [1/s]')
         else:
             wea, cap, cas = bicycle.sort_modes(evals, evecs)
 
             # imaginary components
-            plt.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
-                     label=legend[0], linestyle='--')
-            plt.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsizeColor,
-                     label=legend[1], linestyle='--')
-            plt.plot(speeds, np.abs(np.imag(cas['evals'])), color=casterColor,
-                     label=legend[2], linestyle='--')
+            ax.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
+                    label=legend[0], linestyle='--')
+            ax.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsizeColor,
+                    label=legend[1], linestyle='--')
+            ax.plot(speeds, np.abs(np.imag(cas['evals'])), color=casterColor,
+                    label=legend[2], linestyle='--')
 
             # x axis line
-            plt.plot(speeds, np.zeros_like(speeds), 'k-',
-                     label='_nolegend_', linewidth=1.5)
+            ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
+                    linewidth=1.5)
 
             # plot the real parts of the eigenvalues
-            plt.plot(speeds, np.real(wea['evals']),
-                     color=weaveColor, label=legend[3])
-            plt.plot(speeds, np.real(cap['evals']),
-                     color=capsizeColor, label=legend[4])
-            plt.plot(speeds, np.real(cas['evals']),
-                     color=casterColor, label=legend[5])
+            ax.plot(speeds, np.real(wea['evals']), color=weaveColor,
+                    label=legend[3])
+            ax.plot(speeds, np.real(cap['evals']), color=capsizeColor,
+                    label=legend[4])
+            ax.plot(speeds, np.real(cas['evals']), color=casterColor,
+                    label=legend[5])
 
             # set labels and limits
-            plt.ylim((np.min(np.real(evals)),
-                      np.max(np.imag(evals))))
-            plt.ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
+            ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
 
-        plt.xlim((speeds[0], speeds[-1]))
-        plt.xlabel('Speed [m/s]')
+        ax.set_xlim((speeds[0], speeds[-1]))
+        ax.set_xlabel('Speed [m/s]')
 
         if generic:
-            plt.title('Eigenvalues vs Speed')
+            ax.set_title('Eigenvalues vs Speed')
         else:
-            plt.title('%s\nEigenvalues vs Speed' % self.bicycleName)
-            plt.legend()
+            ax.set_title('%s\nEigenvalues vs Speed' % self.bicycleName)
+            ax.legend()
 
         if show:
-            plt.show()
+            fig.show()
 
         return fig
 
@@ -1046,6 +1097,7 @@ correct directory or reset the pathToData argument.""".format(bicycleName, pathT
             line.set_ydata(line.get_ydata() - np.sign(firstValue) * n * 360.)
         return fig
 
+
 def get_parts_in_parameters(par):
     '''Returns a list of parts in a parameter dictionary.
 
@@ -1063,6 +1115,7 @@ def get_parts_in_parameters(par):
     '''
     parts = [x[1] for x in par.keys() if x.startswith('m')]
     return parts
+
 
 def calculate_benchmark_from_measured(mp):
     '''Returns the benchmark (Meijaard 2007) parameter set based on the
@@ -1110,7 +1163,7 @@ def calculate_benchmark_from_measured(mp):
     # calculate the centers of mass
     for part in slopes.keys():
         par['x' + part], par['z' + part] = com.center_of_mass(slopes[part],
-            intercepts[part])
+                                                              intercepts[part])
 
     # find the center of mass of the handlebar/fork assembly if the fork was
     # split
@@ -1129,12 +1182,13 @@ def calculate_benchmark_from_measured(mp):
 
     # calculate the wheel y inertias
     par['IFyy'] = inertia.compound_pendulum_inertia(mp['mF'], mp['g'],
-                                            mp['lF'], mp['TcF1'])
+                                                    mp['lF'], mp['TcF1'])
     par['IRyy'] = inertia.compound_pendulum_inertia(mp['mR'], mp['g'],
-                                            mp['lR'], mp['TcR1'])
+                                                    mp['lR'], mp['TcR1'])
     try:
         # we measured the inertia of the front wheel with the flywheel inside
-        iFlywheelPlusFwheel = inertia.compound_pendulum_inertia(mp['mD'], mp['g'], mp['lF'], mp['TcD1'])
+        iFlywheelPlusFwheel = inertia.compound_pendulum_inertia(
+            mp['mD'], mp['g'], mp['lF'], mp['TcD1'])
         par['IDyy'] = iFlywheelPlusFwheel - par['IFyy']
     except KeyError:
         pass
@@ -1148,33 +1202,32 @@ def calculate_benchmark_from_measured(mp):
         # fork
         lS = ((par['xS'] - par['w'])**2 +
               (par['zS'] + par['rF'])**2)**(0.5)
-        par['ISyy'] = inertia.compound_pendulum_inertia(mp['mS'], mp['g'],
-                                                lS, mp['TcS1'])
+        par['ISyy'] = inertia.compound_pendulum_inertia(mp['mS'], mp['g'], lS,
+                                                        mp['TcS1'])
         # handlebar
-        l1, l2 = geometry.calculate_l1_l2(mp['h6'], mp['h7'],
-                                 mp['d5'], mp['d6'], mp['l'])
+        l1, l2 = geometry.calculate_l1_l2(mp['h6'], mp['h7'], mp['d5'],
+                                          mp['d6'], mp['l'])
         u1, u2 = geometry.fwheel_to_handlebar_ref(par['lam'], l1, l2)
         lG = ((par['xG'] - par['w'] + u1)**2 +
               (par['zG'] + par['rF'] + u2)**2)**(.5)
-        par['IGyy'] = inertia.compound_pendulum_inertia(mp['mG'], mp['g'],
-                                                lG, mp['TcG1'])
+        par['IGyy'] = inertia.compound_pendulum_inertia(mp['mG'], mp['g'], lG,
+                                                        mp['TcG1'])
     else:
         lH = ((par['xH'] - par['w'])**2 +
               (par['zH'] + par['rF'])**2)**(0.5)
-        par['IHyy'] = inertia.compound_pendulum_inertia(mp['mH'], mp['g'],
-                                                lH, mp['TcH1'])
+        par['IHyy'] = inertia.compound_pendulum_inertia(mp['mH'], mp['g'], lH,
+                                                        mp['TcH1'])
 
     # calculate the stiffness of the torsional pendulum
     IPxx, IPyy, IPzz = inertia.tube_inertia(mp['lP'], mp['mP'],
                                             mp['dP'] / 2., 0.)
     torStiff = inertia.torsional_pendulum_stiffness(IPyy, mp['TtP1'])
-    #print("Torsional pendulum stiffness:", torStiff)
 
     # calculate the wheel x/z inertias
     par['IFxx'] = inertia.tor_inertia(torStiff, mp['TtF1'])
     par['IRxx'] = inertia.tor_inertia(torStiff, mp['TtR1'])
     try:
-        par['IDxx'] =  inertia.tor_inertia(torStiff, mp['TtD1']) - par['IFxx']
+        par['IDxx'] = inertia.tor_inertia(torStiff, mp['TtD1']) - par['IFxx']
     except KeyError:
         pass
 
@@ -1189,7 +1242,8 @@ def calculate_benchmark_from_measured(mp):
         beta = np.array(betas[part])
         # fill arrays of the inertias
         for i in range(numOrien):
-            penInertia[i] = inertia.tor_inertia(torStiff, mp['Tt' + part + str(i + 1)])
+            penInertia[i] = inertia.tor_inertia(torStiff,
+                                                mp['Tt' + part + str(i + 1)])
         # store these inertias
         pendulumInertias[part] = list(penInertia)
         inert = inertia.inertia_components(penInertia, beta)
@@ -1218,12 +1272,13 @@ def calculate_benchmark_from_measured(mp):
         par['IHzz'] = IH[2, 2]
 
     # package the extra information that is useful outside this function
-    extras = {'slopes' : slopes,
-              'intercepts' : intercepts,
-              'betas' : betas,
-              'pendulumInertias' : pendulumInertias}
+    extras = {'slopes': slopes,
+              'intercepts': intercepts,
+              'betas': betas,
+              'pendulumInertias': pendulumInertias}
 
     return par, extras
+
 
 def is_fork_split(mp):
     '''Returns true if the fork was split into two parts and false if not.
