@@ -37,14 +37,13 @@ Dependencies
 Required
 --------
 
-- `Python 2.7 or >= 3.5 <http://www.python.org/>`_
-- `Numpy >= 1.6.1 <https://numpy.org/>`_
-- `Scipy >= 0.9.0 <https://scipy.org/>`_
-- `Matplotlib >= 1.1.1 <https://matplotlib.org/>`_
-- `Uncertainties >= 2.0.0 <https://pythonhosted.org/uncertainties/>`_
-- `yeadon >= 1.1.0 <http://pypi.python.org/pypi/yeadon/>`_
-- `DynamicistToolKit >= 0.1.0
-  <http://pypi.python.org/pypi/DynamicistToolKit>`_
+- `DynamicistToolKit >= 0.5.3 <http://pypi.python.org/pypi/DynamicistToolKit>`_
+- `Matplotlib >= 3.1.2 <https://matplotlib.org/>`_
+- `NumPy >= 1.17.4 <https://numpy.org/>`_
+- `Python >= 3.6 <http://www.python.org/>`_
+- `SciPy >= 1.3.3 <https://scipy.org/>`_
+- `Uncertainties >= 3.1.2 <https://pythonhosted.org/uncertainties/>`_
+- `yeadon >= 1.3.0 <http://pypi.python.org/pypi/yeadon/>`_
 
 Optional
 --------
