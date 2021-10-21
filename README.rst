@@ -24,7 +24,7 @@ of the Whipple-Carvallo bicycle model.
 .. |Anaconda| image:: https://anaconda.org/conda-forge/bicycleparameters/badges/version.svg
    :target: https://anaconda.org/conda-forge/bicycleparameters
 
-.. |GHCI| image:: https://github.com/moorepants/BicycleParameters/actions/workflows/test/badge.svg
+.. |GHCI| image:: https://github.com/moorepants/BicycleParameters/actions/workflows/test.yml/badge.svg
 
 .. |heroku| image:: http://heroku-badge.herokuapp.com/?app=bicycleparameters&svg=1
    :target: https://bicycleparameters.herokuapp.com
