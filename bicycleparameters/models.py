@@ -5,12 +5,21 @@ import matplotlib.pyplot as plt
 
 from .bicycle import benchmark_par_to_canonical, ab_matrix, sort_modes
 
-#class MeijaardPapadopoulosRuinaSchwabModel(object):
-#class BenchmarkModel(object):
-class MinimalLinearWhippleCarvalloModel(object):
-    """Whipple-Carvallo model presented in Meijaard2007. It is both linear and
-    the minimal model in terms of states and coordinates that fully describe
-    the vehicles dynamics."""
+
+class Meijaard2007Model(object):
+    """Whipple-Carvallo model presented in [Meijaard2007]_. It is both linear
+    and the minimal model in terms of states and coordinates that fully
+    describe the vehicles dynamics.
+
+    References
+    ==========
+
+    .. [Meijaard2007] Meijaard J.P, Papadopoulos Jim M, Ruina Andy and Schwab
+       A.L, 2007, Linearized dynamics equations for the balance and steer of a
+       bicycle: a benchmark and review, Proc. R. Soc. A., 463:1955–1982
+       http://doi.org/10.1098/rspa.2007.1857
+
+    """
 
     def __init__(self, benchmark_parameter_set):
         """Initializes the model with the provided parameters.
@@ -18,18 +27,43 @@ class MinimalLinearWhippleCarvalloModel(object):
         Parameters
         ==========
         benchmark_parameters : dictionary
-            Dictionary that maps floats to the parameter keys.
+            Dictionary that maps floats to the parameter keys containing:
+
+            - ``IBxx`` : x moment of inertia of the frame/rider [kg*m**2]
+            - ``IBxz`` : xz product of inertia of the frame/rider [kg*m**2]
+            - ``IBzz`` : z moment of inertia of the frame/rider [kg*m**2]
+            - ``IFxx`` : x moment of inertia of the front wheel [kg*m**2]
+            - ``IFyy`` : y moment of inertia of the front wheel [kg*m**2]
+            - ``IHxx`` : x moment of inertia of the handlebar/fork [kg*m**2]
+            - ``IHxz`` : xz product of inertia of the handlebar/fork [kg*m**2]
+            - ``IHzz`` : z moment of inertia of the handlebar/fork [kg*m**2]
+            - ``IRxx`` : x moment of inertia of the rear wheel [kg*m**2]
+            - ``IRyy`` : y moment of inertia of the rear wheel [kg*m**2]
+            - ``c`` : trail [m]
+            - ``g`` : acceleration due to gravity [m/s**2]
+            - ``lam`` : steer axis tilt [rad]
+            - ``mB`` : frame/rider mass [kg]
+            - ``mF`` : front wheel mass [kg]
+            - ``mH`` : handlebar/fork assembly mass [kg]
+            - ``mR`` : rear wheel mass [kg]
+            - ``rF`` : front wheel radius [m]
+            - ``rR`` : rear wheel radius [m]
+            - ``w`` : wheelbase [m]
+            - ``xB`` : x distance to the frame/rider center of mass [m]
+            - ``xH`` : x distance to the frame/rider center of mass [m]
+            - ``zB`` : z distance to the frame/rider center of mass [m]
+            - ``zH`` : z distance to the frame/rider center of mass [m]
 
         """
         self.parameter_set = benchmark_parameter_set
 
-    def form_benchmark_canonical_matrices(self, **parameter_overrides):
-        """Returns the canonical velocity and gravity independent matrices for
-        the Whipple-Carvallo bicycle model linearized about the nominal
+    def form_reduced_canonical_matrices(self, **parameter_overrides):
+        """Returns the canonical speed and gravity independent matrices for the
+        Whipple-Carvallo bicycle model linearized about the nominal
         configuration.
 
         Returns
-        -------
+        =======
         M : ndarray, shape(2,2) or shape(n,2,2)
             Mass matrix.
         C1 : ndarray, shape(2,2) or shape(n,2,2)
@@ -40,7 +74,7 @@ class MinimalLinearWhippleCarvalloModel(object):
             Velocity squared independent part of the stiffness matrix.
 
         Notes
-        -----
+        =====
 
         The canonical matrices complete the following equation:
 
@@ -51,16 +85,18 @@ class MinimalLinearWhippleCarvalloModel(object):
             q = [phi, delta]
             f = [Tphi, Tdelta]
 
-        phi
+        ``phi``
             Bicycle roll angle.
-        delta
+        ``delta``
             Steer angle.
-        Tphi
+        ``Tphi``
             Roll torque.
-        Tdelta
+        ``Tdelta``
             Steer torque.
-        v
+        ``v``
             Bicylce longitudinal speed.
+        ``g``
+            Acceleration due to gravity.
 
         """
         par = self.parameter_set.parameters.copy()
@@ -81,7 +117,8 @@ class MinimalLinearWhippleCarvalloModel(object):
                     if found_one:
                         msg = 'Only 1 parameter can be an array of values.'
                         raise ValueError(msg)
-                    elif key == 'v' or key == 'g':  # pass v and g through if arrays
+                    # pass v and g through if arrays
+                    elif key == 'v' or key == 'g':
                         par[key] = val
                         found_one = True
                     else:
@@ -118,7 +155,7 @@ class MinimalLinearWhippleCarvalloModel(object):
             The input matrix.
 
         Notes
-        -----
+        =====
         ``A`` and ``B`` describe the Whipple model in state space form:
 
             x' = A * x + B * u
@@ -144,7 +181,7 @@ class MinimalLinearWhippleCarvalloModel(object):
         else:
             v = self.parameter_set.parameters['v']
 
-        M, C1, K0, K2 = self.form_benchmark_canonical_matrices(
+        M, C1, K0, K2 = self.form_reduced_canonical_matrices(
             **parameter_overrides)
 
         if len(M.shape) == 3:  # one of the parameters (not v or g) is an array
@@ -167,7 +204,7 @@ class MinimalLinearWhippleCarvalloModel(object):
 
         return A, B
 
-    def eigen(self, **parameter_overrides):
+    def calc_eigen(self, **parameter_overrides):
         """Returns the eigenvalues and eigenvectors of the model.
 
         Parameters
@@ -204,13 +241,13 @@ class MinimalLinearWhippleCarvalloModel(object):
         if ax is None:
             fig, ax = plt.subplots()
 
-        evals, evecs = self.eigen(**parameter_overrides)
+        evals, evecs = self.calc_eigen(**parameter_overrides)
         wea, cap, cas = sort_modes(evals, evecs)
 
         for k, v in parameter_overrides.items():
             try:
                 v.shape
-            except:
+            except AttributeError:
                 pass
             else:
                 speeds = v
@@ -242,12 +279,8 @@ class MinimalLinearWhippleCarvalloModel(object):
                 label=legend[5])
 
         # set labels and limits
-        #ax.set_ylim((np.min(np.real(evals)),
-                    #np.max(np.imag(evals))))
         ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
-
         ax.set_xlim((speeds[0], speeds[-1]))
         ax.set_xlabel('Speed [m/s]')
-        #ax.legend()
 
         return ax
