@@ -20,6 +20,7 @@ Table of Contents
    installation.rst
    examples.rst
    data.rst
+   app.rst
    bicycleparameters.rst
 
 * :ref:`genindex`
