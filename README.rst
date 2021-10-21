@@ -12,9 +12,9 @@ of the Whipple-Carvallo bicycle model.
    * - Download from Anaconda
      - |Anaconda|
    * - Documentation
-     - http://packages.python.org/BicycleParameters
-   * - Travis CI Status
-     - |Travis|
+     - |RTD|
+   * - CI Status
+     - |GHCI|
    * - Heroku App
      - |heroku|
 
@@ -24,12 +24,15 @@ of the Whipple-Carvallo bicycle model.
 .. |Anaconda| image:: https://anaconda.org/conda-forge/bicycleparameters/badges/version.svg
    :target: https://anaconda.org/conda-forge/bicycleparameters
 
-.. |Travis| image:: https://travis-ci.org/moorepants/BicycleParameters.svg?branch=master
-   :target: https://travis-ci.org/moorepants/BicycleParameters
+.. |GHCI| image:: https://github.com/moorepants/BicycleParameters/actions/workflows/test/badge.svg
 
 .. |heroku| image:: http://heroku-badge.herokuapp.com/?app=bicycleparameters&svg=1
    :target: https://bicycleparameters.herokuapp.com
    :alt: Heroku Application
+
+.. |RTD| image:: https://readthedocs.org/projects/bicycleparameters/badge/?version=latest
+   :target: https://bicycleparameters.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 Dependencies
 ============
