@@ -1,0 +1,10 @@
+version: 2
+sphinx:
+  configuration: docs/conf.py
+formats: all
+conda:
+  environment: conda/bicycleparameters-dev.yml
+python:
+  install:
+    - method: setuptools
+      path: .
