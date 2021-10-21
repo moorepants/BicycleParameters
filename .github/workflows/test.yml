@@ -1,0 +1,31 @@
+name: test
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+    name: test
+    steps:
+      - uses: actions/checkout@v2
+      - name: install mamba
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          environment-file: conda/bicycleparameters-dev.yml
+          environment-name: bicycleparameters-dev
+          extra-specs: |
+            python=${{ matrix.python-version }}
+      - name: run tests
+        shell: bash -l {0}
+        run: |
+          micromamba info
+          micromamba list
+          python -c "import bicycleparameters"
+          py.test bicycleparameters/

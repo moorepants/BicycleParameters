@@ -1,90 +1,33 @@
-html {
-	background-color: rgb(30, 30, 30);
+.dash-table-container .row {
+    display: block;
+    margin: 0px;
 }
 
-#main-header {
-	color:rgb(230, 150, 0);
-	text-align: center; 
-	width: 450px;
-	margin: 5px auto;
-	padding: 15px;
-	border: 5px ridge rgb(60, 60, 90);
-	font-size: 30px;
+.h1, h1 {
+    font-size: 2.5rem;
+    text-align: center;
 }
 
-u {
-	color: rgb(200, 100, 30);
+.h2, h2 {
+    font-size: 2rem;
 }
 
-H2 {
-	text-align: center;
-	font-size: 20px;
-	color: rgb(230, 150, 0);
-	margin: auto;
-	margin-bottom: 5px;
+.h3, h3 {
+    font-size: 1.75rem;
 }
 
-#dropdown-bin {
-	width: 300px;
-	margin: 5px auto;
-	border: 5px ridge rgb(60, 60, 90);
-	padding: 5px;
+.h4, h4 {
+    font-size: 1.5rem;
 }
 
-#bike-dropdown {
-	width: 100%;
-	margin: auto;
+.h5, h5 {
+    font-size: 1.25rem;
 }
 
-#slider-bin {
-	width: 700px;
-	margin: 5px auto;
-	border: 5px ridge rgb(60, 60, 90);
-	padding: 5px;
+.h6, h6 {
+    font-size: 1rem;
 }
 
-#range-slider {
-	background-color: white;
-	margin: auto;
-	width: 90%;
-}
-
-#plot-bin {
-	margin: auto;
-	width: 100%;
-	text-align: center;
-}
-
-#geometry-bin {
-	border: 5px ridge rgb(60, 60, 90);	
-	margin: 5px auto;
-	width: 600px;
-	padding: 5px;
-	display: inline-block;
-}
-
-#eigen-bin {
-	border: 5px ridge rgb(60, 60, 90);	
-	margin: 5px auto;
-	width: 600px;
-	padding: 5px;
-	display: inline-block;
-}
-
-img {
-	width: 600px;
-	height: 370px;
-	background-color: white;
-}
-
-#table-bin {
-	width: 600px;
-	margin: 5px auto;
-	border: 5px ridge rgb(60, 60, 90);
-	padding: 5px;
-}
-
-#reset-button {
-	width: 100px;
-	font-size: 15px;
+.centered {
+    text-align: center;
 }
