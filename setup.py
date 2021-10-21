@@ -15,7 +15,7 @@ setup(
     description='Generates and manipulates the physical parameters of a bicycle.',
     long_description=open('README.rst').read(),
     install_requires=[
-        'DynamicistToolKit>=0.5.3'
+        'DynamicistToolKit>=0.5.3',
         'matplotlib>=3.1.2',
         'numpy>=1.17.4',
         'pyyaml>=5.3.1',
