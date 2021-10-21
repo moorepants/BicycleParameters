@@ -1,13 +1,18 @@
+import os
+
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 
 from ..parameter_sets import Meijaard2007ParameterSet, Moore2019ParameterSet
 
+PARDIR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           'parameter_sets')
+
 
 def test_Meijaard2007ParameterSet(plot=False):
 
-    with open('parameter_sets/benchmark-benchmark.yml', 'r') as f:
+    with open(os.path.join(PARDIR_PATH, 'benchmark-benchmark.yml'), 'r') as f:
         benchmark_par = yaml.load(f, Loader=yaml.FullLoader)['values']
 
     pset = Meijaard2007ParameterSet(benchmark_par, True)
@@ -56,7 +61,8 @@ def test_Meijaard2007ParameterSet(plot=False):
 
 def test_Moore2019ParameterSet(plot=False):
 
-    with open('parameter_sets/principal-browserjason.yml', 'r') as f:
+    with open(os.path.join(PARDIR_PATH,
+                           'principal-browserjason.yml'), 'r') as f:
         principal_par = yaml.load(f, Loader=yaml.FullLoader)['values']
 
     pset = Moore2019ParameterSet(principal_par)
@@ -78,7 +84,8 @@ def test_Moore2019ParameterSet(plot=False):
 
 
 def test_conversion(plot=False):
-    with open('parameter_sets/principal-browserjason.yml', 'r') as f:
+    with open(os.path.join(PARDIR_PATH,
+                           'principal-browserjason.yml'), 'r') as f:
         par_dict = yaml.load(f, Loader=yaml.FullLoader)['values']
     pset = Moore2019ParameterSet(par_dict)
     pset.plot_all()

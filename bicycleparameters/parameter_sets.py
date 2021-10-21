@@ -1,6 +1,5 @@
 """
 
-
 A model is a set of differential algebraic equations in time that have:
 constants and time varying (coordinates, speeds, and exongenous inputs). The
 model can be nonlinear, linear, have algebraic constraints, or not.
@@ -19,6 +18,7 @@ models.
 
 """
 from abc import ABC
+import os
 
 import yaml
 import numpy as np
