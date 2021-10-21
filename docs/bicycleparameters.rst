@@ -49,6 +49,22 @@ bicycleparameters Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`models` Module
+--------------------
+
+.. automodule:: bicycleparameters.models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`parameter_sets` Module
+--------------------
+
+.. automodule:: bicycleparameters.parameter_sets
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`period` Module
 --------------------
 
