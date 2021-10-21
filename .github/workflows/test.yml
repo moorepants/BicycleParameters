@@ -29,3 +29,14 @@ jobs:
           micromamba list
           python -c "import bicycleparameters"
           py.test bicycleparameters/
+      - name: build documentation
+        shell: bash -l {0}
+        run: |
+          micromamba info
+          micromamba list
+          cd docs
+          make html
+      - name: test installation
+        shell: bash -l {0}
+        run: |
+          python setup.py install
