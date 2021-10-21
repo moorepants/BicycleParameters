@@ -1,0 +1,15 @@
+name: bicycleparameters-dev
+channels:
+  - conda-forge
+dependencies:
+  # pins are versions in Ubuntu 20.04
+  - dynamicisttoolkit
+  - matplotlib >=3.1.2
+  - numpy >=1.17.4
+  - numpydoc
+  - pytest
+  - pyyaml >=5.3.1
+  - scipy >=1.3.3
+  - sphinx >=1.8.5
+  - uncertainties >=3.1.2
+  - yeadon
