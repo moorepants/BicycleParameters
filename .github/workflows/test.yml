@@ -1,11 +1,10 @@
+# based on https://github.com/mamba-org/provision-with-micromamba
 name: test
-
 on:
   push:
     branches: master
   pull_request:
     branches: master
-
 jobs:
   test:
     runs-on: ubuntu-20.04
@@ -39,4 +38,6 @@ jobs:
       - name: test installation
         shell: bash -l {0}
         run: |
+          micromamba info
+          micromamba list
           python setup.py install
