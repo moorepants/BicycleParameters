@@ -5,55 +5,112 @@ import matplotlib.pyplot as plt
 from ..parameter_sets import Meijaard2007ParameterSet, Moore2019ParameterSet
 
 with open('parameter_sets/benchmark-benchmark.yml', 'r') as f:
-    benchmark_benchmark = yaml.load(f)['values']
+    benchmark_benchmark = yaml.load(f, Loader=yaml.FullLoader)['values']
 
 with open('parameter_sets/benchmark-browser.yml', 'r') as f:
-    browser_par = yaml.load(f)
+    browser_par = yaml.load(f, Loader=yaml.FullLoader)
 
 with open('parameter_sets/benchmark-pista.yml', 'r') as f:
-    benchmark_pista = yaml.load(f)
+    benchmark_pista = yaml.load(f, Loader=yaml.FullLoader)
 
 with open('parameter_sets/benchmark-pistarider.yml', 'r') as f:
-    benchmark_pistarider = yaml.load(f)
+    benchmark_pistarider = yaml.load(f, Loader=yaml.FullLoader)
 
 with open('parameter_sets/benchmark-realizedopttwo.yml', 'r') as f:
-    benchmark_realizedopttwo = yaml.load(f)
+    benchmark_realizedopttwo = yaml.load(f, Loader=yaml.FullLoader)
 
 with open('parameter_sets/benchmark-pistarideroptimized3ms.yml', 'r') as f:
-    benchmark_pistarideroptimized3ms = yaml.load(f)
+    benchmark_pistarideroptimized3ms = yaml.load(f, Loader=yaml.FullLoader)
+
+with open('parameter_sets/benchmark-extendedoptc.yml', 'r') as f:
+    extendedoptc_par = yaml.load(f, Loader=yaml.FullLoader)
+
+with open('parameter_sets/principal-extendedoptf.yml', 'r') as f:
+    principal_extendedoptf = yaml.load(f, Loader=yaml.FullLoader)
 
 
 def test_Meijaard2007ParameterSet(plot=False):
-    pset = Meijaard2007ParameterSet(benchmark_benchmark, True)
+
+    with open('parameter_sets/benchmark-benchmark.yml', 'r') as f:
+        benchmark_par = yaml.load(f, Loader=yaml.FullLoader)['values']
+
+    pset = Meijaard2007ParameterSet(benchmark_par, True)
+
     assert pset.includes_rider is True
     assert pset.parameters['v'] == 5.0
-    expected_tensor = np.array([[0.05892, 0.0, -0.00756],
-                                [0.0, 0.06, 0.0],
-                                [-0.00756, 0.0, 0.00708]])
-    np.testing.assert_allclose(pset.form_inertia_tensor('H'), expected_tensor)
-    expected_com = np.array([[0.9], [0.0], [-0.7]])
-    np.testing.assert_allclose(pset.form_mass_center_vector('H'), expected_com)
-    np.testing.assert_allclose(pset.form_mass_center_vector('H'), pset.mass_center_of('H'))
-    pset.mass_center_of('B', 'F', 'H', 'R')
 
-    pause
+    expected_IH = np.array([[0.05892, 0.0, -0.00756],
+                            [0.0, 0.06, 0.0],
+                            [-0.00756, 0.0, 0.00708]])
+    np.testing.assert_allclose(pset.form_inertia_tensor('H'),
+                               expected_IH)
 
-    pset = Meijaard2007ParameterSet(browser_par, False)
-    pset = Meijaard2007ParameterSet(benchmark_pista, False)
+    expected_comB = np.array([[0.3], [0.0], [-0.9]])
+    expected_comF = np.array([[1.02], [0.0], [-0.35]])
+    expected_comH = np.array([[0.9], [0.0], [-0.7]])
+    expected_comR = np.array([[0.0], [0.0], [-0.3]])
 
-    pset = Meijaard2007ParameterSet(extendedoptc_par, True)
+    np.testing.assert_allclose(expected_comB,
+                               pset.form_mass_center_vector('B'))
+    np.testing.assert_allclose(expected_comF,
+                               pset.form_mass_center_vector('F'))
+    np.testing.assert_allclose(expected_comH,
+                               pset.form_mass_center_vector('H'))
+    np.testing.assert_allclose(expected_comR,
+                               pset.form_mass_center_vector('R'))
 
-    pset = Meijaard2007ParameterSet(benchmark_pistarider, True)
-    pset = Meijaard2007ParameterSet(benchmark_pistarideroptimized3ms, True)
-    pset = Meijaard2007ParameterSet(benchmark_realizedopttwo, True)
+    np.testing.assert_allclose(pset.form_mass_center_vector('H'),
+                               pset.mass_center_of('H'))
+
+    com_total = pset.mass_center_of('F', 'R')
+
+    x = (1.02*3.0 + 0.0*2.0)/(3.0 + 2.0)
+    y = 0.0
+    z = (-0.35*3.0 + -0.3*2.0)/(3.0 + 2.0)
+
+    np.testing.assert_allclose(com_total, np.array([x, y, z]))
+
+    if plot:
+        ax = pset.plot_geometry()
+        ax = pset.plot_principal_radii_of_gyration(ax=ax)
+        ax = pset.plot_principal_inertia_ellipsoids(ax=ax)
+        ax = pset.plot_mass_centers(ax=ax)
+        plt.show()
+
+
+def test_Moore2019ParameterSet(plot=False):
+
+    with open('parameter_sets/principal-browserjason.yml', 'r') as f:
+        principal_par = yaml.load(f, Loader=yaml.FullLoader)['values']
+
+    pset = Moore2019ParameterSet(principal_par)
 
     ax = pset.plot_geometry()
+    ax = pset.plot_person_diamond(ax=ax)
     ax = pset.plot_principal_radii_of_gyration(ax=ax)
-    ax = pset.plot_inertia_ellipsoids(ax=ax)
-    ax = pset.plot_mass_centers(ax=ax)
+    ax = pset.plot_body_mass_center('D', ax=ax)
+    ax = pset.plot_body_mass_center('F', ax=ax)
+    ax = pset.plot_body_mass_center('H', ax=ax)
+    ax = pset.plot_body_mass_center('P', ax=ax)
+    ax = pset.plot_body_mass_center('R', ax=ax)
+    ax = pset.plot_body_principal_inertia_ellipsoid('D', ax=ax)
+    ax = pset.plot_body_principal_inertia_ellipsoid('P', ax=ax)
+    ax = pset.plot_body_principal_inertia_ellipsoid('H', ax=ax)
 
     if plot:
         plt.show()
+
+
+def test_conversion(plot=False):
+    with open('parameter_sets/principal-browserjason.yml', 'r') as f:
+        par_dict = yaml.load(f, Loader=yaml.FullLoader)['values']
+    pset = Moore2019ParameterSet(par_dict)
+    pset.plot_all()
+    bench_pset = pset.to_benchmark()
+    bench_pset.plot_all()
+    if plot:
+        plt.show()
+
 
 principal_par_jasonbrowser_dict = {
     'alphaD': 1.1722101094171953,
@@ -160,40 +217,7 @@ principal_par_jasonbrowser_dict = {
 }
 
 
-with open('parameter_sets/benchmark-extendedoptc.yml', 'r') as f:
-    extendedoptc_par = yaml.load(f)
-
-with open('parameter_sets/principal-extendedoptf.yml', 'r') as f:
-    principal_extendedoptf = yaml.load(f)
 
 
-def test_conversion(plot=False):
-    with open('parameter_sets/principal-browserjason.yml', 'r') as f:
-        par_dict = yaml.load(f)['values']
-    pset = Moore2019ParameterSet(par_dict)
-    pset.plot_all()
-    bench_pset = pset.to_benchmark()
-    bench_pset.plot_all()
-    if plot:
-        plt.show()
 
 
-def test_PrincipalParameterSet(plot=False):
-
-    pset = Moore2019ParameterSet(principal_extendedoptf)
-
-    ax = pset.plot_geometry()
-    ax = pset.plot_person_diamond(ax=ax)
-    #ax = pset.plot_principal_radii_of_gyration(ax=ax)
-    ax = pset.plot_body_mass_center('D', ax=ax)
-    ax = pset.plot_body_mass_center('F', ax=ax)
-    ax = pset.plot_body_mass_center('H', ax=ax)
-    ax = pset.plot_body_mass_center('P', ax=ax)
-    ax = pset.plot_body_mass_center('R', ax=ax)
-    ax = pset.plot_body_principal_inertia_ellipsoid('D', ax=ax)
-    ax = pset.plot_body_principal_inertia_ellipsoid('P', ax=ax)
-    ax = pset.plot_body_principal_inertia_ellipsoid('H', ax=ax)
-
-
-    if plot:
-        plt.show()
