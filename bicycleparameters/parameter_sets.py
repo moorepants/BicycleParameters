@@ -556,6 +556,8 @@ class Meijaard2007ParameterSet(ParameterSet):
         ax = self.plot_geometry(ax=ax)
         ax = self.plot_mass_centers(ax=ax)
 
+        return ax
+
 
 class Moore2019ParameterSet(ParameterSet):
     """Represents the parameters of the benchmark bicycle presented in [1]_
