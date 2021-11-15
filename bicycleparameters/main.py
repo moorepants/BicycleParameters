@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Wedge
 from uncertainties import unumpy
 from dtk import control
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 # local module imports
 from . import bicycle
@@ -935,38 +937,39 @@ the pathToData argument.""".format(bicycleName, pathToData)
         speeds = np.sort(speeds)
 
         # figure properties
-        fig_height = 4.0  # inches
-        figsize = [fig_height*GOLDEN_RATIO, fig_height]
-        params = {
-            'axes.labelsize': 8,
+        # fig_height = 4.0  # inches
+        # figsize = [fig_height*GOLDEN_RATIO, fig_height]
+        # params = {
+        #     'axes.labelsize': 8,
             # TODO : text.fontsize no longer supported in matplotlib
-            #'text.fontsize': 10,
-            'legend.fontsize': 8,
-            'xtick.labelsize': 6,
-            'ytick.labelsize': 6,
-            'figure.figsize': figsize
-            }
-        try:
-            plt.rcParams.update(params)
-        except KeyError:
-            del params['text.fontsize']
-            plt.rcParams.update(params)
+        #     #'text.fontsize': 10,
+        #     'legend.fontsize': 8,
+        #     'xtick.labelsize': 6,
+        #     'ytick.labelsize': 6,
+        #     'figure.figsize': figsize
+        #     }
+        # try:
+        #     plt.rcParams.update(params)
+        # except KeyError:
+        #     del params['text.fontsize']
+        #     plt.rcParams.update(params)
 
-        if fig is None:
-            fig, ax = plt.subplots(figsize=figsize)
+        # if fig is None:
+        #     fig, ax = plt.subplots(figsize=figsize)
 
         evals, evecs = self.eig(speeds)
 
         if largest:
+            largest = False
             generic = True
 
         if generic:
             weaveColor = color
             capsizeColor = color
             casterColor = color
-            legend = ['_nolegend_'] * 6
-            legend[5] = self.bicycleName
-            maxLabel = self.bicycleName
+            # legend = ['_nolegend_'] * 6
+            # legend[5] = self.bicycleName
+            # maxLabel = self.bicycleName
         else:
             weaveColor = 'blue'
             capsizeColor = 'red'
@@ -976,57 +979,90 @@ the pathToData argument.""".format(bicycleName, pathToData)
                       'Real Caster']
             maxLabel = 'Max Eigenvalue'
 
-        if largest:
-            maxEval = np.max(np.real(evals), axis=1)
-            ax.plot(speeds, maxEval, color=color, label=maxLabel,
-                    linestyle=linestyle, linewidth=1.5)
-            # x axis line
-            ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
-                    linewidth=1.5)
-            ax.set_ylim((np.min(maxEval), np.max(maxEval)))
-            ax.set_ylabel('Real Part of the Largest Eigenvalue [1/s]')
-        else:
-            wea, cap, cas = bicycle.sort_modes(evals, evecs)
+        # if largest:
+        #     print('to do')
 
-            # imaginary components
-            ax.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
-                    label=legend[0], linestyle='--')
-            ax.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsizeColor,
-                    label=legend[1], linestyle='--')
-            ax.plot(speeds, np.abs(np.imag(cas['evals'])), color=casterColor,
-                    label=legend[2], linestyle='--')
+        #     maxEval = np.max(np.real(evals), axis=1)
+        #     ax.plot(speeds, maxEval, color=color, label=maxLabel,
+        #             linestyle=linestyle, linewidth=1.5)
+        #     # x axis line
+        #     ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
+        #             linewidth=1.5)
+        #     ax.set_ylim((np.min(maxEval), np.max(maxEval)))
+        #     ax.set_ylabel('Real Part of the Largest Eigenvalue [1/s]')
+        # else:
+        wea, cap, cas = bicycle.sort_modes(evals, evecs)
 
-            # x axis line
-            ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
-                    linewidth=1.5)
+        #     # imaginary components
+        #     ax.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
+        #             label=legend[0], linestyle='--')
+        #     ax.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsizeColor,
+        #             label=legend[1], linestyle='--')
+        #     ax.plot(speeds, np.abs(np.imag(cas['evals'])), color=casterColor,
+        #             label=legend[2], linestyle='--')
 
-            # plot the real parts of the eigenvalues
-            ax.plot(speeds, np.real(wea['evals']), color=weaveColor,
-                    label=legend[3])
-            ax.plot(speeds, np.real(cap['evals']), color=capsizeColor,
-                    label=legend[4])
-            ax.plot(speeds, np.real(cas['evals']), color=casterColor,
-                    label=legend[5])
+        #     # x axis line
+        #     ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
+        #             linewidth=1.5)
 
-            # set labels and limits
-            ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
+        #     # plot the real parts of the eigenvalues
+        #     ax.plot(speeds, np.real(wea['evals']), color=weaveColor,
+        #             label=legend[3])
+        #     ax.plot(speeds, np.real(cap['evals']), color=capsizeColor,
+        #             label=legend[4])
+        #     ax.plot(speeds, np.real(cas['evals']), color=casterColor,
+        #             label=legend[5])
 
-        ax.set_xlim((speeds[0], speeds[-1]))
-        ax.set_xlabel('Speed [m/s]')
+        #     # set labels and limits
+        #     ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
 
-        if generic:
-            ax.set_title('Eigenvalues vs Speed')
-        else:
-            ax.set_title('%s\nEigenvalues vs Speed' % self.bicycleName)
-            if show_legend:
-                ax.legend()
+        # ax.set_xlim((speeds[0], speeds[-1]))
+        # ax.set_xlabel('Speed [m/s]')
 
-        if grid:
-            ax.grid()
+        # if generic:
+        #     ax.set_title('Eigenvalues vs Speed')
+        # else:
+        #     ax.set_title('%s\nEigenvalues vs Speed' % self.bicycleName)
+        #     if show_legend:
+        #         ax.legend()
 
-        if show:
-            fig.show()
+        # if grid:
+        #     ax.grid()
 
+        # if show:
+        #     fig.show()
+        fig = make_subplots(rows=1, cols=2,subplot_titles=("Eigenvalues", "Bike"))
+        
+        fig.add_trace(go.Scatter(x=speeds, y=np.real(wea['evals']),
+                            mode='lines',
+                            name='$Re(\lambda)$',
+                            text = 'Weave'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=speeds, y=np.real(cap['evals']),
+                            mode='lines',
+                            name='Real',
+                            text = 'Capsize'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=speeds, y=np.real(cas['evals']),
+                            mode='lines',
+                            name='Real',
+                            text = 'Castering'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(wea['evals'])),
+                            mode='lines',
+                            name='Imaginary',
+                            text = 'Weave'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cap['evals'])),
+                            mode='lines',
+                            name='Imaginary',
+                            line=dict(color='royalblue',dash='dash'),
+                            text = 'Capsize'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cas['evals'])),
+                            mode='lines',
+                            name='Imaginary',
+                            line=dict(color='royalblue',dash='dash'),
+                            text = 'Capsize'), row=1, col=1)
+        # fig.add_vrect(x0=vw, x1=vc, 
+        #               annotation_text="Self stability", annotation_position='top left',             
+        #                fillcolor="green", opacity=0.25, line_width=0, row=1, col=1)
+        
         return fig
 
     def plot_bode(self, speed, u, y, **kwargs):

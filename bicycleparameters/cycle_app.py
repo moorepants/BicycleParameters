@@ -11,9 +11,12 @@ import dash_bootstrap_components as dbc
 import dash_table as tbl
 import time
 from dash.dependencies import Input, Output, State
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 import bicycleparameters as bp
 import matplotlib
+
 # run -m bicycleparameters.cycle_app
 
 matplotlib.use('Agg') # prevents pop-up windows when calling plotting functions
@@ -365,22 +368,27 @@ def plot_update(value, wheel, frame, general, options, slider):
             Bike.parameters['Benchmark'][newP[i]] = newP[i+1]
 
     # create geometry-plot image
-    geo_fake = io.BytesIO()
-    geo_plot = Bike.plot_bicycle_geometry(
-        show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
-    geo_plot.savefig(geo_fake)
-    geo_image = base64.b64encode(geo_fake.getvalue())
-    plt.close(geo_plot)
+    # geo_fake = io.BytesIO()
+    # geo_plot = Bike.plot_bicycle_geometry(
+    #     show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
+    # geo_plot.savefig(geo_fake)
+    # geo_image = base64.b64encode(geo_fake.getvalue())
+    # plt.close(geo_plot)
 
     # create eigen-plot image
-    eigen_fake = io.BytesIO()
+    # eigen_fake = io.BytesIO()
     eigen_plot = Bike.plot_eigenvalues_vs_speed(
         speeds, show=False, grid=True, show_legend=False)
-    eigen_plot.savefig(eigen_fake)
-    eigen_image = base64.b64encode(eigen_fake.getvalue())
-    plt.close(eigen_plot)
+    # eigen_plot.savefig(eigen_fake)
+    eigen_image = base64.b64encode(eigen_plot.getvalue())
+    # plt.close(eigen_plot)
 
-    return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
+    # return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
+
+    # return 'data:image/html,{}'.format(eigen_image.decode())
+    
+    # directly return html without encoding
+    return eigen_plot
 
 
 # sets loading notification for the geometry plot
