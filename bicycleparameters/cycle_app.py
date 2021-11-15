@@ -14,6 +14,7 @@ from dash.dependencies import Input, Output, State
 
 import bicycleparameters as bp
 import matplotlib
+# run -m bicycleparameters.cycle_app
 
 matplotlib.use('Agg') # prevents pop-up windows when calling plotting functions
 
@@ -400,4 +401,3 @@ def input_triggers_spinner2(value):
 
 if __name__ == '__main__':                         # omit the `dev_tools_ui` parameter to display debug info 
     app.run_server(debug=True, dev_tools_ui=False) # in the browser rather than in the terminal
-    
