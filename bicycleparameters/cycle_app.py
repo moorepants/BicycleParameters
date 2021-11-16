@@ -73,7 +73,7 @@ GENERAL_LABELS = ['Wheel Base [m]:',
                   'Steer Axis Tilt [degrees]:',
                   'Gravity [N/kg]:']
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.MINTY])
 app.title = 'Bicycle Dynamics Analysis App'
 server = app.server  # needed for heroku
 
@@ -309,8 +309,8 @@ def populate_wheel_data(value, n_clicks):
 
 # updates geometry-plot & eigen-plot path with Dropdown value or edited DataTable values
 
-@app.callback([ #Output('geometry-plot', 'figure'),
-               Output('eigen-plot', 'figure')],
+@app.callback( #Output('geometry-plot', 'figure'),
+               Output('eigen-plot', 'figure'),
               [Input('bike-dropdown', 'value'),
                Input('wheel-table', 'data'),
                Input('frame-table', 'data'),
@@ -378,7 +378,7 @@ def plot_update(value, wheel, frame, general, options, slider):
     # create eigen-plot image
     # eigen_fake = io.BytesIO()
     eigen_plot = Bike.plot_eigenvalues_vs_speed(
-        speeds) #, show=False, grid=True, show_legend=False)
+        speeds, show=False, grid=True, show_legend=False)
     # eigen_plot.savefig(eigen_fake)
     # eigen_image = base64.b64encode(eigen_plot.getvalue())
     # plt.close(eigen_plot)

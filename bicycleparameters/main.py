@@ -954,34 +954,38 @@ the pathToData argument.""".format(bicycleName, pathToData)
         #     del params['text.fontsize']
         #     plt.rcParams.update(params)
 
-        # if fig is None:
+        if fig is None:
         #     fig, ax = plt.subplots(figsize=figsize)
+            """subplots"""
+            # fig = make_subplots(rows=1, cols=2,subplot_titles=("Eigenvalues", "Bike"))
+            """Single plot"""
+            fig = go.Figure(layout_yaxis_range=[-10,10])
+            evals, evecs = self.eig(speeds)
 
-        evals, evecs = self.eig(speeds)
+        # if largest:
+        #     largest = False
+        #     generic = True
 
-        if largest:
-            largest = False
-            generic = True
-
-        if generic:
-            weaveColor = color
-            capsizeColor = color
-            casterColor = color
+        # if generic:
+        #     weaveColor = color
+        #     capsizeColor = color
+        #     casterColor = color
             # legend = ['_nolegend_'] * 6
             # legend[5] = self.bicycleName
             # maxLabel = self.bicycleName
-        else:
-            weaveColor = 'blue'
-            capsizeColor = 'red'
-            casterColor = 'green'
-            legend = ['Imaginary Weave', 'Imaginary Capsize',
-                      'Imaginary Caster', 'Real Weave', 'Real Capsize',
-                      'Real Caster']
-            maxLabel = 'Max Eigenvalue'
+        # else:
+            # weaveColor = 'blue'
+            # capsizeColor = 'red'
+            # casterColor = 'green'
+            # legend = ['Imaginary Weave', 'Imaginary Capsize',
+            #           'Imaginary Caster', 'Real Weave', 'Real Capsize',
+            #           'Real Caster']
+            # maxLabel = 'Max Eigenvalue'
 
-        # if largest:
+        if largest:
         #     print('to do')
-
+            fig.add_trace(go.Scatter(x=speeds, y=np.max(evals)))
+            fig.show()
         #     maxEval = np.max(np.real(evals), axis=1)
         #     ax.plot(speeds, maxEval, color=color, label=maxLabel,
         #             linestyle=linestyle, linewidth=1.5)
@@ -990,8 +994,8 @@ the pathToData argument.""".format(bicycleName, pathToData)
         #             linewidth=1.5)
         #     ax.set_ylim((np.min(maxEval), np.max(maxEval)))
         #     ax.set_ylabel('Real Part of the Largest Eigenvalue [1/s]')
-        # else:
-        wea, cap, cas = bicycle.sort_modes(evals, evecs)
+        else:
+            wea, cap, cas = bicycle.sort_modes(evals, evecs)
 
         #     # imaginary components
         #     ax.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
@@ -1031,37 +1035,75 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
         # if show:
         #     fig.show()
-        fig = make_subplots(rows=1, cols=2,subplot_titles=("Eigenvalues", "Bike"))
-        print(speeds)
-        fig.add_trace(go.Scatter(x=speeds, y=np.real(wea['evals']),
-                            mode='lines',
-                            name='Real',
-                            text = 'Weave'), row=1, col=1)
+        """ To make subplot"""
+        # fig = make_subplots(rows=1, cols=2,subplot_titles=("Eigenvalues", "Bike"))
+        # fig.add_trace(go.Scatter(x=speeds, y=np.real(wea['evals']),
+        #                     mode='lines',
+        #                     name='Real',
+        #                     text = 'Weave'), row=1, col=1)
+        # fig.add_trace(go.Scatter(x=speeds, y=np.real(cap['evals']),
+        #                     mode='lines',
+        #                     name='Real',
+        #                     text = 'Capsize'), row=1, col=1)
+        # fig.add_trace(go.Scatter(x=speeds, y=np.real(cas['evals']),
+        #                     mode='lines',
+        #                     name='Real',
+        #                     text = 'Castering'), row=1, col=1)
+        # fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(wea['evals'])),
+        #                     mode='lines',
+        #                     name='Imaginary',
+        #                     text = 'Weave'), row=1, col=1)
+        # fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cap['evals'])),
+        #                     mode='lines',
+        #                     name='Imaginary',
+        #                     line=dict(color='royalblue',dash='dash'),
+        #                     text = 'Capsize'), row=1, col=1)
+        # fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cas['evals'])),
+        #                     mode='lines',
+        #                     name='Imaginary',
+        #                     line=dict(color='royalblue',dash='dash'),
+        #                     text = 'Capsize'), row=1, col=1)
+         # fig.add_trace(go.Scatter(x=speeds, y=np.imag(evals),
+        #                     mode='lines',
+        #                     name='Imaginary',
+        #                     line=dict(color='royalblue',dash='dash'),
+        #                     text = 'Capsize'), row=1, col=2)
+        """Single plot""" 
+        """Somehow the real weave speeds give errors in the plot"""
+        # fig.add_trace(go.Scatter(x=speeds, y=np.real(wea['evals']),
+        #                     mode='lines',
+        #                     name='Real',
+        #                     text = 'Capsize'))
         fig.add_trace(go.Scatter(x=speeds, y=np.real(cap['evals']),
                             mode='lines',
                             name='Real',
-                            text = 'Capsize'), row=1, col=1)
+                            text = 'Capsize'))
         fig.add_trace(go.Scatter(x=speeds, y=np.real(cas['evals']),
                             mode='lines',
                             name='Real',
-                            text = 'Castering'), row=1, col=1)
+                            text = 'Castering'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(wea['evals'])),
                             mode='lines',
                             name='Imaginary',
-                            text = 'Weave'), row=1, col=1)
+                            text = 'Weave'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cap['evals'])),
                             mode='lines',
                             name='Imaginary',
                             line=dict(color='royalblue',dash='dash'),
-                            text = 'Capsize'), row=1, col=1)
+                            text = 'Capsize'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cas['evals'])),
                             mode='lines',
                             name='Imaginary',
                             line=dict(color='royalblue',dash='dash'),
-                            text = 'Capsize'), row=1, col=1)
+                            text = 'Capsize'))
+       
         # fig.add_vrect(x0=vw, x1=vc, 
         #               annotation_text="Self stability", annotation_position='top left',             
         #                fillcolor="green", opacity=0.25, line_width=0, row=1, col=1)
+        
+        fig.update_layout(title='Eigenvalues vs velocity',
+                   xaxis_title='Velocity [m/s]',
+                   yaxis_title='Eigenvalues')
         # fig.show()
         return fig
 
