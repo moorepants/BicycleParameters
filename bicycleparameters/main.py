@@ -897,8 +897,8 @@ the pathToData argument.""".format(bicycleName, pathToData)
         return evals, evecs
 
     def plot_eigenvalues_vs_speed(self, speeds, fig=None, generic=False,
-                                  color='black', show=False, largest=False,
-                                  linestyle='-', grid=False, show_legend=True):
+                                   color='black', show=False, largest=False,
+                                   linestyle='-', grid=False, show_legend=True):
         """Returns a plot of the eigenvalues versus speed for the current
         benchmark parameters.
 
@@ -1032,10 +1032,10 @@ the pathToData argument.""".format(bicycleName, pathToData)
         # if show:
         #     fig.show()
         fig = make_subplots(rows=1, cols=2,subplot_titles=("Eigenvalues", "Bike"))
-        
+        print(speeds)
         fig.add_trace(go.Scatter(x=speeds, y=np.real(wea['evals']),
                             mode='lines',
-                            name='$Re(\lambda)$',
+                            name='Real',
                             text = 'Weave'), row=1, col=1)
         fig.add_trace(go.Scatter(x=speeds, y=np.real(cap['evals']),
                             mode='lines',
@@ -1062,7 +1062,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
         # fig.add_vrect(x0=vw, x1=vc, 
         #               annotation_text="Self stability", annotation_position='top left',             
         #                fillcolor="green", opacity=0.25, line_width=0, row=1, col=1)
-        
+        # fig.show()
         return fig
 
     def plot_bode(self, speed, u, y, **kwargs):

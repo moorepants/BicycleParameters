@@ -92,17 +92,17 @@ app.layout = html.Div([
                       dbc.Row([dbc.Col(dcc.Loading(id='geometry-load',
                                                    type='dot',
                                                    children=[html.Div(id='geometry-bin',
-                                                                      children=[html.Img(src='',
+                                                                      children=[html.Div([dcc.Graph(                    #html.Img(src='',
                                                                                          id='geometry-plot',
-                                                                                         className='img-fluid')])]),
+                                                                                         className='img-fluid')])])]),    #Change html.Img to Dcc.graph
                                        lg=5,
                                        width=12),
                                dbc.Col(dcc.Loading(id='eigen-load',
                                                    type='dot',
                                                    children=[html.Div(id='eigen-bin',
-                                                                      children=[html.Img(src='',
+                                                                      children=[html.Div([dcc.Graph(  
                                                                                          id='eigen-plot',
-                                                                                         className='img-fluid')])]),
+                                                                                         className='img-fluid')])])]), #Change html.Img to Dcc.graph
                                        lg=5,
                                        width=12),
                                dbc.Col(children=[html.H5('Choose a Parameter Set:',
@@ -309,8 +309,8 @@ def populate_wheel_data(value, n_clicks):
 
 # updates geometry-plot & eigen-plot path with Dropdown value or edited DataTable values
 
-@app.callback([Output('geometry-plot', 'src'),
-               Output('eigen-plot', 'src')],
+@app.callback([ #Output('geometry-plot', 'figure'),
+               Output('eigen-plot', 'figure')],
               [Input('bike-dropdown', 'value'),
                Input('wheel-table', 'data'),
                Input('frame-table', 'data'),
@@ -336,7 +336,7 @@ def plot_update(value, wheel, frame, general, options, slider):
     maxBound = rangeSliderData[1]
     steps = (maxBound-minBound)/0.1
     speeds = np.linspace(minBound, maxBound, num=int(steps))
-
+    print(speeds)
     # create Bike using default data based on dropdown menu value
     Bike = bp.Bicycle(value, pathToData=path_to_app_data)
 
@@ -378,9 +378,9 @@ def plot_update(value, wheel, frame, general, options, slider):
     # create eigen-plot image
     # eigen_fake = io.BytesIO()
     eigen_plot = Bike.plot_eigenvalues_vs_speed(
-        speeds, show=False, grid=True, show_legend=False)
+        speeds) #, show=False, grid=True, show_legend=False)
     # eigen_plot.savefig(eigen_fake)
-    eigen_image = base64.b64encode(eigen_plot.getvalue())
+    # eigen_image = base64.b64encode(eigen_plot.getvalue())
     # plt.close(eigen_plot)
 
     # return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
@@ -388,7 +388,7 @@ def plot_update(value, wheel, frame, general, options, slider):
     # return 'data:image/html,{}'.format(eigen_image.decode())
     
     # directly return html without encoding
-    return eigen_plot
+    return eigen_plot 
 
 
 # sets loading notification for the geometry plot
@@ -408,4 +408,4 @@ def input_triggers_spinner2(value):
 
 
 if __name__ == '__main__':                         # omit the `dev_tools_ui` parameter to display debug info 
-    app.run_server(debug=True, dev_tools_ui=False) # in the browser rather than in the terminal
+    app.run_server(debug=True, dev_tools_ui=True) # in the browser rather than in the terminal
