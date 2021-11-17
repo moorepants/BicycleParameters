@@ -11,6 +11,7 @@ import dash_bootstrap_components as dbc
 import dash_table as tbl
 import time
 from dash.dependencies import Input, Output, State
+import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 

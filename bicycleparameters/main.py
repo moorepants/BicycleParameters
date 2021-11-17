@@ -11,6 +11,7 @@ from uncertainties import unumpy
 from dtk import control
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import plotly.express as px
 
 # local module imports
 from . import bicycle
@@ -995,7 +996,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
         #     ax.set_ylim((np.min(maxEval), np.max(maxEval)))
         #     ax.set_ylabel('Real Part of the Largest Eigenvalue [1/s]')
         else:
-            wea, cap, cas = bicycle.sort_modes(evals, evecs)
+            wea1, wea2, cap, cas = bicycle.sort_modes(evals, evecs)
 
         #     # imaginary components
         #     ax.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
@@ -1070,40 +1071,53 @@ the pathToData argument.""".format(bicycleName, pathToData)
         #                     text = 'Capsize'), row=1, col=2)
         """Single plot""" 
         """Somehow the real weave speeds give errors in the plot"""
-        # fig.add_trace(go.Scatter(x=speeds, y=np.real(wea['evals']),
-        #                     mode='lines',
-        #                     name='Real',
-        #                     text = 'Capsize'))
+        
+        fig.add_trace(go.Scatter(x=speeds, y=np.real(wea1['evals']),
+                            mode='lines',
+                            name='Re',
+                            text = 'Weave'))
+        fig.add_trace(go.Scatter(x=speeds, y=np.real(wea2['evals']),
+                            mode='lines',
+                            name='Re',
+                            text = 'Weave'))
         fig.add_trace(go.Scatter(x=speeds, y=np.real(cap['evals']),
                             mode='lines',
-                            name='Real',
+                            name='Re',
                             text = 'Capsize'))
         fig.add_trace(go.Scatter(x=speeds, y=np.real(cas['evals']),
                             mode='lines',
-                            name='Real',
+                            name='Re',
                             text = 'Castering'))
-        fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(wea['evals'])),
+        fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(wea1['evals'])),
                             mode='lines',
-                            name='Imaginary',
+                            name='Im',
                             text = 'Weave'))
+        fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(wea2['evals'])),
+                             mode='lines',
+                             name='Im',
+                             text = 'Weave'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cap['evals'])),
                             mode='lines',
-                            name='Imaginary',
+                            name='Im',
                             line=dict(color='royalblue',dash='dash'),
                             text = 'Capsize'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cas['evals'])),
                             mode='lines',
-                            name='Imaginary',
+                            name='Im',
                             line=dict(color='royalblue',dash='dash'),
                             text = 'Capsize'))
-       
-        # fig.add_vrect(x0=vw, x1=vc, 
-        #               annotation_text="Self stability", annotation_position='top left',             
-        #                fillcolor="green", opacity=0.25, line_width=0, row=1, col=1)
+        vw = speeds[np.real(cas['evals'])<0][0]
+        vc = speeds[np.real(wea2['evals'])>0][0]
+        fig.add_vrect(x0=vw, x1=vc, 
+                      annotation_text="Self stability", annotation_position='top left',             
+                        fillcolor="green", opacity=0.25, line_width=0, row=1, col=1)
         
         fig.update_layout(title='Eigenvalues vs velocity',
                    xaxis_title='Velocity [m/s]',
                    yaxis_title='Eigenvalues')
+        fig.update_traces(hovertemplate="%{x:.3f}<br>%{y:.3f}")
+
+        
         # fig.show()
         return fig
 

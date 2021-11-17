@@ -255,10 +255,11 @@ def sort_modes(evals, evecs):
             evecsorg[i + 1, :, j] = evecs[i + 1, :, np.argmin(dist)]
             # keep track of the indices we've used
             used.append(np.argmin(dist))
-    weave = {'evals' : evalsorg[:, 2:], 'evecs' : evecsorg[:, :, 2:]}
+    weave1 = {'evals' : evalsorg[:, 2], 'evecs' : evecsorg[:, :, 2]}
+    weave2 = {'evals' : evalsorg[:, 3], 'evecs' : evecsorg[:, :, 3]}
     capsize = {'evals' : evalsorg[:, 1], 'evecs' : evecsorg[:, :, 1]}
     caster = {'evals' : evalsorg[:, 0], 'evecs' : evecsorg[:, :, 0]}
-    return weave, capsize, caster
+    return weave1, weave2, capsize, caster
 
 def trail(rF, lam, fo):
     '''Calculate the trail and mechanical trail.
