@@ -583,27 +583,57 @@ the pathToData argument.""".format(bicycleName, pathToData)
                                   color=partColors[part], alpha=0.25)
                 ax.add_patch(ellipse)
 
-        # plot the ground line
-        x = np.array([-par['rR'],
-                      par['w'] + par['rF']])
-        ax.plot(x, np.zeros_like(x), 'k')
 
-        # plot the rear wheel
-        c = plt.Circle((0., par['rR']), radius=par['rR'], fill=False)
-        ax.add_patch(c)
+        fig1 = go.Figure()
+        # plot the ground line old: ax.plot(x, np.zeros_like(x), 'k'). new:
+        x = np.array([-par['rR'],par['w'] + par['rF']])
+        fig1.add_trace(go.Scatter(x=x, y=np.zeros_like(x),
+                    mode='lines',
+                    name='Ground'))
+            
 
-        # plot the front wheel
-        c = plt.Circle((par['w'], par['rF']), radius=par['rF'], fill=False)
-        ax.add_patch(c)
+        # plot the rear wheel old:ax.add_patch(c) with:  c = plt.Circle((0., par['rR']), radius=par['rR'], fill=False)
+        fig1.add_shape(type="circle",
+                      xref="x", yref="y",
+                      x0=-par['rR'], y0=0, x1=par['rR'], y1=2*par['rR'],
+                      line_color="LightSeaGreen",)
+        
 
-        # plot the fundamental bike
+        # plot the front wheel old: with: ax.add_patch(c) c = plt.Circle((par['w'], par['rF']), radius=par['rF'], fill=False)
+        fig1.add_shape(type="circle",
+                      xref="x", yref="y",
+                      x0=(par['w']-par['rF']), y0=0, x1=(par['w']+par['rF']), y1=2*par['rF'],
+                      line_color="LightSeaGreen",)
+
+        # plot the fundamental bike old: ax.plot(deex, -deez, 'k') with: 
         deex, deez = geometry.fundamental_geometry_plot_data(par)
-        ax.plot(deex, -deez, 'k')
+        fig1.add_trace(go.Scatter(x=deex, y=-deez,
+                    mode='lines',
+                    name='Bicycle'))
 
-        # plot the steer axis
+        # plot the steer axis old: ax.plot([deex[2], dx3],  [-deez[2], 0.], 'k--')
         dx3 = deex[2] + deez[2] * (deex[2] - deex[1]) / (deez[1] - deez[2])
-        ax.plot([deex[2], dx3],  [-deez[2], 0.], 'k--')
-
+        
+        fig1.add_trace(go.Scatter(x=[deex[2], dx3], y=[-deez[2], 0.],
+                    mode='lines',
+                    name='Steer axis',
+                    line=dict(dash='dash')))
+        
+        
+        
+        # Update Layout so circle will be round and background white and no grid
+        fig1.update_xaxes(showgrid=False,zeroline=False)
+        fig1.update_yaxes(showgrid=False,zeroline=False)
+        fig1.update_xaxes(
+            range=[-par['rR'],par['w']+par['rF']],  # sets the range of xaxis
+            constrain="domain",  # meanwhile compresses the xaxis by decreasing its "domain"
+            )
+        fig1.update_yaxes(
+            scaleanchor = "x",
+            scaleratio = 1)
+        fig1.update_layout(plot_bgcolor="white")
+        
+        fig1.show()
         # don't plot the pendulum lines if a rider has been added because the
         # inertia has changed
         if self.hasRider:
@@ -1099,12 +1129,12 @@ the pathToData argument.""".format(bicycleName, pathToData)
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cap['evals'])),
                             mode='lines',
                             name='Im',
-                            line=dict(color='royalblue',dash='dash'),
+                            # line=dict(color='royalblue',dash='dash'),
                             text = 'Capsize'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cas['evals'])),
                             mode='lines',
                             name='Im',
-                            line=dict(color='royalblue',dash='dash'),
+                            # line=dict(color='royalblue',dash='dash'),
                             text = 'Capsize'))
         vw = speeds[np.real(cas['evals'])<0][0]
         vc = speeds[np.real(wea2['evals'])>0][0]

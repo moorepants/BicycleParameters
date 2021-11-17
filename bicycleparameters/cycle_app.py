@@ -370,8 +370,8 @@ def plot_update(value, wheel, frame, general, options, slider):
 
     # create geometry-plot image
     # geo_fake = io.BytesIO()
-    # geo_plot = Bike.plot_bicycle_geometry(
-    #     show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
+    geo_plot = Bike.plot_bicycle_geometry(
+        show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
     # geo_plot.savefig(geo_fake)
     # geo_image = base64.b64encode(geo_fake.getvalue())
     # plt.close(geo_plot)
@@ -389,7 +389,7 @@ def plot_update(value, wheel, frame, general, options, slider):
     # return 'data:image/html,{}'.format(eigen_image.decode())
     
     # directly return html without encoding
-    return eigen_plot 
+    return  eigen_plot,geo_plot
 
 
 # sets loading notification for the geometry plot
