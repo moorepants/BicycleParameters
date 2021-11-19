@@ -535,9 +535,10 @@ the pathToData argument.""".format(bicycleName, pathToData)
         except AttributeError:
             pendulum = False
 
-        fig, ax = plt.subplots()
+        fig1 = go.Figure()
+        # fig, ax = plt.subplots()
 
-        fig.set_size_inches([4.0*GOLDEN_RATIO, 4.0])
+        # fig.set_size_inches([4.0*GOLDEN_RATIO, 4.0])
 
         # define some colors for the parts
         numColors = len(parts)
@@ -578,13 +579,17 @@ the pathToData argument.""".format(bicycleName, pathToData)
                 width = Imax * unitWidth
                 height = Imax * unitHeight
                 angle = -np.degrees(np.arccos(C2D[0, 0]))
-                ellipse = Ellipse((center[0], center[1]), width, height,
-                                  angle=angle, fill=False,
-                                  color=partColors[part], alpha=0.25)
-                ax.add_patch(ellipse)
+                # ellipse = Ellipse((center[0], center[1]), width, height,
+                #                   angle=angle, fill=False,
+                #                   color=partColors[part], alpha=0.25)
+                # fig1.add_shape(type="circle",
+                #                xref="x", yref="y",
+                #                x0=-0.5*width, y0=-0.5*height,
+                #                x1=0.5*width, y1=0.5*height,)
+                # ax.add_patch(ellipse)
 
 
-        fig1 = go.Figure()
+        
         # plot the ground line old: ax.plot(x, np.zeros_like(x), 'k'). new:
         x = np.array([-par['rR'],par['w'] + par['rF']])
         fig1.add_trace(go.Scatter(x=x, y=np.zeros_like(x),
@@ -633,7 +638,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
             scaleratio = 1)
         fig1.update_layout(plot_bgcolor="white")
         
-        fig1.show()
+        
         # don't plot the pendulum lines if a rider has been added because the
         # inertia has changed
         if self.hasRider:
@@ -651,113 +656,122 @@ the pathToData argument.""".format(bicycleName, pathToData)
                                                                      zcom))
                     comLineLength = penInertias[part][i]
                     xPlus = comLineLength / 2. * np.cos(np.arctan(m))
-                    x = np.array([xPoint - xPlus,
+                    xp = np.array([xPoint - xPlus,
                                   xPoint + xPlus])
-                    z = -m * x - b
-                    ax.plot(x, z, color=partColors[part])
+                    zp = -m * xp - b
+                    # ax.plot(x, z, color=partColors[part])
+                    
+                    fig1.add_trace(go.Scatter(x=xp,y=zp))
                     # label the pendulum lines with a number
-                    ax.text(x[0], z[0], str(i + 1))
+                    # ax.text(x[0], z[0], str(i + 1))
 
-        if centerOfMass:
+
+
+        # fig1.show()
+        # if centerOfMass:
             # plot the center of mass location
-            def com_symbol(ax, center, radius, color='b'):
-                '''Returns axis with center of mass symbol.'''
-                c = plt.Circle(center, radius=radius, fill=False)
-                w1 = Wedge(center, radius, 0., 90.,
-                           color=color, ec=None, alpha=0.5)
-                w2 = Wedge(center, radius, 180., 270.,
-                           color=color, ec=None, alpha=0.5)
-                ax.add_patch(w1)
-                ax.add_patch(w2)
-                ax.add_patch(c)
-                return ax
+            # def com_symbol(ax, center, radius, color='b'):
+            #     '''Returns axis with center of mass symbol.'''
+            #     c = plt.Circle(center, radius=radius, fill=False)
+            #     w1 = Wedge(center, radius, 0., 90.,
+            #                 color=color, ec=None, alpha=0.5)
+            #     w2 = Wedge(center, radius, 180., 270.,
+            #                 color=color, ec=None, alpha=0.5)
+            #     ax.add_patch(w1)
+            #     ax.add_patch(w2)
+            #     ax.add_patch(c)
+                
+            #     return ax
 
-            # radius of the CoM symbol
-            sRad = 0.03
-            # front wheel CoM
-            ax = com_symbol(ax, (par['w'], par['rF']), sRad,
-                            color=partColors['F'])
-            ax.text(par['w'] + sRad, par['rF'] + sRad, 'F')
-            # rear wheel CoM
-            ax = com_symbol(ax, (0., par['rR']), sRad,
-                            color=partColors['R'])
-            ax.text(0. + sRad, par['rR'] + sRad, 'R')
-            for j, part in enumerate([x for x in parts
-                                      if x not in 'RFD']):
-                xcom = par['x' + part]
-                zcom = par['z' + part]
-                ax = com_symbol(ax, (xcom, -zcom), sRad,
-                                color=partColors[part])
-                ax.text(xcom + sRad, -zcom + sRad, part)
-            if 'H' not in parts:
-                ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
-                ax.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
+            # # radius of the CoM symbol
+            # sRad = 0.03
+            # # front wheel CoM
+            # ax = com_symbol(ax, (par['w'], par['rF']), sRad,
+            #                 color=partColors['F'])
+            # ax.text(par['w'] + sRad, par['rF'] + sRad, 'F')
+            # # rear wheel CoM
+            # ax = com_symbol(ax, (0., par['rR']), sRad,
+            #                 color=partColors['R'])
+            # ax.text(0. + sRad, par['rR'] + sRad, 'R')
+            # for j, part in enumerate([x for x in parts
+            #                           if x not in 'RFD']):
+            #     xcom = par['x' + part]
+            #     zcom = par['z' + part]
+            #     ax = com_symbol(ax, (xcom, -zcom), sRad,
+            #                     color=partColors[part])
+            #     ax.text(xcom + sRad, -zcom + sRad, part)
+            # if 'H' not in parts:
+            #     ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
+            #     ax.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
 
         # if there is a rider on the bike, make a simple stick figure
-        top_of_head = 0.0
-        if self.human:
-            human = self.human
-            mpar = self.parameters['Measured']
-            bpar = self.parameters['Benchmark']
-            # K2: lower leg, tip of foot to knee
-            start = rider.yeadon_vec_to_bicycle_vec(human.K2.end_pos, mpar,
-                                                    bpar)
-            end = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
-            ax.plot([start[0, 0], end[0, 0]],
-                    [-start[2, 0], -end[2, 0]], 'k')
-            # K1: upper leg, knee to hip
-            start = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
-            end = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
-            ax.plot([start[0, 0], end[0, 0]],
-                    [-start[2, 0], -end[2, 0]], 'k')
-            # torso
-            start = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
-            end = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
-            ax.plot([start[0, 0], end[0, 0]],
-                    [-start[2, 0], -end[2, 0]], 'k')
-            # B1: upper arm
-            start = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
-            end = rider.yeadon_vec_to_bicycle_vec(human.B2.pos, mpar, bpar)
-            ax.plot([start[0, 0], end[0, 0]],
-                    [-start[2, 0], -end[2, 0]], 'k')
-            # B2: lower arm, elbow to tip of fingers
-            start = rider.yeadon_vec_to_bicycle_vec(human.B2.pos, mpar, bpar)
-            end = rider.yeadon_vec_to_bicycle_vec(human.B2.end_pos, mpar, bpar)
-            ax.plot([start[0, 0], end[0, 0]],
-                    [-start[2, 0], -end[2, 0]], 'k')
-            # C: chest/head
-            start = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
-            end = rider.yeadon_vec_to_bicycle_vec(human.C.end_pos, mpar, bpar)
-            ax.plot([start[0, 0], end[0, 0]],
-                    [-start[2, 0], -end[2, 0]], 'k')
-            top_of_head = -end[2, 0]
+        # top_of_head = 0.0
+        # if self.human:
+        #     human = self.human
+        #     mpar = self.parameters['Measured']
+        #     bpar = self.parameters['Benchmark']
+        #     # K2: lower leg, tip of foot to knee
+        #     start = rider.yeadon_vec_to_bicycle_vec(human.K2.end_pos, mpar,
+        #                                             bpar)
+        #     end = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
+        #     ax.plot([start[0, 0], end[0, 0]],
+        #             [-start[2, 0], -end[2, 0]], 'k')
+        #     # K1: upper leg, knee to hip
+        #     start = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
+        #     end = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
+        #     ax.plot([start[0, 0], end[0, 0]],
+        #             [-start[2, 0], -end[2, 0]], 'k')
+        #     # torso
+        #     start = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
+        #     end = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
+        #     ax.plot([start[0, 0], end[0, 0]],
+        #             [-start[2, 0], -end[2, 0]], 'k')
+        #     # B1: upper arm
+        #     start = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
+        #     end = rider.yeadon_vec_to_bicycle_vec(human.B2.pos, mpar, bpar)
+        #     ax.plot([start[0, 0], end[0, 0]],
+        #             [-start[2, 0], -end[2, 0]], 'k')
+        #     # B2: lower arm, elbow to tip of fingers
+        #     start = rider.yeadon_vec_to_bicycle_vec(human.B2.pos, mpar, bpar)
+        #     end = rider.yeadon_vec_to_bicycle_vec(human.B2.end_pos, mpar, bpar)
+        #     ax.plot([start[0, 0], end[0, 0]],
+        #             [-start[2, 0], -end[2, 0]], 'k')
+        #     # C: chest/head
+        #     start = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
+        #     end = rider.yeadon_vec_to_bicycle_vec(human.C.end_pos, mpar, bpar)
+        #     ax.plot([start[0, 0], end[0, 0]],
+        #             [-start[2, 0], -end[2, 0]], 'k')
+        #     top_of_head = -end[2, 0]
 
-        ax.set_aspect('equal')
+        # ax.set_aspect('equal')
 
         # set the y limits to encompass the bicycle and rider geometry
-        max_y = max([2*par['rR'],  # rear wheel diameter
-                     2*par['rF'],  # front wheel diameter
-                     max(-deez),  # max of Z values of bicycle geometry
-                     top_of_head])  # max of Z values of human head
-        min_y = min(-deez)
-        if min_y >= 0.0:
-            y_low = min([0.0, min_y])
-        else:
-            y_low = -np.ceil(np.abs(min_y))
-        ax.set_ylim((y_low, np.ceil(max_y)))
+        # max_y = max([2*par['rR'],  # rear wheel diameter
+        #              2*par['rF'],  # front wheel diameter
+        #              max(-deez),  # max of Z values of bicycle geometry
+        #              top_of_head])  # max of Z values of human head
+        # min_y = min(-deez)
+        # if min_y >= 0.0:
+        #     y_low = min([0.0, min_y])
+        # else:
+        #     y_low = -np.ceil(np.abs(min_y))
+        # ax.set_ylim((y_low, np.ceil(max_y)))
 
-        ax.set_title("{}\nBicycle Geometry".format(self.bicycleName))
+        # ax.set_title("{}\nBicycle Geometry".format(self.bicycleName))
 
-        ax.set_xlabel('x [m]')
-        ax.set_ylabel('-z [m]')
+        # ax.set_xlabel('x [m]')
+        # ax.set_ylabel('-z [m]')
 
-        if show:
-            fig.show()
+        # if show:
+        #     fig.show()
 
-        # TODO : This should return ax instead of fig to follow typical
-        # practice in other Python libraries.
-
-        return fig
+        # # TODO : This should return ax instead of fig to follow typical
+        # # practice in other Python libraries.
+        fig1.update_layout(title='Bicycle geometry',
+                   )
+        fig1.update_layout(yaxis=dict(autorange=True,showgrid=False,ticks='',showticklabels=False))
+        fig1.update_layout(xaxis=dict(autorange=True,showgrid=False,ticks='',showticklabels=False))
+        return fig1
 
     def canonical(self, nominal=False):
         """
@@ -1145,7 +1159,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
         fig.update_layout(title='Eigenvalues vs velocity',
                    xaxis_title='Velocity [m/s]',
                    yaxis_title='Eigenvalues')
-        fig.update_traces(hovertemplate="%{x:.3f}<br>%{y:.3f}")
+        fig.update_traces(hovertemplate= "%{x:.3f}<br>%{y:.3f}")
 
         
         # fig.show()

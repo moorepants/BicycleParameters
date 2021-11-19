@@ -310,8 +310,8 @@ def populate_wheel_data(value, n_clicks):
 
 # updates geometry-plot & eigen-plot path with Dropdown value or edited DataTable values
 
-@app.callback( #Output('geometry-plot', 'figure'),
-               Output('eigen-plot', 'figure'),
+@app.callback( [Output('geometry-plot', 'figure'),
+               Output('eigen-plot', 'figure')],
               [Input('bike-dropdown', 'value'),
                Input('wheel-table', 'data'),
                Input('frame-table', 'data'),
