@@ -767,7 +767,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
         # # TODO : This should return ax instead of fig to follow typical
         # # practice in other Python libraries.
-        fig1.update_layout(title='Bicycle geometry',
+        fig1.update_layout(title_text='Bicycle geometry',title_x=0.5,
                    )
         fig1.update_layout(yaxis=dict(autorange=True,showgrid=False,ticks='',showticklabels=False))
         fig1.update_layout(xaxis=dict(autorange=True,showgrid=False,ticks='',showticklabels=False))
@@ -1156,7 +1156,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                       annotation_text="Self stability", annotation_position='top left',             
                         fillcolor="green", opacity=0.25, line_width=0, row=1, col=1)
         
-        fig.update_layout(title='Eigenvalues vs velocity',
+        fig.update_layout(title_text='Eigenvalues vs velocity',title_x=0.5,
                    xaxis_title='Velocity [m/s]',
                    yaxis_title='Eigenvalues')
         fig.update_traces(hovertemplate= "%{x:.3f}<br>%{y:.3f}")
