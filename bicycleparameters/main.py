@@ -718,15 +718,15 @@ the pathToData argument.""".format(bicycleName, pathToData)
                 xc4 = xs4 + x_center
                 yc4 = ys4 + y_center
                 
-                fig1.add_trace(go.Scatter(x=[x_center,x_center+R],y=[y_center,y_center],mode='lines',line_color="black",showlegend = False))
-                fig1.add_trace(go.Scatter(x=[x_center,x_center],y=[y_center,y_center+R],mode='lines',line_color="black", showlegend = False))
-                fig1.add_trace(go.Scatter(x=xc1,y=yc1,mode='lines',line_color="black", showlegend = False,fill='tonexty'))
-                fig1.add_trace(go.Scatter(x=xc2,y=yc2,mode='lines',line_color="black", showlegend = False))
-                fig1.add_trace(go.Scatter(x=xc3,y=yc3,mode='lines',line_color="black", showlegend = False))
-                fig1.add_trace(go.Scatter(x=[x_center-R,x_center],y=[y_center,y_center],mode='lines',line_color="black",showlegend = False,fill='tonexty'))
-                fig1.add_trace(go.Scatter(x=[x_center,x_center],y=[y_center-R,y_center],mode='lines',line_color="black", showlegend = False))
-                fig1.add_trace(go.Scatter(x=xc4,y=yc4,mode='lines',line_color="black", showlegend = False))
-
+                fig1.add_trace(go.Scatter(x=[x_center,x_center+R],y=[y_center,y_center],mode='lines',line_color="black",showlegend = False,hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=[x_center,x_center],y=[y_center,y_center+R],mode='lines',line_color="black", showlegend = False,hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=xc1,y=yc1,mode='lines',line_color="black", showlegend = False,fill='tonexty',hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=xc2,y=yc2,mode='lines',line_color="black", showlegend = False,hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=xc3,y=yc3,mode='lines',line_color="black", showlegend = False,hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=[x_center-R,x_center],y=[y_center,y_center],mode='lines',line_color="black",showlegend = False,fill='tonexty',hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=[x_center,x_center],y=[y_center-R,y_center],mode='lines',line_color="black", showlegend = False,hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=xc4,y=yc4,mode='lines',line_color="black", showlegend = False,hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=[x_center,x_center],y=[y_center,y_center],mode='lines',line_color="black",hovertemplate="%{x:.3f}<br>%{y:.3f}"))
                 return fig1
 
             # # radius of the CoM symbol
@@ -737,14 +737,16 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
             fig1=com_symbol(sRad,x_com_Wf,y_com_Wf)
             fig1.add_annotation(text="F",
-                  xref='paper', yref='paper',
-                  x=(x_com_Wf), y=(y_com_Wf),showarrow=False)
+                  xref='x', yref='y',
+                  x=x_com_Wf+0.055, y=y_com_Wf+0.055,showarrow=False,font=dict(size=15))
             # ax = com_symbol(ax, (par['w'], par['rF']), sRad,
             #                 color=partColors['F'])
             # ax.text(par['w'] + sRad, par['rF'] + sRad, 'F')
             # # rear wheel CoM
             fig1=com_symbol(sRad,0.,par['rR'])
-            
+            fig1.add_annotation(text="R",
+                  xref='x', yref='y',
+                  x=0.055, y=par['rR']+0.055,showarrow=False,font=dict(size=15))
             # ax = com_symbol(ax, (0., par['rR']), sRad,
             #                 color=partColors['R'])
             # ax.text(0. + sRad, par['rR'] + sRad, 'R')
@@ -753,11 +755,17 @@ the pathToData argument.""".format(bicycleName, pathToData)
                 xcom = par['x' + part]
                 zcom = par['z' + part]
                 fig1=com_symbol(sRad,xcom,-zcom)
+                fig1.add_annotation(text="B",
+                  xref='x', yref='y',
+                  x=xcom+0.055, y=-zcom+0.055,showarrow=False,font=dict(size=15))
             #     ax = com_symbol(ax, (xcom, -zcom), sRad,
             #                     color=partColors[part])
             #     ax.text(xcom + sRad, -zcom + sRad, part)
             if 'H' not in parts:
                 fig1 = com_symbol(sRad,par['xH'], -par['zH'])
+                fig1.add_annotation(text="H",
+                  xref='x', yref='y',
+                  x=par['xH']+0.055, y=-par['zH']+0.055,showarrow=False,font=dict(size=15))
             #     ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
             #     ax.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
 
