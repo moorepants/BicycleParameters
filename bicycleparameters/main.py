@@ -649,6 +649,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
             scaleanchor = "x",
             scaleratio = 1)
         fig1.update_layout(plot_bgcolor="white")
+        # fig1.update_layout(template="plotly_dark")
         
         
         # don't plot the pendulum lines if a rider has been added because the
