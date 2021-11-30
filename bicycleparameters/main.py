@@ -613,7 +613,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
         fig1.add_shape(type="circle",
                       xref="x", yref="y",
                       x0=-par['rR'], y0=0, x1=par['rR'], y1=2*par['rR'],
-                      line_color="LightSeaGreen",)
+                      line_color="LightSeaGreen",name='Rear wheel')
         
 
         # plot the front wheel old: with: ax.add_patch(c) c = plt.Circle((par['w'], par['rF']), radius=par['rF'], fill=False)
@@ -726,7 +726,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                 fig1.add_trace(go.Scatter(x=[x_center-R,x_center],y=[y_center,y_center],mode='lines',line_color="black",showlegend = False,fill='tonexty',hoverinfo='none'))
                 fig1.add_trace(go.Scatter(x=[x_center,x_center],y=[y_center-R,y_center],mode='lines',line_color="black", showlegend = False,hoverinfo='none'))
                 fig1.add_trace(go.Scatter(x=xc4,y=yc4,mode='lines',line_color="black", showlegend = False,hoverinfo='none'))
-                fig1.add_trace(go.Scatter(x=[x_center,x_center],y=[y_center,y_center],mode='lines',line_color="black",hovertemplate="%{x:.3f}<br>%{y:.3f}"))
+                fig1.add_trace(go.Scatter(x=[x_center,x_center],y=[y_center,y_center],mode='lines',line_color="black",hovertemplate="%{x:.3f}<br>%{y:.3f}",name='COM'))
                 return fig1
 
             # # radius of the CoM symbol
@@ -736,7 +736,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
             y_com_Wf=par['rF']
 
             fig1=com_symbol(sRad,x_com_Wf,y_com_Wf)
-            fig1.add_annotation(text="F",
+            fig1.add_annotation(text=part,
                   xref='x', yref='y',
                   x=x_com_Wf+0.055, y=y_com_Wf+0.055,showarrow=False,font=dict(size=15))
             # ax = com_symbol(ax, (par['w'], par['rF']), sRad,
@@ -755,7 +755,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                 xcom = par['x' + part]
                 zcom = par['z' + part]
                 fig1=com_symbol(sRad,xcom,-zcom)
-                fig1.add_annotation(text="B",
+                fig1.add_annotation(text=part,
                   xref='x', yref='y',
                   x=xcom+0.055, y=-zcom+0.055,showarrow=False,font=dict(size=15))
             #     ax = com_symbol(ax, (xcom, -zcom), sRad,
