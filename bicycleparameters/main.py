@@ -22,7 +22,7 @@ from . import io
 from . import geometry
 from . import period
 from . import rider
-from . import Ellipse_COM
+from . import Ellipse2
 
 GOLDEN_RATIO = (1.0 + np.sqrt(5.0))/2.0
 
@@ -589,7 +589,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                                       # color=partColors[part], alpha=0.25)
                         x_center = center[0]
                         y_center = center[1]
-                        x_ep, y_ep = Ellipse_COM.ell(x_center = x_center, y_center = y_center,ax1 = [np.cos(angle), np.sin(angle)], ax2 = [-np.sin(angle), np.cos(angle)],a = height, b = width)
+                        x_ep, y_ep = Ellipse2.ell(x_center = x_center, y_center = y_center,ax1 = [np.cos(angle), np.sin(angle)], ax2 = [-np.sin(angle), np.cos(angle)],a = height, b = width)
 
                     fig1.add_scatter(x=x_ep, y=y_ep, mode = 'lines', fill='toself', opacity=0.5)
                 
@@ -673,7 +673,9 @@ the pathToData argument.""".format(bicycleName, pathToData)
                     zp = -m * xp - b
                     # ax.plot(x, z, color=partColors[part])
                     
-                    fig1.add_trace(go.Scatter(x=xp,y=zp))
+                    fig1.add_trace(go.Scatter(x=xp,y=zp,mode='lines',
+                    name='Pendulum',
+                    line=dict(dash='dash')))
                     # label the pendulum lines with a number
                     # ax.text(x[0], z[0], str(i + 1))
 
@@ -734,7 +736,9 @@ the pathToData argument.""".format(bicycleName, pathToData)
             y_com_Wf=par['rF']
 
             fig1=com_symbol(sRad,x_com_Wf,y_com_Wf)
-
+            fig1.add_annotation(text="F",
+                  xref='paper', yref='paper',
+                  x=(x_com_Wf), y=(y_com_Wf),showarrow=False)
             # ax = com_symbol(ax, (par['w'], par['rF']), sRad,
             #                 color=partColors['F'])
             # ax.text(par['w'] + sRad, par['rF'] + sRad, 'F')
@@ -758,25 +762,27 @@ the pathToData argument.""".format(bicycleName, pathToData)
             #     ax.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
 
         # if there is a rider on the bike, make a simple stick figure
-        # top_of_head = 0.0
-        # if self.human:
-        #     human = self.human
-        #     mpar = self.parameters['Measured']
-        #     bpar = self.parameters['Benchmark']
-        #     # K2: lower leg, tip of foot to knee
-        #     start = rider.yeadon_vec_to_bicycle_vec(human.K2.end_pos, mpar,
-        #                                             bpar)
-        #     end = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
+        top_of_head = 0.0
+        if self.human:
+            human = self.human
+            mpar = self.parameters['Measured']
+            bpar = self.parameters['Benchmark']
+            # K2: lower leg, tip of foot to knee
+            start = rider.yeadon_vec_to_bicycle_vec(human.K2.end_pos, mpar,
+                                                    bpar)
+            end = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
+            fig1.add_trace(go.Scatter(x=[start[0, 0], end[0, 0]],y=[-start[2, 0], -end[2, 0]],mode='lines'))
         #     ax.plot([start[0, 0], end[0, 0]],
         #             [-start[2, 0], -end[2, 0]], 'k')
         #     # K1: upper leg, knee to hip
-        #     start = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
-        #     end = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
+            start = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
+            end = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
+            
         #     ax.plot([start[0, 0], end[0, 0]],
         #             [-start[2, 0], -end[2, 0]], 'k')
         #     # torso
-        #     start = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
-        #     end = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
+            # start = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
+            # end = rider.yeadon_vec_to_bicycle_vec(human.B1.pos, mpar, bpar)
         #     ax.plot([start[0, 0], end[0, 0]],
         #             [-start[2, 0], -end[2, 0]], 'k')
         #     # B1: upper arm
