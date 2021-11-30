@@ -5,8 +5,9 @@ import os
 
 # dependencies
 import numpy as np
+from numpy import pi, sin, cos
 import matplotlib.pyplot as plt
-from matplotlib.patches import Ellipse, Wedge
+# from matplotlib.patches import Ellipse, Wedge
 from uncertainties import unumpy
 from dtk import control
 import plotly.graph_objects as go
@@ -21,6 +22,7 @@ from . import io
 from . import geometry
 from . import period
 from . import rider
+from . import Ellipse_COM
 
 GOLDEN_RATIO = (1.0 + np.sqrt(5.0))/2.0
 
@@ -544,6 +546,9 @@ the pathToData argument.""".format(bicycleName, pathToData)
         numColors = len(parts)
         cmap = plt.get_cmap('gist_rainbow')
         partColors = {}
+        
+     
+        
         for i, part in enumerate(parts):
             partColors[part] = cmap(1. * i / numColors)
 
@@ -563,25 +568,32 @@ the pathToData argument.""".format(bicycleName, pathToData)
                 for i, row in enumerate(C):
                     if np.abs(np.sum(row - uy)) < 1E-10:
                         yrow = i
-                # remove the row for the y vector
-                Ip2D = np.delete(Ip, yrow, 0)
-                # remove the column and row associated with the y
-                C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
-                # make an ellipse
-                Imin = Ip2D[0]
-                Imax = Ip2D[1]
-                # get width and height of a ellipse with the major axis equal
-                # to one
-                unitWidth = 1. / 2. / np.sqrt(Imin) * np.sqrt(Imin)
-                unitHeight = 1. / 2. / np.sqrt(Imax) * np.sqrt(Imin)
-                # now scaled the width and height relative to the maximum
-                # principal moment of inertia
-                width = Imax * unitWidth
-                height = Imax * unitHeight
-                angle = -np.degrees(np.arccos(C2D[0, 0]))
-                # ellipse = Ellipse((center[0], center[1]), width, height,
-                #                   angle=angle, fill=False,
-                #                   color=partColors[part], alpha=0.25)
+                        # remove the row for the y vector
+                        Ip2D = np.delete(Ip, yrow, 0)
+                        # remove the column and row associated with the y
+                        C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
+                        # make an ellipse
+                        Imin = Ip2D[0]
+                        Imax = Ip2D[1]
+                        # get width and height of a ellipse with the major axis equal
+                        # to one
+                        unitWidth = 1. / 2. / np.sqrt(Imin) * np.sqrt(Imin)
+                        unitHeight = 1. / 2. / np.sqrt(Imax) * np.sqrt(Imin)
+                        # now scaled the width and height relative to the maximum
+                        # principal moment of inertia
+                        width = Imax * unitWidth
+                        height = Imax * unitHeight
+                        angle = -np.degrees(np.arccos(C2D[0, 0]))
+                    # ellipse = Ellipse((center[0], center[1]), width, height,
+                                      # angle=angle, fill=False,
+                                      # color=partColors[part], alpha=0.25)
+                        x_center = center[0]
+                        y_center = center[1]
+                        x_ep, y_ep = Ellipse_COM.ell(x_center = x_center, y_center = y_center,ax1 = [np.cos(angle), np.sin(angle)], ax2 = [-np.sin(angle), np.cos(angle)],a = height, b = width)
+
+                    fig1.add_scatter(x=x_ep, y=y_ep, mode = 'lines', fill='toself', opacity=0.5)
+                
+               
                 # fig1.add_shape(type="circle",
                 #                xref="x", yref="y",
                 #                x0=-0.5*width, y0=-0.5*height,
@@ -668,7 +680,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
 
         # fig1.show()
-        # if centerOfMass:
+        if centerOfMass:
             # plot the center of mass location
             # def com_symbol(ax, center, radius, color='b'):
             #     '''Returns axis with center of mass symbol.'''
@@ -682,25 +694,66 @@ the pathToData argument.""".format(bicycleName, pathToData)
             #     ax.add_patch(c)
                 
             #     return ax
+            def com_symbol(R,x_center,y_center):
+                t = np.linspace(0,0.5*pi, 100)
+                xs = R*cos(t)
+                ys = R*sin(t)   
+                xc1 = xs + x_center
+                yc1 = ys + y_center
+                t2 = np.linspace(0.5*pi,pi, 100)
+                xs2 = R*cos(t2)
+                ys2 = R*sin(t2)
+                xc2 = xs2 + x_center
+                yc2 = ys2 + y_center
+                t3 = np.linspace(pi,1.5*pi, 100)
+                xs3 = R*cos(t3)
+                ys3 = R*sin(t3)
+                xc3 = xs3 + x_center
+                yc3 = ys3 + y_center
+                t4 = np.linspace(1.5*pi,2*pi, 100)
+                xs4 = R*cos(t4)
+                ys4 = R*sin(t4)
+                xc4 = xs4 + x_center
+                yc4 = ys4 + y_center
+                
+                fig1.add_trace(go.Scatter(x=[x_center,x_center+R],y=[y_center,y_center],mode='lines',line_color="black",showlegend = False))
+                fig1.add_trace(go.Scatter(x=[x_center,x_center],y=[y_center,y_center+R],mode='lines',line_color="black", showlegend = False))
+                fig1.add_trace(go.Scatter(x=xc1,y=yc1,mode='lines',line_color="black", showlegend = False,fill='tonexty'))
+                fig1.add_trace(go.Scatter(x=xc2,y=yc2,mode='lines',line_color="black", showlegend = False))
+                fig1.add_trace(go.Scatter(x=xc3,y=yc3,mode='lines',line_color="black", showlegend = False))
+                fig1.add_trace(go.Scatter(x=[x_center-R,x_center],y=[y_center,y_center],mode='lines',line_color="black",showlegend = False,fill='tonexty'))
+                fig1.add_trace(go.Scatter(x=[x_center,x_center],y=[y_center-R,y_center],mode='lines',line_color="black", showlegend = False))
+                fig1.add_trace(go.Scatter(x=xc4,y=yc4,mode='lines',line_color="black", showlegend = False))
+
+                return fig1
 
             # # radius of the CoM symbol
-            # sRad = 0.03
+            sRad = 0.03
             # # front wheel CoM
+            x_com_Wf=par['w']
+            y_com_Wf=par['rF']
+
+            fig1=com_symbol(sRad,x_com_Wf,y_com_Wf)
+
             # ax = com_symbol(ax, (par['w'], par['rF']), sRad,
             #                 color=partColors['F'])
             # ax.text(par['w'] + sRad, par['rF'] + sRad, 'F')
             # # rear wheel CoM
+            fig1=com_symbol(sRad,0.,par['rR'])
+            
             # ax = com_symbol(ax, (0., par['rR']), sRad,
             #                 color=partColors['R'])
             # ax.text(0. + sRad, par['rR'] + sRad, 'R')
-            # for j, part in enumerate([x for x in parts
-            #                           if x not in 'RFD']):
-            #     xcom = par['x' + part]
-            #     zcom = par['z' + part]
+            for j, part in enumerate([x for x in parts
+                                      if x not in 'RFD']):
+                xcom = par['x' + part]
+                zcom = par['z' + part]
+                fig1=com_symbol(sRad,xcom,-zcom)
             #     ax = com_symbol(ax, (xcom, -zcom), sRad,
             #                     color=partColors[part])
             #     ax.text(xcom + sRad, -zcom + sRad, part)
-            # if 'H' not in parts:
+            if 'H' not in parts:
+                fig1 = com_symbol(sRad,par['xH'], -par['zH'])
             #     ax = com_symbol(ax, (par['xH'], -par['zH']), sRad)
             #     ax.text(par['xH'] + sRad, -par['zH'] + sRad, 'H')
 
@@ -1454,3 +1507,6 @@ def is_fork_split(mp):
             forkIsSplit = True
 
     return forkIsSplit
+
+
+
