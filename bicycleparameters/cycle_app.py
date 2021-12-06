@@ -74,7 +74,7 @@ GENERAL_LABELS = ['Wheel Base [m]:',
                   'Steer Axis Tilt [degrees]:',
                   'Gravity [N/kg]:']
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.MINTY])
 app.title = 'Bicycle Dynamics Analysis App'
 server = app.server  # needed for heroku
 
@@ -103,7 +103,7 @@ app.layout = html.Div([
                                                    children=[html.Div(id='eigen-bin',
                                                                       children=[html.Div([dcc.Graph(  
                                                                                          id='eigen-plot',
-                                                                                         className='img-fluid')])])]), #Change html.Img to Dcc.graph
+                                                                                         className='img-fluid')])])]), #Changed html.Img (matlipplot)  to Dcc.graph (plotly)
                                        lg=5,
                                        width=12),
                                dbc.Col(children=[html.H5('Choose a Parameter Set:',
@@ -368,27 +368,14 @@ def plot_update(value, wheel, frame, general, options, slider):
         for i in range(0, len(newP), 2):
             Bike.parameters['Benchmark'][newP[i]] = newP[i+1]
 
-    # create geometry-plot image
-    # geo_fake = io.BytesIO()
-    geo_plot = Bike.plot_bicycle_geometry(
+    # create geometry-plot with plotly
+
+    geo_plot = Bike.plot_bicycle_geometry_plotly(
         show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
-    # geo_plot.savefig(geo_fake)
-    # geo_image = base64.b64encode(geo_fake.getvalue())
-    # plt.close(geo_plot)
-
-    # create eigen-plot image
-    # eigen_fake = io.BytesIO()
-    eigen_plot = Bike.plot_eigenvalues_vs_speed(
+    # Create eigenvalues-plot with plotly
+    eigen_plot = Bike.plot_eigenvalues_vs_speed_plotly(
         speeds, show=False, grid=True, show_legend=False)
-    # eigen_plot.savefig(eigen_fake)
-    # eigen_image = base64.b64encode(eigen_plot.getvalue())
-    # plt.close(eigen_plot)
 
-    # return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
-
-    # return 'data:image/html,{}'.format(eigen_image.decode())
-    
-    # directly return html without encoding
     return  eigen_plot,geo_plot
 
 
