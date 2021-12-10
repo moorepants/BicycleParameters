@@ -8,6 +8,7 @@ dependencies:
   - nose
   - numpy >=1.17.4
   - numpydoc
+  - pandas
   - plotly
   - pytest
   - pyyaml >=5.3.1
