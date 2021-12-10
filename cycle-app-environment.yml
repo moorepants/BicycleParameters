@@ -5,8 +5,8 @@ channels:
   - defaults
 dependencies:
   - dash-bootstrap-components
-  - pandas
   - dynamicisttoolkit
-  - yeadon 
   - matplotlib
+  - pandas
   - uncertainties
+  - yeadon
