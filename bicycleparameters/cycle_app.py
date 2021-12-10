@@ -72,7 +72,7 @@ GENERAL_LABELS = ['Wheel Base [m]:',
                   'Steer Axis Tilt [degrees]:',
                   'Gravity [N/kg]:']
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.MINTY])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
 app.title = 'Bicycle Dynamics Analysis App'
 server = app.server  # needed for heroku
 

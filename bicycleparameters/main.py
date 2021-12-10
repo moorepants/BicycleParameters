@@ -979,10 +979,10 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
         fig1.update_layout(title_text='Bicycle geometry',title_x=0.5,
                    )
-        # fig1.update_layout(yaxis=dict(autorange=True,showgrid=False,ticks='',showticklabels=False))
-        # fig1.update_layout(xaxis=dict(autorange=True,showgrid=False,ticks='',showticklabels=False))
-        fig1.update_layout(xaxis=dict(range = [-par['rR'],par['w']+par['rF']],fixedrange=True))
-        fig1.update_layout(yaxis=dict(range =[0,1.2],fixedrange=True))
+        fig1.update_layout(yaxis=dict(autorange=True,showgrid=False,ticks='',showticklabels=False))
+        fig1.update_layout(xaxis=dict(autorange=True,showgrid=False,ticks='',showticklabels=False))
+        # fig1.update_layout(xaxis=dict(range = [-par['rR'],par['w']+par['rF']],fixedrange=True))
+        # fig1.update_layout(yaxis=dict(range =[0,1.2],fixedrange=True))
         
         if show:
             fig1.show()
