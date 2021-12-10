@@ -97,17 +97,15 @@ def plot_eigenvalues(bikes, speeds, colors=None, linestyles=None,
     return fig
 
 
-from numpy import pi, sin, cos
-# import plotly.graph_objects as go
 
-def ell(x_center, y_center, ax1, ax2, a, b, N = 100):
-    # x_center, y_center the coordinates of ellipse center
+def ell(x_center, y_center, ax1, ax2, a, b, N):
+# x_center, y_center the coordinates of ellipse center
 # ax1 ax2 two orthonormal vectors representing the ellipse axis directions
 # a, b the ellipse parameters
-        t = np.linspace(0, 2 * pi, N)
+        t = np.linspace(0, 2 * np.pi, N)
         #ellipse parameterization with respect to a system of axes of directions a1, a2
-        xs = a * cos(t)
-        ys = b * sin(t)
+        xs = a * np.cos(t)
+        ys = b * np.sin(t)
         #rotation matrix
         R = np.array([ax1, ax2]).T
         # coordinate of the ellipse points with respect to the system of axes[1, 0], [0, 1] with origin(0, 0)

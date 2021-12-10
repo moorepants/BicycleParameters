@@ -18,8 +18,6 @@ from plotly.subplots import make_subplots
 import bicycleparameters as bp
 import matplotlib
 
-# run -m bicycleparameters.cycle_app
-
 matplotlib.use('Agg') # prevents pop-up windows when calling plotting functions
 
 path_to_this_file = os.path.dirname(os.path.abspath(__file__))
@@ -93,9 +91,9 @@ app.layout = html.Div([
                       dbc.Row([dbc.Col(dcc.Loading(id='geometry-load',
                                                    type='dot',
                                                    children=[html.Div(id='geometry-bin',
-                                                                      children=[html.Div([dcc.Graph(                    #html.Img(src='',
+                                                                      children=[html.Div([dcc.Graph(                   
                                                                                          id='geometry-plot',
-                                                                                         className='img-fluid')])])]),    #Change html.Img to Dcc.graph
+                                                                                         className='img-fluid')])])]),    
                                        lg=5,
                                        width=12),
                                dbc.Col(dcc.Loading(id='eigen-load',
@@ -103,7 +101,7 @@ app.layout = html.Div([
                                                    children=[html.Div(id='eigen-bin',
                                                                       children=[html.Div([dcc.Graph(  
                                                                                          id='eigen-plot',
-                                                                                         className='img-fluid')])])]), #Changed html.Img (matlipplot)  to Dcc.graph (plotly)
+                                                                                         className='img-fluid')])])]), 
                                        lg=5,
                                        width=12),
                                dbc.Col(children=[html.H5('Choose a Parameter Set:',
@@ -337,7 +335,7 @@ def plot_update(value, wheel, frame, general, options, slider):
     maxBound = rangeSliderData[1]
     steps = (maxBound-minBound)/0.1
     speeds = np.linspace(minBound, maxBound, num=int(steps))
-    print(speeds)
+
     # create Bike using default data based on dropdown menu value
     Bike = bp.Bicycle(value, pathToData=path_to_app_data)
 
@@ -374,7 +372,7 @@ def plot_update(value, wheel, frame, general, options, slider):
         show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
     # Create eigenvalues-plot with plotly
     eigen_plot = Bike.plot_eigenvalues_vs_speed_plotly(
-        speeds, show=False, grid=True, show_legend=False)
+        speeds, show=False)
 
     return  eigen_plot,geo_plot
 
