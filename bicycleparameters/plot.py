@@ -98,7 +98,7 @@ def plot_eigenvalues(bikes, speeds, colors=None, linestyles=None,
 
 
 
-def ell(x_center, y_center, ax1, ax2, a, b, N):
+def generate_ellipse_plot_data(x_center, y_center, ax1, ax2, a, b, N):
 # x_center, y_center the coordinates of ellipse center
 # ax1 ax2 two orthonormal vectors representing the ellipse axis directions
 # a, b the ellipse parameters

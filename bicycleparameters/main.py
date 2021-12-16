@@ -808,7 +808,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                 angle = -np.degrees(np.arccos(C2D[0, 0]))
                 x_center = center[0]
                 y_center = center[1]
-                x_ep, y_ep = plot.ell(x_center = x_center, y_center = y_center,
+                x_ep, y_ep = plot.generate_ellipse_plot_data(x_center = x_center, y_center = y_center,
                                       ax1 = [np.cos(angle), np.sin(angle)], 
                                       ax2 = [-np.sin(angle), np.cos(angle)],
                                       a = height, b = width,N=100)
@@ -825,21 +825,35 @@ the pathToData argument.""".format(bicycleName, pathToData)
         fig1.add_trace(go.Scatter(x=x, y=np.zeros_like(x),
                     mode='lines',
                     name='Ground'))
-            
+        def make_circle_legend(R,x_center_wheel,y_center_wheel):
+                t = np.linspace(0,2*np.pi, 100)
+                xwh= R*np.cos(t)
+                ywh = R*np.sin(t)   
+                x_wheel = xwh + x_center_wheel
+                y_wheel = ywh + y_center_wheel
+                return x_wheel, y_wheel
 
         # plot the rear wheel 
-        fig1.add_shape(type="circle",
-                      xref="x", yref="y",
-                      x0=-par['rR'], y0=0, x1=par['rR'], y1=2*par['rR'],
-                      line_color="LightSeaGreen",name='Rear wheel')
+        x_wheel_R,y_wheel_R = make_circle_legend(par['rR'],0,par['rR'])
+        fig1.add_trace(go.Scatter(x=x_wheel_R,y=y_wheel_R,mode='lines',
+                                  line_color="LightSeaGreen",
+                                  name='Rear wheel'))
+        # fig1.add_shape(type="circle",
+        #               xref="x", yref="y",
+        #               x0=-par['rR'], y0=0, x1=par['rR'], y1=2*par['rR'],
+        #               line_color="LightSeaGreen",name='Rear wheel')
         
 
         # plot the front wheel
-        fig1.add_shape(type="circle",
-                      xref="x", yref="y",
-                      x0=(par['w']-par['rF']), y0=0, x1=(par['w']+par['rF']),
-                      y1=2*par['rF'],
-                      line_color="LightSeaGreen",)
+        x_wheel_F,y_wheel_F = make_circle_legend(par['rF'],par['w'],par['rF'])
+        fig1.add_trace(go.Scatter(x=x_wheel_F,y=y_wheel_F,mode='lines',
+                                  line_color="LightSeaGreen",
+                                  name='Front wheel'))
+        # fig1.add_shape(type="circle",
+        #               xref="x", yref="y",
+        #               x0=(par['w']-par['rF']), y0=0, x1=(par['w']+par['rF']),
+        #               y1=2*par['rF'],
+        #               line_color="LightSeaGreen",)
 
         # plot the fundamental bike 
         deex, deez = geometry.fundamental_geometry_plot_data(par)
@@ -1293,7 +1307,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
     
     
     def plot_eigenvalues_vs_speed_plotly(self, speeds, fig=None,
-                                         show=True, largest=False):
+                                         show=True, largest=False,Stabilityregion=True):
         speeds = np.sort(speeds)
         if fig is None:
             fig = go.Figure(layout_yaxis_range=[-10,10])
@@ -1304,51 +1318,68 @@ the pathToData argument.""".format(bicycleName, pathToData)
             fig.show()
         else:
             w, cap, cas = bicycle.sort_modes(evals, evecs)
-
+            weaveColor1 = 'royalblue'
+            weaveColor2 = 'cornflowerblue'
+            capsizeColor = 'coral'
+            casterColor = 'mediumseagreen'
         wea1 = w['evals'][:, 0]
         wea2 = w['evals'][:, 1]
         fig.add_trace(go.Scatter(x=speeds, y=np.real(wea1),
                             mode='lines',
                             name='Re Weave',
-                            line=dict(color='royalblue'),
+                            line=dict(color=weaveColor1),
                             text = 'Re'))
         fig.add_trace(go.Scatter(x=speeds, y=np.real(wea2),
                             mode='lines',
                             name='Re Weave',
+                            line=dict(color=weaveColor2),
                             text = 'Re'))
         fig.add_trace(go.Scatter(x=speeds, y=np.real(cap['evals']),
                             mode='lines',
                             name='Re Capsize',
+                            line=dict(color=capsizeColor),
                             text = 'Re'))
         fig.add_trace(go.Scatter(x=speeds, y=np.real(cas['evals']),
                             mode='lines',
                             name='Re Castering',
+                            line=dict(color=casterColor),
                             text = 'Re'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(wea1)),
                             mode='lines',
                             name='Im Weave',
-                            line=dict(color='royalblue',dash='dash'),
+                            line=dict(color=weaveColor1,dash='dash'),
                             text = 'Im'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(wea2)),
                             mode='lines',
                             name='Im Weave',
-                            line=dict(dash='dash'),
+                            line=dict(color=weaveColor2,dash='dash'),
                             text = 'Im'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cap['evals'])),
                             mode='lines',
                             name='Im Capsize',
-                            line=dict(dash='dash'),
+                            line=dict(color=capsizeColor,dash='dash'),
                             text = 'Im'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cas['evals'])),
                             mode='lines',
                             name='Im Castering',
-                            line=dict(dash='dash'),
+                            line=dict(color=casterColor ,dash='dash'),
                             text = 'Im'))
-        vw = speeds[np.real(cas['evals'])<0][0]
-        vc = speeds[np.real(wea2)>0][0]
-        fig.add_vrect(x0=vw, x1=vc, 
-                      annotation_text="Self stability", annotation_position='top left',             
-                        fillcolor="green", opacity=0.25, line_width=0, row=1, col=1)
+        if Stabilityregion:
+            v_start_stab= max([min(speeds[np.real(wea2)<0]),
+                        min(speeds[ np.real(cas['evals'])<0]),
+                        min(speeds[ np.real(cap['evals'])<0]),
+                        min(speeds[ np.real(wea1)<0])])
+
+            v_end_stab =min([max(speeds[np.real(wea2)<0]),
+                        max(speeds[ np.real(cas['evals'])<0]),
+                        max(speeds[ np.real(cap['evals'])<0]),
+                        max(speeds[ np.real(wea1)<0])])
+        
+            fig.add_vrect(x0=v_start_stab, x1=v_end_stab, 
+                      annotation_text="Self stability", 
+                      annotation_position='top left',             
+                        fillcolor="blue", opacity=0.25, 
+                        line_width=0, row=1, col=1)
         
         fig.update_layout(title_text='Eigenvalues vs velocity',#title_x=0.5,
                    xaxis_title='Velocity [m/s]',

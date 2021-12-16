@@ -113,7 +113,8 @@ app.layout = html.Div([
                                                               style={'color': 'black'}),
                                                  dcc.Checklist(id='geometry-checklist',
                                                                options=[{'label': 'Show Centers of Mass ', 'value': 'centers'},
-                                                                        {'label': 'Show Inertia Ellipsoids ', 'value': 'ellipse'}],
+                                                                        {'label': 'Show Inertia Ellipsoids ', 'value': 'ellipse'},
+                                                                        {'label': 'Show Self-stability region', 'value': 'stability'}],
                                                                value=['centers']),
                                                  dbc.Button('Reset Table',
                                                             id='reset-button',
@@ -329,6 +330,7 @@ def plot_update(value, wheel, frame, general, options, slider):
     # construct flags for selected values of the geometry plot display options
     mass_boolean = 'centers' in checklistData
     ellipse_boolean = 'ellipse' in checklistData
+    stability_option = 'stability' in checklistData
 
     # sets the speed range for eigen-plot based on range-slider
     minBound = rangeSliderData[0]
@@ -372,7 +374,7 @@ def plot_update(value, wheel, frame, general, options, slider):
         show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
     # Create eigenvalues-plot with plotly
     eigen_plot = Bike.plot_eigenvalues_vs_speed_plotly(
-        speeds, show=False)
+        speeds, show=False,Stabilityregion=stability_option)
 
     return  eigen_plot,geo_plot
 
