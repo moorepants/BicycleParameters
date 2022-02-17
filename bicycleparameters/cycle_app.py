@@ -91,17 +91,17 @@ app.layout = html.Div([
                       dbc.Row([dbc.Col(dcc.Loading(id='geometry-load',
                                                    type='dot',
                                                    children=[html.Div(id='geometry-bin',
-                                                                      children=[html.Div([dcc.Graph(                   
+                                                                      children=[html.Div([dcc.Graph(
                                                                                          id='geometry-plot',
-                                                                                         className='img-fluid')])])]),    
+                                                                                         className='img-fluid')])])]),
                                        lg=5,
                                        width=12),
                                dbc.Col(dcc.Loading(id='eigen-load',
                                                    type='dot',
                                                    children=[html.Div(id='eigen-bin',
-                                                                      children=[html.Div([dcc.Graph(  
+                                                                      children=[html.Div([dcc.Graph(
                                                                                          id='eigen-plot',
-                                                                                         className='img-fluid')])])]), 
+                                                                                         className='img-fluid')])])]),
                                        lg=5,
                                        width=12),
                                dbc.Col(children=[html.H5('Choose a Parameter Set:',
@@ -122,7 +122,6 @@ app.layout = html.Div([
                                                             size='lg',
                                                             n_clicks=0)],
                                        lg=2)],
-                              no_gutters=True,
                               className="my-2"),
                       dbc.Row([dbc.Col(tbl.DataTable(id='frame-table',
                                                      columns=FRAME_COLUMNS,
@@ -140,7 +139,7 @@ app.layout = html.Div([
                                                      },
                                                      style_data_conditional=[
                                                          {
-                                                            "if": {"state": "selected"},              
+                                                            "if": {"state": "selected"},
                                                             "backgroundColor": "rgb(255,255,255)",
                                                             'color': 'black',
                                                             "border": "1px solid black",
@@ -182,7 +181,7 @@ app.layout = html.Div([
                                                                                 },
                                                                                 style_data_conditional=[
                                                                                     {
-                                                                                        "if": {"state": "selected"},              
+                                                                                        "if": {"state": "selected"},
                                                                                         "backgroundColor": "rgb(255,255,255)",
                                                                                         'color': 'black',
                                                                                         "border": "1px solid black",
@@ -205,7 +204,7 @@ app.layout = html.Div([
                                                                                 },
                                                                                 style_data_conditional=[
                                                                                     {
-                                                                                        "if": {"state": "selected"},              
+                                                                                        "if": {"state": "selected"},
                                                                                         "backgroundColor": "rgb(255,255,255)",
                                                                                         'color': 'black',
                                                                                         "border": "1px solid black",
@@ -395,5 +394,5 @@ def input_triggers_spinner2(value):
     return value
 
 
-if __name__ == '__main__':                         # omit the `dev_tools_ui` parameter to display debug info 
+if __name__ == '__main__':                         # omit the `dev_tools_ui` parameter to display debug info
     app.run_server(debug=True, dev_tools_ui=True) # in the browser rather than in the terminal
