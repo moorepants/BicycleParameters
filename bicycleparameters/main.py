@@ -956,16 +956,14 @@ the pathToData argument.""".format(bicycleName, pathToData)
             # front wheel CoM
             x_com_Wf=par['w']
             y_com_Wf=par['rF']
-            F_color= 'skyblue'
             fig1=com_symbol(sRad,x_com_Wf,y_com_Wf,partColors['F'])
-            fig1.add_annotation(text=part,
+            fig1.add_annotation(text='F',
                   xref='x', yref='y',
                   x=x_com_Wf+0.055, y=y_com_Wf+0.055,showarrow=False,font=dict(size=15))
 
             # rear wheel CoM
-            R_color = 'mediumseagreen'
             fig1=com_symbol(sRad,0.,par['rR'],partColors['R'])
-            fig1.add_annotation(text="R",
+            fig1.add_annotation(text='R',
                   xref='x', yref='y',
                   x=0.055, y=par['rR']+0.055,showarrow=False,font=dict(size=15))
 
@@ -973,14 +971,12 @@ the pathToData argument.""".format(bicycleName, pathToData)
                                       if x not in 'RFD']):
                 xcom = par['x' + part]
                 zcom = par['z' + part]
-                B_color = 'coral'
                 fig1=com_symbol(sRad,xcom,-zcom,partColors[part])
                 fig1.add_annotation(text=part,
                   xref='x', yref='y',
                   x=xcom+0.055, y=-zcom+0.055,showarrow=False,font=dict(size=15))
 
             if 'H' not in parts:
-                H_color='pink'
                 fig1 = com_symbol(sRad,par['xH'], -par['zH'],partColors['H'])
                 fig1.add_annotation(text="H",
                   xref='x', yref='y',
@@ -1379,21 +1375,30 @@ the pathToData argument.""".format(bicycleName, pathToData)
                             line=dict(color=casterColor ,dash='dash'),
                             text = 'Im'))
         if Stabilityregion:
-            v_start_stab= max([min(speeds[np.real(wea2)<0]),
+            # if not min(speeds[ np.real(wea1)<0],default="EMPTY"):
+            try:
+                v_start_stab = max([min(speeds[np.real(wea2)<0]),
                         min(speeds[ np.real(cas['evals'])<0]),
                         min(speeds[ np.real(cap['evals'])<0]),
-                        min(speeds[ np.real(wea1)<0])])
-
-            v_end_stab =min([max(speeds[np.real(wea2)<0]),
+                        min(speeds[ np.real(wea1)<0], default="EMPTY")])
+                v_end_stab =min([max(speeds[np.real(wea2)<0]),
                         max(speeds[ np.real(cas['evals'])<0]),
                         max(speeds[ np.real(cap['evals'])<0]),
                         max(speeds[ np.real(wea1)<0])])
-        
-            fig.add_vrect(x0=v_start_stab, x1=v_end_stab, 
+            except:
+                fig.add_annotation(x=0.5*max(speeds),y=9,
+                                    text="No stability region",
+                                    showarrow=False)
+            else:
+                fig.add_vrect(x0=v_start_stab, x1=v_end_stab, 
                       annotation_text="Self stability", 
                       annotation_position='top left',             
                         fillcolor="blue", opacity=0.25, 
                         line_width=0, row=1, col=1)
+
+
+
+
         
         fig.update_layout(title_text='Eigenvalues vs velocity',#title_x=0.5,
                    xaxis_title='Velocity [m/s]',
