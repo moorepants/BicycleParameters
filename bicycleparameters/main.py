@@ -817,9 +817,6 @@ the pathToData argument.""".format(bicycleName, pathToData)
                                      name = 'Inertia of '+part,
                                      line_color=partColors[part],
                                      fill='toself', opacity=0.5)
-                # fig1.add_annotation(text="Inertia of"+ part,xref='x', 
-                # yref='y',x=x_center+0.055,y=y_center+0.055,
-                # showarrow=False,font=dict(size=12))
             
         # plot the ground line 
         x = np.array([-par['rR'],par['w'] + par['rF']])
@@ -828,6 +825,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                     name='Ground',
                     line_color= 'lightgrey',
                     hovertemplate= "%{x:.3f}<br>%{y:.3f}"))
+        
         def make_circle_legend(R,x_center_wheel,y_center_wheel):
                 t = np.linspace(0,2*np.pi, 100)
                 xwh= R*np.cos(t)
@@ -842,12 +840,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                                   #line_color="LightSeaGreen",
                                   line_color='grey',
                                   name='Rear wheel',
-                                  hovertemplate= "%{x:.3f}<br>%{y:.3f}"))
-        # fig1.add_shape(type="circle",
-        #               xref="x", yref="y",
-        #               x0=-par['rR'], y0=0, x1=par['rR'], y1=2*par['rR'],
-        #               line_color="LightSeaGreen",name='Rear wheel')
-        
+                                  hovertemplate= "%{x:.3f}<br>%{y:.3f}"))     
 
         # plot the front wheel
         x_wheel_F,y_wheel_F = make_circle_legend(par['rF'],par['w'],par['rF'])
@@ -855,11 +848,6 @@ the pathToData argument.""".format(bicycleName, pathToData)
                                   line_color='grey',
                                   hovertemplate= "%{x:.3f}<br>%{y:.3f}",
                                   name='Front wheel'))
-        # fig1.add_shape(type="circle",
-        #               xref="x", yref="y",
-        #               x0=(par['w']-par['rF']), y0=0, x1=(par['w']+par['rF']),
-        #               y1=2*par['rF'],
-        #               line_color="LightSeaGreen",)
 
         # plot the fundamental bike 
         deex, deez = geometry.fundamental_geometry_plot_data(par)
@@ -1316,11 +1304,13 @@ the pathToData argument.""".format(bicycleName, pathToData)
     
     
     def plot_eigenvalues_vs_speed_plotly(self, speeds, fig=None,
-                                         show=True, largest=False,Stabilityregion=True):
-        speeds = np.sort(speeds)
+                                         show=True, largest=False,
+                                         Stabilityregion=True):
+        speeds = np.sort(speeds)      
         if fig is None:
             fig = go.Figure(layout_yaxis_range=[-10,10])
             evals, evecs = self.eig(speeds)
+
 
         if largest:
             fig.add_trace(go.Scatter(x=speeds, y=np.max(evals)))
@@ -1328,10 +1318,10 @@ the pathToData argument.""".format(bicycleName, pathToData)
         else:
             w, cap, cas = bicycle.sort_modes(evals, evecs)
             colors_eig = px.colors.qualitative.Pastel
-            weaveColor1 = colors_eig[0] #'royalblue'
-            weaveColor2 = colors_eig[1] #'cornflowerblue'
-            capsizeColor = colors_eig[2] #'coral'
-            casterColor = colors_eig[5] #'mediumseagreen'
+            weaveColor1 = colors_eig[0] 
+            weaveColor2 = colors_eig[1] 
+            capsizeColor = colors_eig[2] 
+            casterColor = colors_eig[5]
         wea1 = w['evals'][:, 0]
         wea2 = w['evals'][:, 1]
         fig.add_trace(go.Scatter(x=speeds, y=np.real(wea1),
@@ -1375,7 +1365,6 @@ the pathToData argument.""".format(bicycleName, pathToData)
                             line=dict(color=casterColor ,dash='dash'),
                             text = 'Im'))
         if Stabilityregion:
-            # if not min(speeds[ np.real(wea1)<0],default="EMPTY"):
             try:
                 v_start_stab = max([min(speeds[np.real(wea2)<0]),
                         min(speeds[ np.real(cas['evals'])<0]),
@@ -1389,6 +1378,14 @@ the pathToData argument.""".format(bicycleName, pathToData)
                 fig.add_annotation(x=0.5*max(speeds),y=9,
                                     text="No stability region",
                                     showarrow=False)
+            if (v_start_stab > v_end_stab):
+                fig.add_annotation(x=0.5*max(speeds),y=9,
+                                    text="No stability region",
+                                    showarrow=False)                        
+            elif (v_end_stab - v_start_stab < 0.0001):
+                fig.add_annotation(x=0.5*max(speeds),y=9,
+                                    text="No stability region",
+                                    showarrow=False)
             else:
                 fig.add_vrect(x0=v_start_stab, x1=v_end_stab, 
                       annotation_text="Self stability", 
@@ -1396,11 +1393,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                         fillcolor="blue", opacity=0.25, 
                         line_width=0, row=1, col=1)
 
-
-
-
-        
-        fig.update_layout(title_text='Eigenvalues vs velocity',#title_x=0.5,
+        fig.update_layout(title_text='Eigenvalues vs velocity',
                    xaxis_title='Velocity [m/s]',
                    yaxis_title='Eigenvalues [1/s]') #,template='plotly_dark')
         fig.update_traces(hovertemplate= "%{x:.3f}<br>%{y:.3f}")
