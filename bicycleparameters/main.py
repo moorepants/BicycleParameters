@@ -805,7 +805,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                 angle = -np.degrees(np.arccos(C2D[0, 0]))
                 x_center = center[0]
                 y_center = center[1]
-                x_ep, y_ep = plot.generate_ellipse_plot_data(
+                x_ep, y_ep = plot._generate_ellipse_plot_data(
                     x_center=x_center, y_center=y_center,
                     ax1=[np.cos(angle), np.sin(angle)],
                     ax2=[-np.sin(angle), np.cos(angle)],
@@ -1193,8 +1193,8 @@ the pathToData argument.""".format(bicycleName, pathToData)
         return evals, evecs
 
     def plot_eigenvalues_vs_speed(self, speeds, fig=None, generic=False,
-                                   color='black', show=False, largest=False,
-                                   linestyle='-', grid=False, show_legend=True):
+                                  color='black', show=False, largest=False,
+                                  linestyle='-', grid=False, show_legend=True):
         """Returns a plot of the eigenvalues versus speed for the current
         benchmark parameters.
 
@@ -1716,6 +1716,3 @@ def is_fork_split(mp):
             forkIsSplit = True
 
     return forkIsSplit
-
-
-

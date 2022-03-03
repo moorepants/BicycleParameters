@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def compare_bode_bicycles(bikes, speed, u, y, fig=None):
     """Returns a figure with the Bode plots of multiple bicycles.
 
@@ -46,8 +47,9 @@ def compare_bode_bicycles(bikes, speed, u, y, fig=None):
 
     return fig
 
+
 def plot_eigenvalues(bikes, speeds, colors=None, linestyles=None,
-        largest=False, show=False):
+                     largest=False, show=False):
     '''Returns a figure with the eigenvalues vs speed for multiple bicycles.
 
     Parameters
@@ -97,19 +99,20 @@ def plot_eigenvalues(bikes, speeds, colors=None, linestyles=None,
     return fig
 
 
-
-def generate_ellipse_plot_data(x_center, y_center, ax1, ax2, a, b, N):
-# x_center, y_center the coordinates of ellipse center
-# ax1 ax2 two orthonormal vectors representing the ellipse axis directions
-# a, b the ellipse parameters
-        t = np.linspace(0, 2 * np.pi, N)
-        #ellipse parameterization with respect to a system of axes of directions a1, a2
-        xs = a * np.cos(t)
-        ys = b * np.sin(t)
-        #rotation matrix
-        R = np.array([ax1, ax2]).T
-        # coordinate of the ellipse points with respect to the system of axes[1, 0], [0, 1] with origin(0, 0)
-        xp, yp = np.dot(R, [xs, ys])
-        x = xp + x_center
-        y = yp + y_center
-        return x, y
+def _generate_ellipse_plot_data(x_center, y_center, ax1, ax2, a, b, N):
+    # x_center, y_center the coordinates of ellipse center
+    # ax1 ax2 two orthonormal vectors representing the ellipse axis directions
+    # a, b the ellipse parameters
+    t = np.linspace(0, 2 * np.pi, N)
+    # ellipse parameterization with respect to a system of axes of directions
+    # a1, a2
+    xs = a * np.cos(t)
+    ys = b * np.sin(t)
+    # rotation matrix
+    R = np.array([ax1, ax2]).T
+    # coordinate of the ellipse points with respect to the system of axes[1,
+    # 0], [0, 1] with origin(0, 0)
+    xp, yp = np.dot(R, [xs, ys])
+    x = xp + x_center
+    y = yp + y_center
+    return x, y
