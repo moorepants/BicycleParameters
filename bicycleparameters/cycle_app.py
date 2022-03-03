@@ -8,9 +8,6 @@ from dash import dcc
 from dash import html
 from dash import dash_table as tbl
 import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 import bicycleparameters as bp
 
 path_to_this_file = os.path.dirname(os.path.abspath(__file__))
@@ -367,11 +364,11 @@ def plot_update(value, wheel, frame, general, options, slider):
 
     # create geometry-plot with plotly
 
-    geo_plot = Bike.plot_bicycle_geometry_plotly(
+    geo_plot = Bike._plot_bicycle_geometry_plotly(
         show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
     # Create eigenvalues-plot with plotly
-    eigen_plot = Bike.plot_eigenvalues_vs_speed_plotly(
-        speeds, show=False, Stabilityregion=stability_option)
+    eigen_plot = Bike._plot_eigenvalues_vs_speed_plotly(
+        speeds, show=False, stability_region=stability_option)
 
     return eigen_plot, geo_plot
 

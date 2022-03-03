@@ -495,8 +495,8 @@ the pathToData argument.""".format(bicycleName, pathToData)
             self.parameters['Benchmark'] = bicycleRiderPar
             self.riderName = riderName
             self.hasRider = True
-            
-            
+
+
     def plot_bicycle_geometry(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
         """Returns a figure showing the basic bicycle geometry, the centers of
@@ -727,9 +727,9 @@ the pathToData argument.""".format(bicycleName, pathToData)
         return fig
 
 
-    def plot_bicycle_geometry_plotly(self, show=True, pendulum=True,
+    def _plot_bicycle_geometry_plotly(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
-        """Returns a Plotly figure showing the basic bicycle geometry, 
+        """Returns a Plotly figure showing the basic bicycle geometry,
         the centers of
         mass and the moments of inertia.
 
@@ -739,12 +739,12 @@ the pathToData argument.""".format(bicycleName, pathToData)
             If true plotly figure will show.
         centerOfMass : boolean, optional
             If true the mass center of each rigid body will be displayed. but
-            will have no trace in the legend since it already has a button. 
+            will have no trace in the legend since it already has a button.
             The hoverfunction will show where the COM's are located.
         inertiaEllipse : boolean optional
             If true inertia ellipses for each rigid body will be displayed.
             In some cases the ellipses are so large that they will not fit in
-            the figure. Therefor the axis of this plot are fixed. 
+            the figure. Therefor the axis of this plot are fixed.
 
         Returns
         =======
@@ -770,7 +770,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
         cmap = px.colors.qualitative.Pastel
         partColors = {}
 
-        
+
         for i, part in enumerate(parts):
             partColors[part] = cmap[i]
 
@@ -797,11 +797,11 @@ the pathToData argument.""".format(bicycleName, pathToData)
                             # make an ellipse
                 Imin = Ip2D[0]
                 Imax = Ip2D[1]
-                            # get width and height of a ellipse with 
+                            # get width and height of a ellipse with
                             # the major axis equal to one
                 unitWidth = 1. / 2. / np.sqrt(Imin) * np.sqrt(Imin)
                 unitHeight = 1. / 2. / np.sqrt(Imax) * np.sqrt(Imin)
-                            # now scaled the width and height relative to 
+                            # now scaled the width and height relative to
                             # the maximum principal moment of inertia
                 width = Imax * unitWidth
                 height = Imax * unitHeight
@@ -809,38 +809,38 @@ the pathToData argument.""".format(bicycleName, pathToData)
                 x_center = center[0]
                 y_center = center[1]
                 x_ep, y_ep = plot.generate_ellipse_plot_data(x_center = x_center, y_center = y_center,
-                                          ax1 = [np.cos(angle), np.sin(angle)], 
+                                          ax1 = [np.cos(angle), np.sin(angle)],
                                           ax2 = [-np.sin(angle), np.cos(angle)],
                                           a = height, b = width,N=100)
-    
-                fig1.add_scatter(x=x_ep, y=y_ep, mode = 'lines', 
+
+                fig1.add_scatter(x=x_ep, y=y_ep, mode = 'lines',
                                      name = 'Inertia of '+part,
                                      line_color=partColors[part],
                                      fill='toself', opacity=0.5)
-            
-        # plot the ground line 
+
+        # plot the ground line
         x = np.array([-par['rR'],par['w'] + par['rF']])
         fig1.add_trace(go.Scatter(x=x, y=np.zeros_like(x),
                     mode='lines',
                     name='Ground',
                     line_color= 'lightgrey',
                     hovertemplate= "%{x:.3f}<br>%{y:.3f}"))
-        
+
         def make_circle_legend(R,x_center_wheel,y_center_wheel):
                 t = np.linspace(0,2*np.pi, 100)
                 xwh= R*np.cos(t)
-                ywh = R*np.sin(t)   
+                ywh = R*np.sin(t)
                 x_wheel = xwh + x_center_wheel
                 y_wheel = ywh + y_center_wheel
                 return x_wheel, y_wheel
 
-        # plot the rear wheel 
+        # plot the rear wheel
         x_wheel_R,y_wheel_R = make_circle_legend(par['rR'],0,par['rR'])
         fig1.add_trace(go.Scatter(x=x_wheel_R,y=y_wheel_R,mode='lines',
                                   #line_color="LightSeaGreen",
                                   line_color='grey',
                                   name='Rear wheel',
-                                  hovertemplate= "%{x:.3f}<br>%{y:.3f}"))     
+                                  hovertemplate= "%{x:.3f}<br>%{y:.3f}"))
 
         # plot the front wheel
         x_wheel_F,y_wheel_F = make_circle_legend(par['rF'],par['w'],par['rF'])
@@ -849,7 +849,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                                   hovertemplate= "%{x:.3f}<br>%{y:.3f}",
                                   name='Front wheel'))
 
-        # plot the fundamental bike 
+        # plot the fundamental bike
         deex, deez = geometry.fundamental_geometry_plot_data(par)
         fig1.add_trace(go.Scatter(x=deex, y=-deez,
                     mode='lines',
@@ -859,17 +859,17 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
         # plot the steer axis
         dx3 = deex[2] + deez[2] * (deex[2] - deex[1]) / (deez[1] - deez[2])
-        
+
         fig1.add_trace(go.Scatter(x=[deex[2], dx3], y=[-deez[2], 0.],
                     mode='lines',
                     name='Steer axis',
                     hovertemplate= "%{x:.3f}<br>%{y:.3f}",
                     line=dict(dash='dash', color= 'dodgerblue')))
-        
+
         # Update Layout so circle will be round and background white and no grid
         fig1.update_xaxes(showgrid=False,zeroline=False)
         fig1.update_yaxes(showgrid=False,zeroline=False)
-        
+
         fig1.update_xaxes(
             range=[-par['rR'],par['w']+par['rF']],  # sets the range of xaxis
             constrain="domain",  # meanwhile compresses the xaxis by decreasing its "domain"
@@ -878,8 +878,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
             scaleanchor = "x",
             scaleratio = 1)
         fig1.update_layout(plot_bgcolor="white")
-        # fig1.update_layout(template="plotly_dark")
-        
+
         # don't plot the pendulum lines if a rider has been added because the
         # inertia has changed
         if self.hasRider:
@@ -900,16 +899,16 @@ the pathToData argument.""".format(bicycleName, pathToData)
                     xp = np.array([xPoint - xPlus,
                                   xPoint + xPlus])
                     zp = -m*xp - b
-                    
+
                     fig1.add_scatter(x=xp,y=zp,mode='lines',
                     name='Pendulum',
                     line=dict(dash='dash'))
-            
+
         if centerOfMass:
             def com_symbol(R,x_center,y_center,partcolor):
                 t = np.linspace(0,0.5*np.pi, 100)
                 xs = R*np.cos(t)
-                ys = R*np.sin(t)   
+                ys = R*np.sin(t)
                 xc1 = xs + x_center
                 yc1 = ys + y_center
                 t2 = np.linspace(0.5*np.pi,np.pi, 100)
@@ -927,7 +926,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                 ys4 = R*np.sin(t4)
                 xc4 = xs4 + x_center
                 yc4 = ys4 + y_center
-                
+
                 fig1.add_trace(go.Scatter(x=[x_center,x_center+R],y=[y_center,y_center],mode='lines',line_color=partcolor,showlegend = False,hoverinfo='none'))
                 fig1.add_trace(go.Scatter(x=[x_center,x_center],y=[y_center,y_center+R],mode='lines',line_color=partcolor, showlegend = False,hoverinfo='none'))
                 fig1.add_trace(go.Scatter(x=xc1,y=yc1,mode='lines',line_color=partcolor, showlegend = False,fill='tonexty',hoverinfo='none'))
@@ -994,7 +993,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
         # fig1.update_traces(hovertemplate= "%{x:.3f}<br>%{y:.3f}")
         # fig1.update_layout(xaxis=dict(range = [-par['rR'],par['w']+par['rF']],fixedrange=True))
         # fig1.update_layout(yaxis=dict(range =[0,1.2],fixedrange=True))
-        
+
         if show:
             fig1.show()
         return fig1
@@ -1301,16 +1300,14 @@ the pathToData argument.""".format(bicycleName, pathToData)
             fig.show()
 
         return fig
-    
-    
-    def plot_eigenvalues_vs_speed_plotly(self, speeds, fig=None,
-                                         show=True, largest=False,
-                                         Stabilityregion=True):
-        speeds = np.sort(speeds)      
-        if fig is None:
-            fig = go.Figure(layout_yaxis_range=[-10,10])
-            evals, evecs = self.eig(speeds)
 
+    def _plot_eigenvalues_vs_speed_plotly(self, speeds, fig=None, show=True,
+                                          largest=False,
+                                          stability_region=True):
+        speeds = np.sort(speeds)
+        if fig is None:
+            fig = go.Figure(layout_yaxis_range=[-10, 10])
+            evals, evecs = self.eig(speeds)
 
         if largest:
             fig.add_trace(go.Scatter(x=speeds, y=np.max(evals)))
@@ -1318,89 +1315,90 @@ the pathToData argument.""".format(bicycleName, pathToData)
         else:
             w, cap, cas = bicycle.sort_modes(evals, evecs)
             colors_eig = px.colors.qualitative.Pastel
-            weaveColor1 = colors_eig[0] 
-            weaveColor2 = colors_eig[1] 
-            capsizeColor = colors_eig[2] 
+            weaveColor1 = colors_eig[0]
+            weaveColor2 = colors_eig[1]
+            capsizeColor = colors_eig[2]
             casterColor = colors_eig[5]
         wea1 = w['evals'][:, 0]
         wea2 = w['evals'][:, 1]
         fig.add_trace(go.Scatter(x=speeds, y=np.real(wea1),
-                            mode='lines',
-                            name='Re Weave',
-                            line=dict(color=weaveColor1),
-                            text = 'Re'))
+                                 mode='lines',
+                                 name='Re Weave',
+                                 line=dict(color=weaveColor1),
+                                 text='Re'))
         fig.add_trace(go.Scatter(x=speeds, y=np.real(wea2),
-                            mode='lines',
-                            name='Re Weave',
-                            line=dict(color=weaveColor2),
-                            text = 'Re'))
+                                 mode='lines',
+                                 name='Re Weave',
+                                 line=dict(color=weaveColor2),
+                                 text='Re'))
         fig.add_trace(go.Scatter(x=speeds, y=np.real(cap['evals']),
-                            mode='lines',
-                            name='Re Capsize',
-                            line=dict(color=capsizeColor),
-                            text = 'Re'))
+                                 mode='lines',
+                                 name='Re Capsize',
+                                 line=dict(color=capsizeColor),
+                                 text='Re'))
         fig.add_trace(go.Scatter(x=speeds, y=np.real(cas['evals']),
-                            mode='lines',
-                            name='Re Castering',
-                            line=dict(color=casterColor),
-                            text = 'Re'))
+                                 mode='lines',
+                                 name='Re Castering',
+                                 line=dict(color=casterColor),
+                                 text='Re'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(wea1)),
-                            mode='lines',
-                            name='Im Weave',
-                            line=dict(color=weaveColor1,dash='dash'),
-                            text = 'Im'))
+                                 mode='lines',
+                                 name='Im Weave',
+                                 line=dict(color=weaveColor1, dash='dash'),
+                                 text='Im'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(wea2)),
-                            mode='lines',
-                            name='Im Weave',
-                            line=dict(color=weaveColor2,dash='dash'),
-                            text = 'Im'))
+                                 mode='lines',
+                                 name='Im Weave',
+                                 line=dict(color=weaveColor2, dash='dash'),
+                                 text='Im'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cap['evals'])),
-                            mode='lines',
-                            name='Im Capsize',
-                            line=dict(color=capsizeColor,dash='dash'),
-                            text = 'Im'))
+                                 mode='lines',
+                                 name='Im Capsize',
+                                 line=dict(color=capsizeColor, dash='dash'),
+                                 text='Im'))
         fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cas['evals'])),
-                            mode='lines',
-                            name='Im Castering',
-                            line=dict(color=casterColor ,dash='dash'),
-                            text = 'Im'))
-        if Stabilityregion:
+                                 mode='lines',
+                                 name='Im Castering',
+                                 line=dict(color=casterColor, dash='dash'),
+                                 text='Im'))
+        if stability_region:
             try:
-                v_start_stab = max([min(speeds[np.real(wea2)<0]),
-                        min(speeds[ np.real(cas['evals'])<0]),
-                        min(speeds[ np.real(cap['evals'])<0]),
-                        min(speeds[ np.real(wea1)<0], default="EMPTY")])
-                v_end_stab =min([max(speeds[np.real(wea2)<0]),
-                        max(speeds[ np.real(cas['evals'])<0]),
-                        max(speeds[ np.real(cap['evals'])<0]),
-                        max(speeds[ np.real(wea1)<0])])
-            except:
-                fig.add_annotation(x=0.5*max(speeds),y=9,
-                                    text="No stability region",
-                                    showarrow=False)
+                v_start_stab = max([min(speeds[np.real(wea2) < 0]),
+                                    min(speeds[np.real(cas['evals']) < 0]),
+                                    min(speeds[np.real(cap['evals']) < 0]),
+                                    min(speeds[np.real(wea1) < 0],
+                                        default="EMPTY")])
+                v_end_stab = min([max(speeds[np.real(wea2) < 0]),
+                                  max(speeds[np.real(cas['evals']) < 0]),
+                                  max(speeds[np.real(cap['evals']) < 0]),
+                                  max(speeds[np.real(wea1) < 0])])
+            except:  # TODO : Add explicit exception
+                fig.add_annotation(x=0.5*max(speeds), y=9,
+                                   text="No stability region",
+                                   showarrow=False)
             if (v_start_stab > v_end_stab):
-                fig.add_annotation(x=0.5*max(speeds),y=9,
-                                    text="No stability region",
-                                    showarrow=False)                        
+                fig.add_annotation(x=0.5*max(speeds), y=9,
+                                   text="No stability region",
+                                   showarrow=False)
             elif (v_end_stab - v_start_stab < 0.0001):
-                fig.add_annotation(x=0.5*max(speeds),y=9,
-                                    text="No stability region",
-                                    showarrow=False)
+                fig.add_annotation(x=0.5*max(speeds), y=9,
+                                   text="No stability region",
+                                   showarrow=False)
             else:
-                fig.add_vrect(x0=v_start_stab, x1=v_end_stab, 
-                      annotation_text="Self stability", 
-                      annotation_position='top left',             
-                        fillcolor="blue", opacity=0.25, 
-                        line_width=0, row=1, col=1)
+                fig.add_vrect(x0=v_start_stab, x1=v_end_stab,
+                              annotation_text="Self stability",
+                              annotation_position='top left',
+                              fillcolor="blue", opacity=0.25,
+                              line_width=0, row=1, col=1)
 
         fig.update_layout(title_text='Eigenvalues vs velocity',
-                   xaxis_title='Velocity [m/s]',
-                   yaxis_title='Eigenvalues [1/s]') #,template='plotly_dark')
-        fig.update_traces(hovertemplate= "%{x:.3f}<br>%{y:.3f}")
+                          xaxis_title='Velocity [m/s]',
+                          yaxis_title='Eigenvalues [1/s]')
+        fig.update_traces(hovertemplate="%{x:.3f}<br>%{y:.3f}")
 
         if show:
             fig.show()
-            
+
         return fig
 
     def plot_bode(self, speed, u, y, **kwargs):
