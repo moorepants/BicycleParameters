@@ -389,7 +389,7 @@ def input_triggers_spinner2(value):
     return value
 
 
-# omit the `dev_tools_ui` parameter to display debug info
-# in the browser rather than in the terminal
+# omit the `dev_tools_ui` parameter to display debug info in the browser rather
+# than in the terminal
 if __name__ == '__main__':
-    app.run_server(debug=True, dev_tools_ui=True)
+    app.run_server(debug=True, dev_tools_ui=False)
