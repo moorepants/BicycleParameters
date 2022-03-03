@@ -1,21 +1,14 @@
-import io
-import base64
 import os
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-import dash_bootstrap_components as dbc
-import dash_table as tbl
 import time
-from dash.dependencies import Input, Output, State
 
+from dash.dependencies import Input, Output
+import dash
+import dash_bootstrap_components as dbc
+from dash import dcc
+from dash import html
+from dash import dash_table as tbl
+import numpy as np
 import bicycleparameters as bp
-import matplotlib
-
-matplotlib.use('Agg') # prevents pop-up windows when calling plotting functions
 
 path_to_this_file = os.path.dirname(os.path.abspath(__file__))
 path_to_app_data = os.path.join(path_to_this_file, 'app-data')
@@ -25,7 +18,10 @@ path_to_assets = os.path.join(path_to_this_file, 'assets')
 
 pList = ['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
          'w', 'c', 'lam', 'g',
-         'xB', 'zB', 'mB', 'IBxx', 'IByy', 'IBzz', 'IBxz', 'xH', 'zH', 'mH', 'IHxx', 'IHyy', 'IHzz', 'IHxz']
+         'xB', 'zB', 'mB',
+         'IBxx', 'IByy', 'IBzz', 'IBxz',
+         'xH', 'zH', 'mH',
+         'IHxx', 'IHyy', 'IHzz', 'IHxz']
 
 # list of bicycle models in the dropdown menu
 
@@ -88,17 +84,17 @@ app.layout = html.Div([
                       dbc.Row([dbc.Col(dcc.Loading(id='geometry-load',
                                                    type='dot',
                                                    children=[html.Div(id='geometry-bin',
-                                                                      children=[html.Img(src='',
+                                                                      children=[html.Div([dcc.Graph(
                                                                                          id='geometry-plot',
-                                                                                         className='img-fluid')])]),
+                                                                                         className='img-fluid')])])]),
                                        lg=5,
                                        width=12),
                                dbc.Col(dcc.Loading(id='eigen-load',
                                                    type='dot',
                                                    children=[html.Div(id='eigen-bin',
-                                                                      children=[html.Img(src='',
+                                                                      children=[html.Div([dcc.Graph(
                                                                                          id='eigen-plot',
-                                                                                         className='img-fluid')])]),
+                                                                                         className='img-fluid')])])]),
                                        lg=5,
                                        width=12),
                                dbc.Col(children=[html.H5('Choose a Parameter Set:',
@@ -110,7 +106,8 @@ app.layout = html.Div([
                                                               style={'color': 'black'}),
                                                  dcc.Checklist(id='geometry-checklist',
                                                                options=[{'label': 'Show Centers of Mass ', 'value': 'centers'},
-                                                                        {'label': 'Show Inertia Ellipsoids ', 'value': 'ellipse'}],
+                                                                        {'label': 'Show Inertia Ellipsoids ', 'value': 'ellipse'},
+                                                                        {'label': 'Show Self-stability region', 'value': 'stability'}],
                                                                value=['centers']),
                                                  dbc.Button('Reset Table',
                                                             id='reset-button',
@@ -118,7 +115,6 @@ app.layout = html.Div([
                                                             size='lg',
                                                             n_clicks=0)],
                                        lg=2)],
-                              no_gutters=True,
                               className="my-2"),
                       dbc.Row([dbc.Col(tbl.DataTable(id='frame-table',
                                                      columns=FRAME_COLUMNS,
@@ -136,7 +132,7 @@ app.layout = html.Div([
                                                      },
                                                      style_data_conditional=[
                                                          {
-                                                            "if": {"state": "selected"},              
+                                                            "if": {"state": "selected"},
                                                             "backgroundColor": "rgb(255,255,255)",
                                                             'color': 'black',
                                                             "border": "1px solid black",
@@ -178,7 +174,7 @@ app.layout = html.Div([
                                                                                 },
                                                                                 style_data_conditional=[
                                                                                     {
-                                                                                        "if": {"state": "selected"},              
+                                                                                        "if": {"state": "selected"},
                                                                                         "backgroundColor": "rgb(255,255,255)",
                                                                                         'color': 'black',
                                                                                         "border": "1px solid black",
@@ -201,7 +197,7 @@ app.layout = html.Div([
                                                                                 },
                                                                                 style_data_conditional=[
                                                                                     {
-                                                                                        "if": {"state": "selected"},              
+                                                                                        "if": {"state": "selected"},
                                                                                         "backgroundColor": "rgb(255,255,255)",
                                                                                         'color': 'black',
                                                                                         "border": "1px solid black",
@@ -303,10 +299,11 @@ def populate_wheel_data(value, n_clicks):
     return wheelData, frameData, genData
 
 
-# updates geometry-plot & eigen-plot path with Dropdown value or edited DataTable values
+# updates geometry-plot & eigen-plot path with Dropdown value or edited
+# DataTable values
 
-@app.callback([Output('geometry-plot', 'src'),
-               Output('eigen-plot', 'src')],
+@app.callback([Output('geometry-plot', 'figure'),
+               Output('eigen-plot', 'figure')],
               [Input('bike-dropdown', 'value'),
                Input('wheel-table', 'data'),
                Input('frame-table', 'data'),
@@ -326,6 +323,7 @@ def plot_update(value, wheel, frame, general, options, slider):
     # construct flags for selected values of the geometry plot display options
     mass_boolean = 'centers' in checklistData
     ellipse_boolean = 'ellipse' in checklistData
+    stability_option = 'stability' in checklistData
 
     # sets the speed range for eigen-plot based on range-slider
     minBound = rangeSliderData[0]
@@ -336,7 +334,8 @@ def plot_update(value, wheel, frame, general, options, slider):
     # create Bike using default data based on dropdown menu value
     Bike = bp.Bicycle(value, pathToData=path_to_app_data)
 
-    # convert steer axis tilt into radians if recieving values from datatable edits
+    # convert steer axis tilt into radians if recieving values from datatable
+    # edits
     if ctx.triggered[0].get('prop_id') != 'bike-dropdown.value':
 
         # convert to radians
@@ -344,7 +343,7 @@ def plot_update(value, wheel, frame, general, options, slider):
         radians = np.deg2rad(degrees)
         genData[2]['data'] = radians
 
-       # creates an alternating list of [parameter,value] from table data
+        # creates an alternating list of [parameter,value] from table data
         newP = []
         for p in range(8):
             if p < 4:
@@ -363,41 +362,34 @@ def plot_update(value, wheel, frame, general, options, slider):
         for i in range(0, len(newP), 2):
             Bike.parameters['Benchmark'][newP[i]] = newP[i+1]
 
-    # create geometry-plot image
-    geo_fake = io.BytesIO()
-    geo_plot = Bike.plot_bicycle_geometry(
+    # create geometry-plot with plotly
+
+    geo_plot = Bike._plot_bicycle_geometry_plotly(
         show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
-    geo_plot.savefig(geo_fake)
-    geo_image = base64.b64encode(geo_fake.getvalue())
-    plt.close(geo_plot)
+    # Create eigenvalues-plot with plotly
+    eigen_plot = Bike._plot_eigenvalues_vs_speed_plotly(
+        speeds, show=False, stability_region=stability_option)
 
-    # create eigen-plot image
-    eigen_fake = io.BytesIO()
-    eigen_plot = Bike.plot_eigenvalues_vs_speed(
-        speeds, show=False, grid=True, show_legend=False)
-    eigen_plot.savefig(eigen_fake)
-    eigen_image = base64.b64encode(eigen_fake.getvalue())
-    plt.close(eigen_plot)
-
-    return 'data:image/png;base64,{}'.format(geo_image.decode()), 'data:image/png;base64,{}'.format(eigen_image.decode())
+    return eigen_plot, geo_plot
 
 
 # sets loading notification for the geometry plot
-
-@app.callback(Output("geometry-load", "children"), [Input("geometry-bin", "children")])
+@app.callback(Output("geometry-load", "children"),
+              [Input("geometry-bin", "children")])
 def input_triggers_spinner1(value):
     time.sleep(1)
     return value
 
 
 # sets loading notification for the eigenvalue plot
-
-@app.callback(Output("eigen-load", "children"), [Input("eigen-bin", "children")])
+@app.callback(Output("eigen-load", "children"),
+              [Input("eigen-bin", "children")])
 def input_triggers_spinner2(value):
     time.sleep(1)
     return value
 
 
-if __name__ == '__main__':                         # omit the `dev_tools_ui` parameter to display debug info 
-    app.run_server(debug=True, dev_tools_ui=False) # in the browser rather than in the terminal
-    
+# omit the `dev_tools_ui` parameter to display debug info in the browser rather
+# than in the terminal
+if __name__ == '__main__':
+    app.run_server(debug=True, dev_tools_ui=False)

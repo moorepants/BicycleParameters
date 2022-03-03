@@ -1,9 +1,8 @@
 # build dependencies for running the app on heroku
 DynamicistToolKit
-dash
+dash>=2
 dash-bootstrap-components
 gunicorn
-matplotlib
 numpy
 pandas
 scipy

@@ -4,11 +4,13 @@
 import os
 
 # dependencies
-import numpy as np
-import matplotlib.pyplot as plt
+from dtk import control
 from matplotlib.patches import Ellipse, Wedge
 from uncertainties import unumpy
-from dtk import control
+import matplotlib.pyplot as plt
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
 
 # local module imports
 from . import bicycle
@@ -18,6 +20,7 @@ from . import io
 from . import geometry
 from . import period
 from . import rider
+from . import plot
 
 GOLDEN_RATIO = (1.0 + np.sqrt(5.0))/2.0
 
@@ -492,11 +495,11 @@ the pathToData argument.""".format(bicycleName, pathToData)
             self.riderName = riderName
             self.hasRider = True
 
+
     def plot_bicycle_geometry(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
         """Returns a figure showing the basic bicycle geometry, the centers of
         mass and the moments of inertia.
-
         Parameters
         ==========
         show : boolean, optional
@@ -509,17 +512,13 @@ the pathToData argument.""".format(bicycleName, pathToData)
             If true the mass center of each rigid body will be displayed.
         inertiaEllipse : boolean optional
             If true inertia ellipses for each rigid body will be displayed.
-
         Returns
         =======
         fig : matplotlib.pyplot.Figure
-
         Notes
         =====
-
         If the flywheel is defined, it's center of mass corresponds to the
         front wheel and is not depicted in the plot.
-
         """
         par = io.remove_uncertainties(self.parameters['Benchmark'])
         parts = get_parts_in_parameters(par)
@@ -725,6 +724,305 @@ the pathToData argument.""".format(bicycleName, pathToData)
         # practice in other Python libraries.
 
         return fig
+
+
+    def _plot_bicycle_geometry_plotly(self, show=True, pendulum=True,
+                                      centerOfMass=True, inertiaEllipse=True):
+        """Returns a Plotly figure showing the basic bicycle geometry,
+        the centers of
+        mass and the moments of inertia.
+
+        Parameters
+        ==========
+        show : optional
+            If true plotly figure will show.
+        centerOfMass : boolean, optional
+            If true the mass center of each rigid body will be displayed. but
+            will have no trace in the legend since it already has a button.
+            The hoverfunction will show where the COM's are located.
+        inertiaEllipse : boolean optional
+            If true inertia ellipses for each rigid body will be displayed.
+            In some cases the ellipses are so large that they will not fit in
+            the figure. Therefor the axis of this plot are fixed.
+
+        Returns
+        =======
+        fig1 : A plotly figure
+
+        """
+        par = io.remove_uncertainties(self.parameters['Benchmark'])
+        parts = get_parts_in_parameters(par)
+
+        try:
+            slopes = io.remove_uncertainties(self.extras['slopes'])
+            intercepts = io.remove_uncertainties(self.extras['intercepts'])
+            penInertias = io.remove_uncertainties(
+                self.extras['pendulumInertias'])
+        except AttributeError:
+            pendulum = False
+
+        fig1 = go.Figure()
+
+        # define some colors for the parts
+        # cmap = px.colors.sequential.Agsunset
+        cmap = px.colors.qualitative.Pastel
+        partColors = {}
+
+        for i, part in enumerate(parts):
+            partColors[part] = cmap[i]
+
+        if inertiaEllipse:
+            # plot the principal moments of inertia
+            for j, part in enumerate(parts):
+                I = inertia.part_inertia_tensor(par, part)
+                Ip, C = inertia.principal_axes(I)
+                if part == 'R':
+                    center = np.array([0., par['rR']])
+                elif part in 'FD':
+                    center = np.array([par['w'], par['rF']])
+                else:
+                    center = np.array([par['x' + part], -par['z' + part]])
+                    # which row in C is the y vector
+                uy = np.array([0., 1., 0.])
+                for i, row in enumerate(C):
+                    if np.abs(np.sum(row - uy)) < 1E-10:
+                        yrow = i
+                    # remove the row for the y vector
+                Ip2D = np.delete(Ip, yrow, 0)
+                # remove the column and row associated with the y
+                C2D = np.delete(np.delete(C, yrow, 0), 1, 1)
+                # make an ellipse
+                Imin = Ip2D[0]
+                Imax = Ip2D[1]
+                # get width and height of a ellipse with
+                # the major axis equal to one
+                unitWidth = 1. / 2. / np.sqrt(Imin) * np.sqrt(Imin)
+                unitHeight = 1. / 2. / np.sqrt(Imax) * np.sqrt(Imin)
+                # now scaled the width and height relative to
+                # the maximum principal moment of inertia
+                width = Imax * unitWidth
+                height = Imax * unitHeight
+                angle = -np.degrees(np.arccos(C2D[0, 0]))
+                x_center = center[0]
+                y_center = center[1]
+                x_ep, y_ep = plot._generate_ellipse_plot_data(
+                    x_center=x_center, y_center=y_center,
+                    ax1=[np.cos(angle), np.sin(angle)],
+                    ax2=[-np.sin(angle), np.cos(angle)],
+                    a=height, b=width, N=100)
+
+                fig1.add_scatter(x=x_ep, y=y_ep, mode='lines',
+                                 name='Inertia of ' + part,
+                                 line_color=partColors[part],
+                                 fill='toself', opacity=0.5)
+
+        # plot the ground line
+        x = np.array([-par['rR'], par['w'] + par['rF']])
+        fig1.add_trace(go.Scatter(x=x, y=np.zeros_like(x),
+                       mode='lines',
+                       name='Ground',
+                       line_color='lightgrey',
+                       hovertemplate="%{x:.3f}<br>%{y:.3f}"))
+
+        def make_circle_legend(R, x_center_wheel, y_center_wheel):
+            t = np.linspace(0, 2*np.pi, 100)
+            xwh = R*np.cos(t)
+            ywh = R*np.sin(t)
+            x_wheel = xwh + x_center_wheel
+            y_wheel = ywh + y_center_wheel
+            return x_wheel, y_wheel
+
+        # plot the rear wheel
+        x_wheel_R, y_wheel_R = make_circle_legend(par['rR'], 0, par['rR'])
+        fig1.add_trace(go.Scatter(x=x_wheel_R,
+                                  y=y_wheel_R,
+                                  mode='lines',
+                                  line_color='grey',
+                                  name='Rear wheel',
+                                  hovertemplate="%{x:.3f}<br>%{y:.3f}"))
+
+        # plot the front wheel
+        x_wheel_F, y_wheel_F = make_circle_legend(par['rF'], par['w'],
+                                                  par['rF'])
+        fig1.add_trace(go.Scatter(x=x_wheel_F,
+                                  y=y_wheel_F,
+                                  mode='lines',
+                                  line_color='grey',
+                                  hovertemplate="%{x:.3f}<br>%{y:.3f}",
+                                  name='Front wheel'))
+
+        # plot the fundamental bike
+        deex, deez = geometry.fundamental_geometry_plot_data(par)
+        fig1.add_trace(go.Scatter(x=deex, y=-deez,
+                                  mode='lines',
+                                  name='Bicycle',
+                                  line_color='black',
+                                  hovertemplate="%{x:.3f}<br>%{y:.3f}"))
+
+        # plot the steer axis
+        dx3 = deex[2] + deez[2] * (deex[2] - deex[1]) / (deez[1] - deez[2])
+
+        fig1.add_trace(go.Scatter(x=[deex[2], dx3], y=[-deez[2], 0.],
+                                  mode='lines',
+                                  name='Steer axis',
+                                  hovertemplate="%{x:.3f}<br>%{y:.3f}",
+                                  line=dict(dash='dash', color='dodgerblue')))
+
+        # Update Layout so circle will be round and background white and no
+        # grid
+        fig1.update_xaxes(showgrid=False, zeroline=False)
+        fig1.update_yaxes(showgrid=False, zeroline=False)
+
+        fig1.update_xaxes(
+            range=[-par['rR'], par['w']+par['rF']],  # sets the range of xaxis
+            constrain="domain",  # meanwhile compresses the xaxis by decreasing its "domain"
+        )
+        fig1.update_yaxes(scaleanchor="x", scaleratio=1)
+        fig1.update_layout(plot_bgcolor="white")
+
+        # don't plot the pendulum lines if a rider has been added because the
+        # inertia has changed
+        if self.hasRider:
+            pendulum = False
+
+        if pendulum:
+            # plot the pendulum axes for the measured parts
+            for j, pair in enumerate(slopes.items()):
+                part, slopeSet = pair
+                xcom, zcom = par['x' + part], par['z' + part]
+                for i, m in enumerate(slopeSet):
+                    b = intercepts[part][i]
+                    xPoint, zPoint = geometry.project_point_on_line((m, b),
+                                                                    (xcom,
+                                                                     zcom))
+                    comLineLength = penInertias[part][i]
+                    xPlus = comLineLength / 2. * np.cos(np.arctan(m))
+                    xp = np.array([xPoint - xPlus,
+                                  xPoint + xPlus])
+                    zp = -m*xp - b
+
+                    fig1.add_scatter(x=xp, y=zp, mode='lines', name='Pendulum',
+                                     line=dict(dash='dash'))
+
+        if centerOfMass:
+            def com_symbol(R, x_center, y_center, partcolor):
+                t = np.linspace(0, 0.5*np.pi, 100)
+                xs = R*np.cos(t)
+                ys = R*np.sin(t)
+                xc1 = xs + x_center
+                yc1 = ys + y_center
+                t2 = np.linspace(0.5*np.pi, np.pi, 100)
+                xs2 = R*np.cos(t2)
+                ys2 = R*np.sin(t2)
+                xc2 = xs2 + x_center
+                yc2 = ys2 + y_center
+                t3 = np.linspace(np.pi, 1.5*np.pi, 100)
+                xs3 = R*np.cos(t3)
+                ys3 = R*np.sin(t3)
+                xc3 = xs3 + x_center
+                yc3 = ys3 + y_center
+                t4 = np.linspace(1.5*np.pi, 2*np.pi, 100)
+                xs4 = R*np.cos(t4)
+                ys4 = R*np.sin(t4)
+                xc4 = xs4 + x_center
+                yc4 = ys4 + y_center
+
+                fig1.add_trace(go.Scatter(x=[x_center, x_center+R],
+                                          y=[y_center, y_center], mode='lines',
+                                          line_color=partcolor,
+                                          showlegend=False, hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=[x_center, x_center],
+                                          y=[y_center, y_center + R],
+                                          mode='lines', line_color=partcolor,
+                                          showlegend=False,
+                                          hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=xc1, y=yc1, mode='lines',
+                                          line_color=partcolor,
+                                          showlegend=False, fill='tonexty',
+                                          hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=xc2, y=yc2, mode='lines',
+                                          line_color=partcolor,
+                                          showlegend=False, hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=xc3, y=yc3, mode='lines',
+                                          line_color=partcolor,
+                                          showlegend=False, hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=[x_center-R, x_center],
+                                          y=[y_center, y_center], mode='lines',
+                                          line_color=partcolor,
+                                          showlegend=False, fill='tonexty',
+                                          hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=[x_center, x_center],
+                                          y=[y_center-R, y_center],
+                                          mode='lines', line_color=partcolor,
+                                          showlegend=False,
+                                          hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=xc4, y=yc4, mode='lines',
+                                          line_color=partcolor,
+                                          showlegend=False, hoverinfo='none'))
+                fig1.add_trace(go.Scatter(x=[x_center, x_center],
+                                          y=[y_center, y_center],
+                                          mode='lines', line_color=partcolor,
+                                          hovertemplate="%{x:.3f}<br>%{y:.3f}",
+                                          name='COM', showlegend=False))
+                return fig1
+
+            # radius of the CoM symbol
+            sRad = 0.03
+            # front wheel CoM
+            x_com_Wf = par['w']
+            y_com_Wf = par['rF']
+            fig1 = com_symbol(sRad, x_com_Wf, y_com_Wf, partColors['F'])
+            fig1.add_annotation(text='F', xref='x', yref='y',
+                                x=x_com_Wf + 0.055,
+                                y=y_com_Wf+0.055, showarrow=False,
+                                font=dict(size=15))
+
+            # rear wheel CoM
+            fig1 = com_symbol(sRad, 0., par['rR'], partColors['R'])
+            fig1.add_annotation(text='R', xref='x', yref='y', x=0.055,
+                                y=par['rR']+0.055, showarrow=False,
+                                font=dict(size=15))
+
+            for j, part in enumerate([x for x in parts
+                                      if x not in 'RFD']):
+                xcom = par['x' + part]
+                zcom = par['z' + part]
+                fig1 = com_symbol(sRad, xcom, -zcom, partColors[part])
+                fig1.add_annotation(text=part, xref='x', yref='y',
+                                    x=xcom+0.055, y=-zcom+0.055,
+                                    showarrow=False, font=dict(size=15))
+
+            if 'H' not in parts:
+                fig1 = com_symbol(sRad, par['xH'], -par['zH'], partColors['H'])
+                fig1.add_annotation(text="H", xref='x', yref='y',
+                                    x=par['xH']+0.055, y=-par['zH']+0.055,
+                                    showarrow=False, font=dict(size=15))
+
+        # if there is a rider on the bike, make a simple stick figure
+        if self.human:
+            human = self.human
+            mpar = self.parameters['Measured']
+            bpar = self.parameters['Benchmark']
+            # K2: lower leg, tip of foot to knee
+            start = rider.yeadon_vec_to_bicycle_vec(human.K2.end_pos, mpar,
+                                                    bpar)
+            end = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
+            fig1.add_trace(go.Scatter(x=[start[0, 0], end[0, 0]],
+                                      y=[-start[2, 0], -end[2, 0]],
+                                      mode='lines'))
+
+            # K1: upper leg, knee to hip
+            start = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
+            end = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
+
+        fig1.update_layout(title_text='Bicycle geometry', title_x=0.5)
+        fig1.update_layout(yaxis=dict(autorange=True, showgrid=False, ticks='',
+                                      showticklabels=False))
+        fig1.update_layout(xaxis=dict(autorange=True, showgrid=False, ticks='',
+                                      showticklabels=False))
+        if show:
+            fig1.show()
+        return fig1
 
     def canonical(self, nominal=False):
         """
@@ -1023,6 +1321,106 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
         if grid:
             ax.grid()
+
+        if show:
+            fig.show()
+
+        return fig
+
+    def _plot_eigenvalues_vs_speed_plotly(self, speeds, fig=None, show=True,
+                                          largest=False,
+                                          stability_region=True):
+        speeds = np.sort(speeds)
+        if fig is None:
+            fig = go.Figure(layout_yaxis_range=[-10, 10])
+            evals, evecs = self.eig(speeds)
+
+        if largest:
+            fig.add_trace(go.Scatter(x=speeds, y=np.max(evals)))
+            fig.show()
+        else:
+            w, cap, cas = bicycle.sort_modes(evals, evecs)
+            colors_eig = px.colors.qualitative.Pastel
+            weaveColor1 = colors_eig[0]
+            weaveColor2 = colors_eig[1]
+            capsizeColor = colors_eig[2]
+            casterColor = colors_eig[5]
+        wea1 = w['evals'][:, 0]
+        wea2 = w['evals'][:, 1]
+        fig.add_trace(go.Scatter(x=speeds, y=np.real(wea1),
+                                 mode='lines',
+                                 name='Re Weave',
+                                 line=dict(color=weaveColor1),
+                                 text='Re'))
+        fig.add_trace(go.Scatter(x=speeds, y=np.real(wea2),
+                                 mode='lines',
+                                 name='Re Weave',
+                                 line=dict(color=weaveColor2),
+                                 text='Re'))
+        fig.add_trace(go.Scatter(x=speeds, y=np.real(cap['evals']),
+                                 mode='lines',
+                                 name='Re Capsize',
+                                 line=dict(color=capsizeColor),
+                                 text='Re'))
+        fig.add_trace(go.Scatter(x=speeds, y=np.real(cas['evals']),
+                                 mode='lines',
+                                 name='Re Castering',
+                                 line=dict(color=casterColor),
+                                 text='Re'))
+        fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(wea1)),
+                                 mode='lines',
+                                 name='Im Weave',
+                                 line=dict(color=weaveColor1, dash='dash'),
+                                 text='Im'))
+        fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(wea2)),
+                                 mode='lines',
+                                 name='Im Weave',
+                                 line=dict(color=weaveColor2, dash='dash'),
+                                 text='Im'))
+        fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cap['evals'])),
+                                 mode='lines',
+                                 name='Im Capsize',
+                                 line=dict(color=capsizeColor, dash='dash'),
+                                 text='Im'))
+        fig.add_trace(go.Scatter(x=speeds, y=np.abs(np.imag(cas['evals'])),
+                                 mode='lines',
+                                 name='Im Castering',
+                                 line=dict(color=casterColor, dash='dash'),
+                                 text='Im'))
+        if stability_region:
+            try:
+                v_start_stab = max([min(speeds[np.real(wea2) < 0]),
+                                    min(speeds[np.real(cas['evals']) < 0]),
+                                    min(speeds[np.real(cap['evals']) < 0]),
+                                    min(speeds[np.real(wea1) < 0],
+                                        default="EMPTY")])
+                v_end_stab = min([max(speeds[np.real(wea2) < 0]),
+                                  max(speeds[np.real(cas['evals']) < 0]),
+                                  max(speeds[np.real(cap['evals']) < 0]),
+                                  max(speeds[np.real(wea1) < 0])])
+            except:  # TODO : Add explicit exception
+                fig.add_annotation(x=0.5*max(speeds), y=9,
+                                   text="No stability region",
+                                   showarrow=False)
+            if (v_start_stab > v_end_stab):
+                fig.add_annotation(x=0.5*max(speeds), y=9,
+                                   text="No stability region",
+                                   showarrow=False)
+            elif (v_end_stab - v_start_stab < 0.0001):
+                fig.add_annotation(x=0.5*max(speeds), y=9,
+                                   text="No stability region",
+                                   showarrow=False)
+            else:
+                fig.add_vrect(x0=v_start_stab, x1=v_end_stab,
+                              annotation_text="Self stability",
+                              annotation_position='top left',
+                              fillcolor="blue", opacity=0.25,
+                              line_width=0, row=1, col=1)
+
+        fig.update_layout(title_text='Eigenvalues vs velocity',
+                          xaxis_title='Velocity [m/s]',
+                          yaxis_title='Eigenvalues [1/s]')
+        fig.update_traces(hovertemplate="%{x:.3f}<br>%{y:.3f}")
 
         if show:
             fig.show()
