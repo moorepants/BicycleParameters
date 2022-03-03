@@ -4,6 +4,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - dash >=2
   - dash-bootstrap-components
   - dynamicisttoolkit
   - matplotlib
