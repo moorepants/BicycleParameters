@@ -25,7 +25,7 @@ setup(
     ],
     extras_require={
         'doc': ['sphinx', 'numpydoc'],
-        'app': ['dash', 'dash-bootstrap-components'],
+        'app': ['dash>=2', 'dash-bootstrap-components'],
     },
     tests_require=['nose'],
     test_suite='nose.collector',

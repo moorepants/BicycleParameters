@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+1.1.0
+-----
+
+- Switched app plots from matplotlib to plotly.
+
 1.0.0
 -----
 
