@@ -128,3 +128,6 @@ or recommendations expressed in this material are those of the authors and do
 not necessarily reflect the views of the National Science Foundation.
 
 .. _Grant No. 0928339: https://www.nsf.gov/awardsearch/showAward?AWD_ID=0928339
+
+This material is also partially based upon work supported by the TKI CLICKNL
+grant "Fiets van de Toekomst"(Grant No. TKI1706).
