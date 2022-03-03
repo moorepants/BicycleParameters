@@ -1417,8 +1417,8 @@ the pathToData argument.""".format(bicycleName, pathToData)
                               fillcolor="blue", opacity=0.25,
                               line_width=0, row=1, col=1)
 
-        fig.update_layout(title_text='Eigenvalues vs velocity',
-                          xaxis_title='Velocity [m/s]',
+        fig.update_layout(title_text='Eigenvalues vs Speed',
+                          xaxis_title='Speed [m/s]',
                           yaxis_title='Eigenvalues [1/s]')
         fig.update_traces(hovertemplate="%{x:.3f}<br>%{y:.3f}")
 
