@@ -1,24 +1,17 @@
-import io
-import base64
 import os
+import time
+
+from dash.dependencies import Input, Output
+import dash
+import dash_bootstrap_components as dbc
+from dash import dcc
+from dash import html
+from dash import dash_table as tbl
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-import dash_bootstrap_components as dbc
-import dash_table as tbl
-import time
-from dash.dependencies import Input, Output, State
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-
 import bicycleparameters as bp
-import matplotlib
-
-matplotlib.use('Agg') # prevents pop-up windows when calling plotting functions
 
 path_to_this_file = os.path.dirname(os.path.abspath(__file__))
 path_to_app_data = os.path.join(path_to_this_file, 'app-data')
@@ -28,7 +21,10 @@ path_to_assets = os.path.join(path_to_this_file, 'assets')
 
 pList = ['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
          'w', 'c', 'lam', 'g',
-         'xB', 'zB', 'mB', 'IBxx', 'IByy', 'IBzz', 'IBxz', 'xH', 'zH', 'mH', 'IHxx', 'IHyy', 'IHzz', 'IHxz']
+         'xB', 'zB', 'mB',
+         'IBxx', 'IByy', 'IBzz', 'IBxz',
+         'xH', 'zH', 'mH',
+         'IHxx', 'IHyy', 'IHzz', 'IHxz']
 
 # list of bicycle models in the dropdown menu
 
@@ -306,9 +302,10 @@ def populate_wheel_data(value, n_clicks):
     return wheelData, frameData, genData
 
 
-# updates geometry-plot & eigen-plot path with Dropdown value or edited DataTable values
+# updates geometry-plot & eigen-plot path with Dropdown value or edited
+# DataTable values
 
-@app.callback( [Output('geometry-plot', 'figure'),
+@app.callback([Output('geometry-plot', 'figure'),
                Output('eigen-plot', 'figure')],
               [Input('bike-dropdown', 'value'),
                Input('wheel-table', 'data'),
@@ -340,7 +337,8 @@ def plot_update(value, wheel, frame, general, options, slider):
     # create Bike using default data based on dropdown menu value
     Bike = bp.Bicycle(value, pathToData=path_to_app_data)
 
-    # convert steer axis tilt into radians if recieving values from datatable edits
+    # convert steer axis tilt into radians if recieving values from datatable
+    # edits
     if ctx.triggered[0].get('prop_id') != 'bike-dropdown.value':
 
         # convert to radians
@@ -348,7 +346,7 @@ def plot_update(value, wheel, frame, general, options, slider):
         radians = np.deg2rad(degrees)
         genData[2]['data'] = radians
 
-       # creates an alternating list of [parameter,value] from table data
+        # creates an alternating list of [parameter,value] from table data
         newP = []
         for p in range(8):
             if p < 4:
@@ -373,26 +371,28 @@ def plot_update(value, wheel, frame, general, options, slider):
         show=False, centerOfMass=mass_boolean, inertiaEllipse=ellipse_boolean)
     # Create eigenvalues-plot with plotly
     eigen_plot = Bike.plot_eigenvalues_vs_speed_plotly(
-        speeds, show=False,Stabilityregion=stability_option)
+        speeds, show=False, Stabilityregion=stability_option)
 
-    return  eigen_plot,geo_plot
+    return eigen_plot, geo_plot
 
 
 # sets loading notification for the geometry plot
-
-@app.callback(Output("geometry-load", "children"), [Input("geometry-bin", "children")])
+@app.callback(Output("geometry-load", "children"),
+              [Input("geometry-bin", "children")])
 def input_triggers_spinner1(value):
     time.sleep(1)
     return value
 
 
 # sets loading notification for the eigenvalue plot
-
-@app.callback(Output("eigen-load", "children"), [Input("eigen-bin", "children")])
+@app.callback(Output("eigen-load", "children"),
+              [Input("eigen-bin", "children")])
 def input_triggers_spinner2(value):
     time.sleep(1)
     return value
 
 
-if __name__ == '__main__':                         # omit the `dev_tools_ui` parameter to display debug info
-    app.run_server(debug=True, dev_tools_ui=True) # in the browser rather than in the terminal
+# omit the `dev_tools_ui` parameter to display debug info
+# in the browser rather than in the terminal
+if __name__ == '__main__':
+    app.run_server(debug=True, dev_tools_ui=True)
