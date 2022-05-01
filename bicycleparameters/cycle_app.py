@@ -10,6 +10,8 @@ from dash import dash_table as tbl
 import numpy as np
 import bicycleparameters as bp
 
+
+
 path_to_this_file = os.path.dirname(os.path.abspath(__file__))
 path_to_app_data = os.path.join(path_to_this_file, 'app-data')
 path_to_assets = os.path.join(path_to_this_file, 'assets')
@@ -65,7 +67,7 @@ GENERAL_LABELS = ['Wheel Base [m]:',
                   'Steer Axis Tilt [degrees]:',
                   'Gravity [N/kg]:']
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.COSMO])
 app.title = 'Bicycle Dynamics Analysis App'
 server = app.server  # needed for heroku
 
@@ -77,7 +79,7 @@ app.layout = html.Div([
                   children=[
                       dbc.Row([dbc.Col(dbc.NavbarSimple(brand='Bicycle Dynamics Analysis App',
                                                         dark=True,
-                                                        color='info'),
+                                                        color='primary'),
                                        width='auto',
                                        className='my-2')],
                               justify='center'),
@@ -119,25 +121,32 @@ app.layout = html.Div([
                       dbc.Row([dbc.Col(tbl.DataTable(id='frame-table',
                                                      columns=FRAME_COLUMNS,
                                                      data=[],
-                                                     style_cell={
-                                                         'backgroundColor': 'rgb(50, 50, 50)',
-                                                         'color': 'white',
-                                                         'border': '1px solid white',
-                                                         'whiteSpace': 'normal',
-                                                         'height': 'auto'
-                                                     },
-                                                     style_header={
-                                                         'textAlign': 'center',
-                                                         'backgroundColor': 'rgb(30, 30, 30)'
-                                                     },
-                                                     style_data_conditional=[
-                                                         {
-                                                            "if": {"state": "selected"},
-                                                            "backgroundColor": "rgb(255,255,255)",
-                                                            'color': 'black',
-                                                            "border": "1px solid black",
-                                                         },
-                                                     ],
+                                                      style_cell={
+                                                          'backgroundColor': 'white',
+                                                          'color': 'black',
+                                                          # 'border': '1px solid white',
+                                                          'whiteSpace': 'normal',
+                                                          'height': 'auto'
+                                                      },
+                                                       style_header={
+                                                           'textAlign': 'center',
+                                                           'backgroundColor': 'rgba(39,128,227,0.15)'
+                                                       },
+                                                       # style_header_conditional=[
+                                                       #     {
+                                                       #        'if': {'column_id': 'rB'},
+                                                       #        'backgroundColor': 'rgb(246, 207, 113)',
+                                                       #        },
+                                                      # ],
+                                                      style_data_conditional=[
+                                                          {
+                                                             "if": {"state": "selected"},
+                                                              'backgroundColor': 'rgba(39,128,227,0.15)',
+                                                              'color': 'black',
+                                                              "border": "1px solid black",
+                                                          },
+
+                                                      ],
                                                      editable=True),
                                        lg=4),
                                dbc.Col(children=[html.H5('Set the EigenValue Speed Range [m/s]:',
@@ -162,20 +171,20 @@ app.layout = html.Div([
                                                                                 columns=WHEEL_COLUMNS,
                                                                                 data=[],
                                                                                 style_cell={
-                                                                                    'backgroundColor': 'rgb(50, 50, 50)',
-                                                                                    'color': 'white',
-                                                                                    'border': '1px solid white',
+                                                                                    # 'backgroundColor': 'white',
+                                                                                    # 'color': 'black',
+                                                                                    # 'border': '1px solid white',
                                                                                     'whiteSpace': 'normal',
                                                                                     'height': 'auto'
                                                                                 },
                                                                                 style_header={
                                                                                     'textAlign': 'center',
-                                                                                    'backgroundColor': 'rgb(30, 30, 30)'
+                                                                                    'backgroundColor': 'rgba(39,128,227,0.15)'
                                                                                 },
                                                                                 style_data_conditional=[
                                                                                     {
                                                                                         "if": {"state": "selected"},
-                                                                                        "backgroundColor": "rgb(255,255,255)",
+                                                                                        "backgroundColor": 'rgba(39,128,227,0.15)',
                                                                                         'color': 'black',
                                                                                         "border": "1px solid black",
                                                                                     },
@@ -185,20 +194,20 @@ app.layout = html.Div([
                                                                                 columns=GENERAL_COLUMNS,
                                                                                 data=[],
                                                                                 style_cell={
-                                                                                    'backgroundColor': 'rgb(50, 50, 50)',
-                                                                                    'color': 'white',
-                                                                                    'border': '1px solid white',
+                                                                                    # 'backgroundColor': 'rgb(50, 50, 50)',
+                                                                                    # 'color': 'white',
+                                                                                    # 'border': '1px solid white',
                                                                                     'whiteSpace': 'normal',
                                                                                     'height': 'auto'
                                                                                 },
                                                                                 style_header={
                                                                                     'textAlign': 'center',
-                                                                                    'backgroundColor': 'rgb(30, 30, 30)'
+                                                                                    'backgroundColor': 'rgba(39,128,227,0.15)'
                                                                                 },
                                                                                 style_data_conditional=[
                                                                                     {
                                                                                         "if": {"state": "selected"},
-                                                                                        "backgroundColor": "rgb(255,255,255)",
+                                                                                        "backgroundColor": 'rgba(39,128,227,0.15)',
                                                                                         'color': 'black',
                                                                                         "border": "1px solid black",
                                                                                     },

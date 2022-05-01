@@ -1015,9 +1015,10 @@ the pathToData argument.""".format(bicycleName, pathToData)
             start = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
 
-        fig1.update_layout(title_text='Bicycle geometry', title_x=0.5)
-        fig1.update_layout(yaxis=dict(autorange=True, showgrid=False, ticks='',
-                                      showticklabels=False))
+        fig1.update_layout(title_text='Bicycle geometry', title_x=0.5,
+                           yaxis_title='z-axis [m]')
+        fig1.update_layout(yaxis=dict(autorange=True, showgrid=False, ticks='outside',
+                                      showticklabels=True))
         fig1.update_layout(xaxis=dict(autorange=True, showgrid=False, ticks='',
                                       showticklabels=False))
         if show:
@@ -1414,10 +1415,13 @@ the pathToData argument.""".format(bicycleName, pathToData)
                 fig.add_vrect(x0=v_start_stab, x1=v_end_stab,
                               annotation_text="Self stability",
                               annotation_position='top left',
-                              fillcolor="blue", opacity=0.25,
+                              # fillcolor="blue", opacity=0.25,
+                              fillcolor = 'rgba(71,147,231,0.5)',
                               line_width=0, row=1, col=1)
 
         fig.update_layout(title_text='Eigenvalues vs velocity',
+                          title_x=0.5,
+                           plot_bgcolor='rgba(39,128,227,0.15)',
                           xaxis_title='Velocity [m/s]',
                           yaxis_title='Eigenvalues [1/s]')
         fig.update_traces(hovertemplate="%{x:.3f}<br>%{y:.3f}")
