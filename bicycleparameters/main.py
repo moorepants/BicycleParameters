@@ -1015,8 +1015,13 @@ the pathToData argument.""".format(bicycleName, pathToData)
             start = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
 
-        fig1.update_layout(title_text='Bicycle geometry', title_x=0.5,
-                           yaxis_title='z-axis [m]')
+        fig1.update_layout(#title_x=0.5,
+                           title=dict(text='Bicycle geometry',
+                           font=dict(family="Segoe UI light", size=25)),
+                           yaxis_title='z-axis [m]',
+                           font_family="Source Sans Pro",
+                           hoverlabel=dict(font_family="Source Sans Pro"))
+
         fig1.update_layout(yaxis=dict(autorange=True, showgrid=False, ticks='outside',
                                       showticklabels=True))
         fig1.update_layout(xaxis=dict(autorange=True, showgrid=False, ticks='',
@@ -1419,11 +1424,15 @@ the pathToData argument.""".format(bicycleName, pathToData)
                               fillcolor = 'rgba(71,147,231,0.5)',
                               line_width=0, row=1, col=1)
 
-        fig.update_layout(title_text='Eigenvalues vs velocity',
-                          title_x=0.5,
-                           plot_bgcolor='rgba(39,128,227,0.15)',
+        fig.update_layout(
+                          # title_x=0.5,
+                          title=dict(text='Eigenvalues vs velocity',
+                          font=dict(family="Segoe UI light", size=25)),
+                          font_family="Source Sans Pro",
+                          plot_bgcolor='rgba(39,128,227,0.15)',
                           xaxis_title='Velocity [m/s]',
-                          yaxis_title='Eigenvalues [1/s]')
+                          yaxis_title='Eigenvalues [1/s]',
+                          hoverlabel=dict(font_family="Source Sans Pro"))
         fig.update_traces(hovertemplate="%{x:.3f}<br>%{y:.3f}")
 
         if show:
