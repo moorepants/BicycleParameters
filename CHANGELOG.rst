@@ -4,7 +4,14 @@ Release Notes
 1.1.0
 -----
 
-- Switched app plots from matplotlib to plotly.
+- Introduced a Dash based web application for interactive use.
+
+  - https://github.com/moorepants/BicycleParameters/pull/34
+  - https://github.com/moorepants/BicycleParameters/pull/88
+
+- Dropped support for Python 2.7, 3.4, 3.5, and 3.6.
+- Moved to mamba and Github action based continuous integration testing.
+- Introduced new modules for future class hierarchies and better design.
 
 1.0.0
 -----

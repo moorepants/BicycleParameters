@@ -43,13 +43,19 @@ Required
 - `DynamicistToolKit >= 0.5.3 <http://pypi.python.org/pypi/DynamicistToolKit>`_
 - `Matplotlib >= 3.1.2 <https://matplotlib.org/>`_
 - `NumPy >= 1.17.4 <https://numpy.org/>`_
-- `Python >= 3.6 <http://www.python.org/>`_
+- `Python >= 3.7 <http://www.python.org/>`_
 - `SciPy >= 1.3.3 <https://scipy.org/>`_
 - `Uncertainties >= 3.1.2 <https://pythonhosted.org/uncertainties/>`_
 - `yeadon >= 1.3.0 <http://pypi.python.org/pypi/yeadon/>`_
 
 Optional
 --------
+
+These are required to run the Dash web application:
+
+- `Dash >= 2.0 <https://plotly.com/dash/>`_
+- `dash-bootstrap-components <https://github.com/facultyai/dash-bootstrap-components>`_
+- `Pandas <https://pandas.pydata.org/>`_
 
 These are required to build the documentation:
 
@@ -95,7 +101,7 @@ with::
 Example Code
 ============
 
-::
+.. code-block:: python
 
     >>> import bicycleparameters as bp
     >>> import numpy as np
@@ -129,5 +135,5 @@ not necessarily reflect the views of the National Science Foundation.
 
 .. _Grant No. 0928339: https://www.nsf.gov/awardsearch/showAward?AWD_ID=0928339
 
-This material is also partially based upon work supported by the TKI CLICKNL
-grant "Fiets van de Toekomst"(Grant No. TKI1706).
+This material is partially based upon work supported by the TKI CLICKNL grant
+"Fiets van de Toekomst"(Grant No. TKI1706).
