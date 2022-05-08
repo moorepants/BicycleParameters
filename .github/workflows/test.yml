@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        dependency-set: ["-old", "latest"]
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        dependency-set: ["-old", ""]
+        python-version: ["3.7", "3.8", "3.9"]
         exclude:
           - dependency-set: "old"
-          - python-version: ["3.9", "3.10"]
+          - python-version: ["3.9"]
     name: test
     steps:
       - uses: actions/checkout@v2
