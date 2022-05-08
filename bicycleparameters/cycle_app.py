@@ -80,7 +80,7 @@ app.layout = html.Div([
                       dbc.Row([dbc.Col(dbc.NavbarSimple(brand='Bicycle Dynamics Analysis App',
                                                         dark=True,
                                                         color='primary'),
-                                        width='auto',
+                                       width='auto',
                                        className='my-2')],
                                        justify='center'),
                       dbc.Row([dbc.Col(dcc.Loading(id='geometry-load',
@@ -121,26 +121,24 @@ app.layout = html.Div([
                       dbc.Row([dbc.Col(tbl.DataTable(id='frame-table',
                                                      columns=FRAME_COLUMNS,
                                                      data=[],
-                                                      style_cell={
+                                                     style_cell={
                                                           'backgroundColor': 'white',
                                                           'color': 'black',
                                                           # 'border': '1px solid white',
                                                           'whiteSpace': 'normal',
                                                           'height': 'auto'
                                                       },
-                                                       style_header={
+                                                      style_header={
                                                            'textAlign': 'center',
                                                            'backgroundColor': 'rgba(39,128,227,0.15)'
-                                                       },
-                                                       style_data_conditional=[
-                                                          {
+                                                      },
+                                                      style_data_conditional=[{
                                                              "if": {"state": "selected"},
                                                               'backgroundColor': 'rgba(39,128,227,0.15)',
                                                               'color': 'black',
                                                               "border": "1px solid black",
-                                                          },
-                                                      ],
-                                                     editable=True),
+                                                      },],
+                                                      editable=True),
                                        lg=4),
                                dbc.Col(children=[html.H5('Set the EigenValue Speed Range [m/s]:',
                                                          className='centered'),
@@ -148,8 +146,7 @@ app.layout = html.Div([
                                                                  min=-45,
                                                                  max=45,
                                                                  step=5,
-                                                                 value=[
-                                                                     0, 10],
+                                                                 value=[0, 10],
                                                                  marks={-40: {'label': '-40'},
                                                                         -30: {'label': '-30'},
                                                                         -20: {'label': '-20'},
@@ -159,7 +156,7 @@ app.layout = html.Div([
                                                                         20: {'label': '20'},
                                                                         30: {'label': '30'},
                                                                         40: {'label': '40'}},
-                                                                 allowCross=False),                                                 
+                                                                 allowCross=False),
                                                  dbc.Row([dbc.Col(tbl.DataTable(id='wheel-table',
                                                                                 columns=WHEEL_COLUMNS,
                                                                                 data=[],
@@ -388,4 +385,4 @@ def input_triggers_spinner2(value):
 # omit the `dev_tools_ui` parameter to display debug info in the browser rather
 # than in the terminal
 if __name__ == '__main__':
-    app.run_server(debug=True, dev_tools_ui=True)
+    app.run_server(debug=True, dev_tools_ui=False)
