@@ -22,7 +22,7 @@ jobs:
         uses: mamba-org/provision-with-micromamba@main
         with:
           environment-file: conda/bicycleparameters-dev${{ matrix.dependency-set }}.yml
-          environment-name: bicycleparameters-dev
+          environment-name: bicycleparameters-dev${{ matrix.dependency-set }}
           extra-specs: |
             python=${{ matrix.python-version }}
       - name: run tests
