@@ -14,7 +14,9 @@ jobs:
         python-version: ["3.7", "3.8", "3.9"]
         exclude:
           - dependency-set: "-old"
-          - python-version: ["3.8", "3.9"]
+            python-version: "3.8"
+          - dependency-set: "-old"
+            python-version: "3.9"
     name: test
     steps:
       - uses: actions/checkout@v2
