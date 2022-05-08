@@ -3,10 +3,10 @@
 This web application computes the eigenvalues of the Whipple-Carvallo [1,2]
 linearized bicycle model about the upright constant speed equilibrium state.
 The eigenvalues are a function of 27 parameters as defined in [3]. The
-eigenvalues can be used to assess the uncontrolled stability of a given bicycle
-design as well as characterize the growth and decay rates and oscillatory
-nature of the time evolutions of the two degrees of freedom: roll angle and
-steer angle.
+eigenvalues can be used to assess the uncontrolled stability ("self-stability")
+of a given bicycle design as well as characterize the growth and decay rates
+and oscillatory nature of the time evolutions of the two degrees of freedom:
+roll angle and steer angle.
 
 # Inputs
 
@@ -39,7 +39,7 @@ The numerical values of 26 parameters can be edited in the table. These
 parameters are defined in [3]. Select the numerical value, change the number to
 the desired number, and press enter to see the figures update. Note the units
 of the parameters. The "Reset Table" button will change all of the values in
-the table back to the currently selected parameter set.
+the table back to the currently selected bicycle parameter set.
 
 # Outputs
 
@@ -57,12 +57,13 @@ shown for each body with a matching color to the mass center symbol.
 The real parts (solid lines) and imaginary parts (dotted lines) of the
 eigenvalues are plotted on the ordinate versus speed on the abscissa. Any
 speeds in which the real parts are all negative indicate self-stability at
-those speeds.
+those speeds. The "Show Self-stability" checkbox will plot a shaded region for
+these speeds.
 
 # Colophon
 
-This website was designed by Noah Sanders with mentorship from Jason K. Moore
-and Andrew Dressel.
+This website was designed by Noah Sanders and Julie van Vlerken with mentorship
+from Jason K. Moore and Andrew Dressel.
 
 The software that powers the website is open source and information on it can
 be found here:
