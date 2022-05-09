@@ -1017,7 +1017,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
         fig1.update_layout(#title_x=0.5,
                            title=dict(text='Bicycle geometry',
-                           font=dict(family="Segoe UI light", size=25)),
+                           font=dict(family="Segoe UI", size=25)),
                            yaxis_title='z-axis [m]',
                            font_family="Source Sans Pro",
                            hoverlabel=dict(font_family="Source Sans Pro"))
@@ -1427,7 +1427,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
         fig.update_layout(
                           # title_x=0.5,
                           title=dict(text='Eigenvalues vs velocity',
-                          font=dict(family="Segoe UI light", size=25)),
+                          font=dict(family="Segoe UI", size=25)),
                           font_family="Source Sans Pro",
                           plot_bgcolor='rgba(39,128,227,0.15)',
                           xaxis_title='Velocity [m/s]',
