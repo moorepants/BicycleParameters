@@ -123,7 +123,7 @@ app.layout = html.Div([
                                                      data=[],
                                                      style_cell={
                                                           'backgroundColor': 'white',
-                                                          'color': 'black',
+                                                          # 'color': 'black',
                                                           # 'border': '1px solid white',
                                                           'whiteSpace': 'normal',
                                                           'height': 'auto'
