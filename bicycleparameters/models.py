@@ -57,6 +57,37 @@ class Meijaard2007Model(object):
         """
         self.parameter_set = benchmark_parameter_set
 
+    def _parse_parameter_overrides(self, **parameter_overrides):
+
+        par = self.parameter_set.parameters.copy()
+
+        found_one = False
+        array_key = None
+        array_val = None
+        for key, val in parameter_overrides.items():
+            if key not in par.keys():  # don't add invalid keys
+                msg = '{} is not a valid parameter, ignoring'
+                warnings.warn(msg.format(key))
+            else:
+                try:
+                    val.shape
+                except AttributeError:  # is not an ndarray
+                    par[key] = val
+                else:
+                    if found_one:
+                        msg = 'Only 1 parameter can be an array of values.'
+                        raise ValueError(msg)
+                    # pass v and g through if arrays
+                    elif key == 'v' or key == 'g':
+                        par[key] = val
+                        found_one = True
+                    else:
+                        array_key = key
+                        array_val = val
+                        found_one = True
+
+        return par, array_key, array_val
+
     def form_reduced_canonical_matrices(self, **parameter_overrides):
         """Returns the canonical speed and gravity independent matrices for the
         Whipple-Carvallo bicycle model linearized about the nominal
@@ -99,32 +130,8 @@ class Meijaard2007Model(object):
             Acceleration due to gravity.
 
         """
-        par = self.parameter_set.parameters.copy()
-
-        found_one = False
-        array_key = None
-        array_val = None
-        for key, val in parameter_overrides.items():
-            if key not in par.keys():  # don't add invalid keys
-                msg = '{} is not a valid parameter, ignoring'
-                warnings.warn(msg.format(key))
-            else:
-                try:
-                    val.shape
-                except AttributeError:  # is not an ndarray
-                    par[key] = val
-                else:
-                    if found_one:
-                        msg = 'Only 1 parameter can be an array of values.'
-                        raise ValueError(msg)
-                    # pass v and g through if arrays
-                    elif key == 'v' or key == 'g':
-                        par[key] = val
-                        found_one = True
-                    else:
-                        array_key = key
-                        array_val = val
-                        found_one = True
+        par, array_key, array_val = self._parse_parameter_overrides(
+            **parameter_overrides)
 
         if array_val is not None:
             M = np.zeros((len(array_val), 2, 2))
@@ -281,6 +288,10 @@ class Meijaard2007Model(object):
         # set labels and limits
         ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
         ax.set_xlim((speeds[0], speeds[-1]))
-        ax.set_xlabel('Speed [m/s]')
+
+        _, array_key, _ = self._parse_parameter_overrides(
+            **parameter_overrides)
+
+        ax.set_xlabel(array_key)
 
         return ax
