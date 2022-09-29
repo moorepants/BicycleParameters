@@ -70,16 +70,19 @@ class Meijaard2007Model(object):
                 warnings.warn(msg.format(key))
             else:
                 try:
+                    # TODO : a numpy.float64 has an empty shape! so this
+                    # doesn't work in that case
                     val.shape
                 except AttributeError:  # is not an ndarray
                     par[key] = val
-                else:
+                else:  # is an array
                     if found_one:
                         msg = 'Only 1 parameter can be an array of values.'
                         raise ValueError(msg)
                     # pass v and g through if arrays
                     elif key == 'v' or key == 'g':
                         par[key] = val
+                        array_key = key
                         found_one = True
                     else:
                         array_key = key
@@ -241,9 +244,19 @@ class Meijaard2007Model(object):
         else:
             return np.linalg.eig(A)
 
-    def plot_eigenvalue_parts(self, ax=None, **parameter_overrides):
+    def plot_eigenvalue_parts(self, ax=None, colors=None,
+                              **parameter_overrides):
         """Returns a Matplotlib axis of the real and imaginary parts of the
-        eigenvalues plotted against the provided parameter."""
+        eigenvalues plotted against the provided parameter.
+
+        Parameters
+        ==========
+        ax : Axes
+            Matplotlib axes.
+        colors : sequence, len(3)
+            Matplotlib colors for the weave, capsize, and caster modes.
+
+        """
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -259,18 +272,23 @@ class Meijaard2007Model(object):
             else:
                 speeds = v
 
-        weaveColor = 'blue'
-        capsizeColor = 'red'
-        casterColor = 'green'
+        if colors is None:
+            weave_color = 'C0'
+            capsize_color = 'C1'
+            caster_color = 'C2'
+        else:
+            weave_color = colors[0]
+            capsize_color = colors[1]
+            caster_color = colors[2]
         legend = ['Imaginary Weave', 'Imaginary Capsize', 'Imaginary Caster',
                   'Real Weave', 'Real Capsize', 'Real Caster']
 
         # imaginary components
-        ax.plot(speeds, np.abs(np.imag(wea['evals'])), color=weaveColor,
+        ax.plot(speeds, np.abs(np.imag(wea['evals'])), color=weave_color,
                 label=legend[0], linestyle='--')
-        ax.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsizeColor,
+        ax.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsize_color,
                 label=legend[1], linestyle='--')
-        ax.plot(speeds, np.abs(np.imag(cas['evals'])), color=casterColor,
+        ax.plot(speeds, np.abs(np.imag(cas['evals'])), color=caster_color,
                 label=legend[2], linestyle='--')
 
         # x axis line
@@ -278,11 +296,11 @@ class Meijaard2007Model(object):
                 linewidth=1.5)
 
         # plot the real parts of the eigenvalues
-        ax.plot(speeds, np.real(wea['evals']), color=weaveColor,
+        ax.plot(speeds, np.real(wea['evals']), color=weave_color,
                 label=legend[3])
-        ax.plot(speeds, np.real(cap['evals']), color=capsizeColor,
+        ax.plot(speeds, np.real(cap['evals']), color=capsize_color,
                 label=legend[4])
-        ax.plot(speeds, np.real(cas['evals']), color=casterColor,
+        ax.plot(speeds, np.real(cas['evals']), color=caster_color,
                 label=legend[5])
 
         # set labels and limits
