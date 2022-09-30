@@ -69,13 +69,13 @@ class Meijaard2007Model(object):
                 msg = '{} is not a valid parameter, ignoring'
                 warnings.warn(msg.format(key))
             else:
-                try:
-                    # TODO : a numpy.float64 has an empty shape! so this
-                    # doesn't work in that case
-                    val.shape
-                except AttributeError:  # is not an ndarray
-                    par[key] = val
+                if np.isscalar(val):
+                    par[key] = float(val)
                 else:  # is an array
+                    # TODO : It would be useful if more than one can be an
+                    # array. As long as the arrays are the same length you
+                    # could doe this. For example this is helpful for gain
+                    # scheduling multiple gains across speeds.
                     if found_one:
                         msg = 'Only 1 parameter can be an array of values.'
                         raise ValueError(msg)
@@ -214,19 +214,19 @@ class Meijaard2007Model(object):
 
         return A, B
 
-    def calc_eigen(self, **parameter_overrides):
+    def calc_eigen(self, left=False, **parameter_overrides):
         """Returns the eigenvalues and eigenvectors of the model.
 
         Parameters
         ==========
-        speeds : ndarray, shape (n,) or float
-            The speed at which to calculate the eigenvalues.
+        left : boolean, optional
+            If true, the left eigenvectors will be returned, i.e. A.T*v=lam*v.
 
         Returns
         =======
-        evals : ndarray, shape (n, 4)
+        evals : ndarray, shape(4,) or shape (n, 4)
             eigenvalues
-        evecs : ndarray, shape (n, 4, 4)
+        evecs : ndarray, shape(4,4) or shape (n, 4, 4)
             eigenvectors
 
         """
@@ -237,12 +237,49 @@ class Meijaard2007Model(object):
             evals = np.zeros((n, m), dtype='complex128')
             evecs = np.zeros((n, m, m), dtype='complex128')
             for i, Ai in enumerate(A):
+                if left:
+                    Ai = Ai.T
                 w, v = np.linalg.eig(Ai)
                 evals[i] = w
                 evecs[i] = v
             return evals, evecs
         else:
+            if left:
+                A = A.T
             return np.linalg.eig(A)
+
+    def calc_modal_controllability(self, **parameter_overrides):
+        """Returns the modal controllability measures.
+
+        A. M. A. Hamdan and A. H. Nayfeh, “Measures of modal controllability
+        and observability for first- and second-order linear systems,” Journal
+        of Guidance, Control, and Dynamics, vol. 12, no. 3, pp. 421–428, 1989,
+        doi: 10.2514/3.20424.
+
+        """
+
+        A, B = self.form_state_space_matrices(**parameter_overrides)
+        evals, evecs = self.calc_eigen(left=True, **parameter_overrides)
+
+        def mod_cont(q, b):
+            num = np.abs(np.dot(q, b))
+            den = np.linalg.norm(q) * np.linalg.norm(b)
+            return np.arccos(np.real(num/den))
+
+        if len(A.shape) == 3:  # array version
+            m, n = 4, A.shape[0]
+            mod_ctrb = np.empty((n, m, 2))
+            for k, (Bk, vk) in enumerate(zip(B, evecs)):
+                for i, vi in enumerate(vk.T):
+                    for j, bj in enumerate(Bk.T):
+                        mod_ctrb[k, i, j] = mod_cont(vi, bj)
+        else:
+            mod_ctrb = np.empty((evecs.shape[1], B.shape[1]))
+            for i, vi in enumerate(evecs.T):
+                for j, bj in enumerate(B.T):
+                    mod_ctrb[i, j] = mod_cont(vi, bj)
+
+        return mod_ctrb
 
     def plot_eigenvalue_parts(self, ax=None, colors=None,
                               **parameter_overrides):
