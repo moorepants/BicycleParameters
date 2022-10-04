@@ -233,15 +233,12 @@ class Meijaard2007Model(object):
         A, B = self.form_state_space_matrices(**parameter_overrides)
 
         if len(A.shape) == 3:  # array version
-            m, n = 4, A.shape[0]
-            evals = np.zeros((n, m), dtype='complex128')
-            evecs = np.zeros((n, m, m), dtype='complex128')
+            evals = np.zeros(A.shape[:2], dtype='complex128')
+            evecs = np.zeros(A.shape, dtype='complex128')
             for i, Ai in enumerate(A):
                 if left:
                     Ai = Ai.T
-                w, v = np.linalg.eig(Ai)
-                evals[i] = w
-                evecs[i] = v
+                evals[i], evecs[i] = np.linalg.eig(Ai)
             return evals, evecs
         else:
             if left:
@@ -251,25 +248,71 @@ class Meijaard2007Model(object):
     def calc_modal_controllability(self, **parameter_overrides):
         """Returns the modal controllability measures.
 
-        A. M. A. Hamdan and A. H. Nayfeh, “Measures of modal controllability
-        and observability for first- and second-order linear systems,” Journal
+        cos(beta_ij) = |qi.T @ bj|
+                       -------------
+                       ||qi|| ||bj||
+
+        qi : ith left eigenvector
+        bj : jth column of B
+
+        A. M. A. Hamdan and A. H. Nayfeh, "Measures of modal controllability
+        and observability for first- and second-order linear systems," Journal
         of Guidance, Control, and Dynamics, vol. 12, no. 3, pp. 421–428, 1989,
         doi: 10.2514/3.20424.
 
+
+        When q is complex, the angle calculation is
+        https://en.wikipedia.org/wiki/Dot_product#Complex_vectors
+
+        cos(beta_ij) = Re(qi.H @ bj)
+                       -------------
+                       ||qi|| ||bj||
         """
 
-        A, B = self.form_state_space_matrices(**parameter_overrides)
+        _, B = self.form_state_space_matrices(**parameter_overrides)
         evals, evecs = self.calc_eigen(left=True, **parameter_overrides)
 
-        def mod_cont(q, b):
-            num = np.abs(np.dot(q, b))
-            den = np.linalg.norm(q) * np.linalg.norm(b)
-            return np.arccos(np.real(num/den))
+        def mod_cont(q, b, acute=True):
+            """Returns the modal controllability value of the eigenvector q and
+            input matrix column b.
 
-        if len(A.shape) == 3:  # array version
-            m, n = 4, A.shape[0]
-            mod_ctrb = np.empty((n, m, 2))
+            Parameters
+            ==========
+            q : array_like, shape(n,)
+                A complex left eigenvector.
+            b : array_like, shape(n,)
+                A real column of the input matrix.
+
+            Returns
+            =======
+            beta : float
+                The (acute) angle in radians between q and b.
+
+            """
+            # vdot takes the complex conjugate of the first argument before
+            # taking the dot product.
+            num = np.real(np.vdot(q, b))  # Re(q.H @ b)
+            #num = np.real(b @ np.conjugate(q).T)
+
+            #norm_q = np.abs(np.sqrt(np.conjugate(q).T @ q))
+            #norm_b = np.sqrt(b.T @ b)
+            #den = norm_q*norm_b
+
+            # norm() returns a real valued answer for the 2-norm
+            den = np.linalg.norm(q)*np.linalg.norm(b)
+
+            # NOTE : abs() forces 0 to 90 deg instead of 0 to 180 deg, i.e.
+            # always the acute angle.
+            if acute:
+                cosbeta = np.abs(num/den)
+            else:
+                cosbeta = num/den
+            return np.arccos(cosbeta)
+
+        if len(B.shape) == 3:  # array version
+            mod_ctrb = np.empty_like(B)
             for k, (Bk, vk) in enumerate(zip(B, evecs)):
+                # columns of the evecs and columns of B
                 for i, vi in enumerate(vk.T):
                     for j, bj in enumerate(Bk.T):
                         mod_ctrb[k, i, j] = mod_cont(vi, bj)
