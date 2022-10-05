@@ -62,37 +62,27 @@ class Meijaard2007Model(object):
 
         par = self.parameter_set.parameters.copy()
 
-        found_one = False
-        array_key = None
-        array_val = None
+        array_len = None
+        array_keys = []
+
         for key, val in parameter_overrides.items():
             if key not in par.keys():  # don't add invalid keys
                 msg = '{} is not a valid parameter, ignoring'
                 warnings.warn(msg.format(key))
             else:
-                # TODO : if the array is a list this may not work
                 if np.isscalar(val):
                     par[key] = float(val)
                 else:  # is an array
-                    # TODO : It would be useful if more than one can be an
-                    # array. As long as the arrays are the same length you
-                    # could doe this. For example this is helpful for gain
-                    # scheduling multiple gains across speeds.
-                    if found_one:
-                        msg = 'Only 1 parameter can be an array of values.'
+                    if array_len is None:
+                        array_len = len(val)
+                    if len(val) != array_len:
+                        msg = ('All array valued parameters must have the '
+                               'same length.')
                         raise ValueError(msg)
-                    # pass v and g through if arrays
-                    elif key == 'v' or key == 'g':
-                        par[key] = val
-                        array_key = key
-                        found_one = True
-                    else:
-                        array_key = key
-                        array_val = val
-                        par[key] = val
-                        found_one = True
+                    array_keys.append(key)
+                    par[key] = val
 
-        return par, array_key, array_val
+        return par, array_keys
 
     def form_reduced_canonical_matrices(self, **parameter_overrides):
         """Returns the canonical speed and gravity independent matrices for the

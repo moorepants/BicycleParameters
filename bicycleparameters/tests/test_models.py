@@ -41,43 +41,46 @@ def test_parse_parameter_overrides():
 
     model = Meijaard2007Model(parameter_set)
 
-    par, array_key, array_val = model._parse_parameter_overrides(zH=4.0)
+    par, array_keys = model._parse_parameter_overrides(zH=4.0)
     assert par['zH'] == 4.0
-    assert array_key is None
-    assert array_val is None
+    assert array_keys == []
 
-    par, array_key, array_val = model._parse_parameter_overrides(
-        zH=4.0, IBxx=6.0)
+    par, array_keys = model._parse_parameter_overrides(zH=4.0, IBxx=6.0)
     assert par['zH'] == 4.0
     assert par['IBxx'] == 6.0
-    assert array_key is None
-    assert array_val is None
+    assert array_keys == []
 
-    par, array_key, array_val = model._parse_parameter_overrides(
+    par, array_keys = model._parse_parameter_overrides(
         zH=4.0, IBxx=[1.0, 2.0, 3.0])
     assert par['zH'] == 4.0
-    assert array_key == 'IBxx'
-    np.testing.assert_allclose(array_val, [1.0, 2.0, 3.0])
+    assert array_keys == ['IBxx']
     np.testing.assert_allclose(par['IBxx'], [1.0, 2.0, 3.0])
 
-    par, array_key, array_val = model._parse_parameter_overrides(
+    par, array_keys = model._parse_parameter_overrides(
         v=[1.0, 2.0, 3.0])
     np.testing.assert_allclose(par['v'], [1.0, 2.0, 3.0])
-    assert array_key == 'v'
-    #np.testing.assert_allclose(array_val, [1.0, 2.0, 3.0])
+    assert array_keys == ['v']
 
-    par, array_key, array_val = model._parse_parameter_overrides(
+    par, array_keys = model._parse_parameter_overrides(
         g=[1.0, 2.0, 3.0])
     np.testing.assert_allclose(par['g'], [1.0, 2.0, 3.0])
-    assert array_key == 'g'
-    #np.testing.assert_allclose(array_val, [1.0, 2.0, 3.0])
+    assert array_keys == ['g']
 
-    par, array_key, array_val = model._parse_parameter_overrides(
+    par, array_keys = model._parse_parameter_overrides(
         zH=4.0, v=[1.0, 2.0, 3.0])
     assert par['zH'] == 4.0
-    assert array_key == 'v'
+    assert array_keys == ['v']
     np.testing.assert_allclose(par['v'], [1.0, 2.0, 3.0])
-    #np.testing.assert_allclose(array_val, [1.0, 2.0, 3.0])
+
+    par, array_keys = model._parse_parameter_overrides(zH=[5.0, 6.0, 7.0],
+                                                       v=[1.0, 2.0, 3.0])
+    assert array_keys == ['zH', 'v']
+    np.testing.assert_allclose(par['v'], [1.0, 2.0, 3.0])
+    np.testing.assert_allclose(par['zH'], [5.0, 6.0, 7.0])
+
+    with assert_raises(ValueError):
+        par, array_keys = model._parse_parameter_overrides(
+            zH=[5.0, 6.0], v=[1.0, 2.0, 3.0])
 
 
 def test_Meijaard2007Model(show=True):
