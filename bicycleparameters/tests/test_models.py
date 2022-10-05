@@ -35,6 +35,51 @@ meijaard2007_parameters = {  # dictionary of the parameters in Meijaard 2007
 }
 
 
+def test_parse_parameter_overrides():
+
+    parameter_set = Meijaard2007ParameterSet(meijaard2007_parameters, True)
+
+    model = Meijaard2007Model(parameter_set)
+
+    par, array_key, array_val = model._parse_parameter_overrides(zH=4.0)
+    assert par['zH'] == 4.0
+    assert array_key is None
+    assert array_val is None
+
+    par, array_key, array_val = model._parse_parameter_overrides(
+        zH=4.0, IBxx=6.0)
+    assert par['zH'] == 4.0
+    assert par['IBxx'] == 6.0
+    assert array_key is None
+    assert array_val is None
+
+    par, array_key, array_val = model._parse_parameter_overrides(
+        zH=4.0, IBxx=[1.0, 2.0, 3.0])
+    assert par['zH'] == 4.0
+    assert array_key == 'IBxx'
+    np.testing.assert_allclose(array_val, [1.0, 2.0, 3.0])
+    np.testing.assert_allclose(par['IBxx'], [1.0, 2.0, 3.0])
+
+    par, array_key, array_val = model._parse_parameter_overrides(
+        v=[1.0, 2.0, 3.0])
+    np.testing.assert_allclose(par['v'], [1.0, 2.0, 3.0])
+    assert array_key == 'v'
+    #np.testing.assert_allclose(array_val, [1.0, 2.0, 3.0])
+
+    par, array_key, array_val = model._parse_parameter_overrides(
+        g=[1.0, 2.0, 3.0])
+    np.testing.assert_allclose(par['g'], [1.0, 2.0, 3.0])
+    assert array_key == 'g'
+    #np.testing.assert_allclose(array_val, [1.0, 2.0, 3.0])
+
+    par, array_key, array_val = model._parse_parameter_overrides(
+        zH=4.0, v=[1.0, 2.0, 3.0])
+    assert par['zH'] == 4.0
+    assert array_key == 'v'
+    np.testing.assert_allclose(par['v'], [1.0, 2.0, 3.0])
+    #np.testing.assert_allclose(array_val, [1.0, 2.0, 3.0])
+
+
 def test_Meijaard2007Model(show=True):
 
     parameter_set = Meijaard2007ParameterSet(meijaard2007_parameters, True)
