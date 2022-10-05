@@ -188,6 +188,53 @@ def lambda_from_abc(rF, rR, a, b, c):
     lam = newton(lam_equality, guess.nominal_value, args=args)
     return ufloat(lam, guess.std_dev)
 
+
+def sort_eigenmodes(evals, evecs):
+    """Sort eigenvalues and eigenvectors.
+
+    Parameters
+    ==========
+    evals : ndarray, shape (n, 4)
+        A sequence of n sets of eigenvalues.
+    evecs : ndarray, shape (n, 4, 4)
+        A sequence of n sets of eigenvectors.
+
+    Returns
+    =======
+
+    """
+    evalsorg = np.zeros_like(evals)
+    evecsorg = np.zeros_like(evecs)
+    # set the first row to be the same
+    evalsorg[0] = evals[0]
+    evecsorg[0] = evecs[0]
+    # for each speed
+    for i, speed in enumerate(evals):
+        if i == evals.shape[0] - 1:
+            break
+        # for each current eigenvalue
+        used = []
+        for j, e in enumerate(speed):
+            x, y = np.real(evalsorg[i, j]), np.imag(evalsorg[i, j])
+            # for each eigenvalue at the next speed
+            dist = np.zeros(4)
+            for k, eignext in enumerate(evals[i + 1]):
+                xn, yn = np.real(eignext), np.imag(eignext)
+                # distance between points in the real/imag plane
+                dist[k] = np.abs(((xn - x)**2 + (yn - y)**2)**0.5)
+            if np.argmin(dist) in used:
+                # set the already used indice higher
+                dist[np.argmin(dist)] = np.max(dist) + 1.
+            else:
+                pass
+            evalsorg[i + 1, j] = evals[i + 1, np.argmin(dist)]
+            evecsorg[i + 1, :, j] = evecs[i + 1, :, np.argmin(dist)]
+            # keep track of the indices we've used
+            used.append(np.argmin(dist))
+
+    return evalsorg, evecsorg
+
+
 def sort_modes(evals, evecs):
     '''Sort eigenvalues and eigenvectors into weave, capsize, caster modes.
 
