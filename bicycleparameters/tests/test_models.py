@@ -41,45 +41,53 @@ def test_parse_parameter_overrides():
 
     model = Meijaard2007Model(parameter_set)
 
-    par, array_keys = model._parse_parameter_overrides(zH=4.0)
+    par, array_keys, array_len = model._parse_parameter_overrides(zH=4.0)
     assert par['zH'] == 4.0
     assert array_keys == []
+    assert array_len is None
 
-    par, array_keys = model._parse_parameter_overrides(zH=4.0, IBxx=6.0)
+    par, array_keys, array_len = model._parse_parameter_overrides(
+        zH=4.0, IBxx=6.0)
     assert par['zH'] == 4.0
     assert par['IBxx'] == 6.0
     assert array_keys == []
+    assert array_len is None
 
-    par, array_keys = model._parse_parameter_overrides(
+    par, array_keys, array_len = model._parse_parameter_overrides(
         zH=4.0, IBxx=[1.0, 2.0, 3.0])
     assert par['zH'] == 4.0
     assert array_keys == ['IBxx']
     np.testing.assert_allclose(par['IBxx'], [1.0, 2.0, 3.0])
+    assert array_len == 3
 
-    par, array_keys = model._parse_parameter_overrides(
+    par, array_keys, array_len = model._parse_parameter_overrides(
         v=[1.0, 2.0, 3.0])
     np.testing.assert_allclose(par['v'], [1.0, 2.0, 3.0])
     assert array_keys == ['v']
+    assert array_len == 3
 
-    par, array_keys = model._parse_parameter_overrides(
+    par, array_keys, array_len = model._parse_parameter_overrides(
         g=[1.0, 2.0, 3.0])
     np.testing.assert_allclose(par['g'], [1.0, 2.0, 3.0])
     assert array_keys == ['g']
+    assert array_len == 3
 
-    par, array_keys = model._parse_parameter_overrides(
+    par, array_keys, array_len = model._parse_parameter_overrides(
         zH=4.0, v=[1.0, 2.0, 3.0])
     assert par['zH'] == 4.0
     assert array_keys == ['v']
     np.testing.assert_allclose(par['v'], [1.0, 2.0, 3.0])
+    assert array_len == 3
 
-    par, array_keys = model._parse_parameter_overrides(zH=[5.0, 6.0, 7.0],
-                                                       v=[1.0, 2.0, 3.0])
+    par, array_keys, array_len = model._parse_parameter_overrides(
+        zH=[5.0, 6.0, 7.0], v=[1.0, 2.0, 3.0])
     assert array_keys == ['zH', 'v']
     np.testing.assert_allclose(par['v'], [1.0, 2.0, 3.0])
     np.testing.assert_allclose(par['zH'], [5.0, 6.0, 7.0])
+    assert array_len == 3
 
     with assert_raises(ValueError):
-        par, array_keys = model._parse_parameter_overrides(
+        par, array_keys, array_len = model._parse_parameter_overrides(
             zH=[5.0, 6.0], v=[1.0, 2.0, 3.0])
 
 
@@ -100,10 +108,12 @@ def test_Meijaard2007Model(show=True):
     assert C1.shape == (5, 2, 2)
     assert K0.shape == (5, 2, 2)
     assert K2.shape == (5, 2, 2)
-    # only one parameter sweep is allowed at a time
-    with assert_raises(ValueError):
-        model.form_reduced_canonical_matrices(w=np.linspace(0.5, 1.5),
-                                              v=np.linspace(1, 3))
+    M, C1, K0, K2 = model.form_reduced_canonical_matrices(
+        w=np.linspace(0.5, 1.5, num=10), v=np.linspace(1, 3, num=10))
+    assert M.shape == (10, 2, 2)
+    assert C1.shape == (10, 2, 2)
+    assert K0.shape == (10, 2, 2)
+    assert K2.shape == (10, 2, 2)
 
     A, B = model.form_state_space_matrices()
     assert A.shape == (4, 4)
@@ -112,6 +122,11 @@ def test_Meijaard2007Model(show=True):
     assert A.shape == (5, 4, 4)
     assert B.shape == (5, 4, 2)
     A, B = model.form_state_space_matrices(v=np.linspace(0, 10, num=10))
+    assert A.shape == (10, 4, 4)
+    assert B.shape == (10, 4, 2)
+
+    A, B = model.form_state_space_matrices(v=np.linspace(0, 10, num=10),
+                                           g=np.linspace(0, 10, num=10))
     assert A.shape == (10, 4, 4)
     assert B.shape == (10, 4, 2)
 
@@ -125,6 +140,7 @@ def test_Meijaard2007Model(show=True):
     assert evals.shape == (10, 4)
     assert evecs.shape == (10, 4, 4)
     model.plot_eigenvalue_parts(v=np.linspace(0, 10, num=10))
+    model.plot_eigenvectors(v=np.linspace(0, 10, num=4))
     if show:
         import matplotlib.pyplot as plt
         plt.show()

@@ -82,7 +82,7 @@ class Meijaard2007Model(object):
                     array_keys.append(key)
                     par[key] = val
 
-        return par, array_keys
+        return par, array_keys, array_len
 
     def form_reduced_canonical_matrices(self, **parameter_overrides):
         """Returns the canonical speed and gravity independent matrices for the
@@ -126,21 +126,38 @@ class Meijaard2007Model(object):
             Acceleration due to gravity.
 
         """
-        par, array_key, array_val = self._parse_parameter_overrides(
+        par, array_keys, array_len = self._parse_parameter_overrides(
             **parameter_overrides)
-        canon_deps = ['IBxx', 'IBxz', 'IByy', 'IBzz', 'IFxx', 'IFyy', 'IHxx',
-                      'IHxz', 'IHyy', 'IHzz', 'IRxx', 'IRyy', 'c', 'lam', 'mB',
-                      'mF', 'mH', 'mR', 'rF', 'rR', 'w', 'xB', 'xH', 'zB',
-                      'zH']
 
-        if array_val is not None and array_key in canon_deps:
-            M = np.zeros((len(array_val), 2, 2))
-            C1 = np.zeros((len(array_val), 2, 2))
-            K0 = np.zeros((len(array_val), 2, 2))
-            K2 = np.zeros((len(array_val), 2, 2))
-            for i, val in enumerate(array_val):
-                par[array_key] = val
-                M[i], C1[i], K0[i], K2[i] = benchmark_par_to_canonical(par)
+        mutable_par = par.copy()
+
+        # these are the only variables needed to calculate M, C1, K0, K2
+        canon_deps = ['IBxx', 'IBxz', 'IByy', 'IBzz',
+                      'IFxx', 'IFyy',
+                      'IHxx', 'IHxz', 'IHyy', 'IHzz',
+                      'IRxx', 'IRyy',
+                      'c', 'lam',
+                      'mB', 'mF', 'mH', 'mR',
+                      'rF', 'rR', 'w',
+                      'xB', 'xH', 'zB', 'zH']
+
+        compute_arrays = False
+        for key in array_keys:
+            if key in canon_deps:
+                compute_arrays = True
+                break
+
+        if array_keys and compute_arrays:
+            n = array_len
+            M = np.zeros((n, 2, 2))
+            C1 = np.zeros((n, 2, 2))
+            K0 = np.zeros((n, 2, 2))
+            K2 = np.zeros((n, 2, 2))
+            for i in range(n):
+                for key in array_keys:
+                    mutable_par[key] = par[key][i]
+                M[i], C1[i], K0[i], K2[i] = benchmark_par_to_canonical(
+                    mutable_par)
             return M, C1, K0, K2
         else:
             return benchmark_par_to_canonical(par)
@@ -178,15 +195,8 @@ class Meijaard2007Model(object):
                         steer torque]
 
         """
-        if 'g' in parameter_overrides.keys():
-            g = parameter_overrides['g']
-        else:
-            g = self.parameter_set.parameters['g']
-
-        if 'v' in parameter_overrides.keys():
-            v = parameter_overrides['v']
-        else:
-            v = self.parameter_set.parameters['v']
+        par, array_keys, array_len = self._parse_parameter_overrides(
+            **parameter_overrides)
 
         M, C1, K0, K2 = self.form_reduced_canonical_matrices(
             **parameter_overrides)
@@ -195,19 +205,31 @@ class Meijaard2007Model(object):
             A = np.zeros((M.shape[0], 4, 4))
             B = np.zeros((M.shape[0], 4, 2))
             for i, (Mi, C1i, K0i, K2i) in enumerate(zip(M, C1, K0, K2)):
+                if 'g' in array_keys:
+                    g = par['g'][i]
+                else:
+                    g = par['g']
+                if 'v' in array_keys:
+                    v = par['v'][i]
+                else:
+                    v = par['v']
                 A[i], B[i] = ab_matrix(Mi, C1i, K0i, K2i, v, g)
-        elif not isinstance(v, float):
-            A = np.zeros((len(v), 4, 4))
-            B = np.zeros((len(v), 4, 2))
-            for i, vi in enumerate(v):
-                A[i], B[i] = ab_matrix(M, C1, K0, K2, vi, g)
-        elif not isinstance(g, float):
-            A = np.zeros((len(g), 4, 4))
-            B = np.zeros((len(g), 4, 2))
-            for i, gi in enumerate(g):
-                A[i], B[i] = ab_matrix(M, C1, K0, K2, v, gi)
+        elif 'v' in array_keys or 'g' in array_keys:
+            n = array_len
+            A = np.zeros((n, 4, 4))
+            B = np.zeros((n, 4, 2))
+            for i in range(n):
+                if 'g' in array_keys:
+                    g = par['g'][i]
+                else:
+                    g = par['g']
+                if 'v' in array_keys:
+                    v = par['v'][i]
+                else:
+                    v = par['v']
+                A[i], B[i] = ab_matrix(M, C1, K0, K2, v, g)
         else:  # scalar parameters
-            A, B = ab_matrix(M, C1, K0, K2, v, g)
+            A, B = ab_matrix(M, C1, K0, K2, par['v'], par['g'])
 
         return A, B
 
@@ -345,7 +367,7 @@ class Meijaard2007Model(object):
         else:
             evals, evecs = [evals], [evecs]
 
-        par, array_key, array_val = self._parse_parameter_overrides(
+        par, array_keys, _ = self._parse_parameter_overrides(
             **parameter_overrides)
 
         if colors is None:
@@ -354,7 +376,7 @@ class Meijaard2007Model(object):
                   'Mode 1', 'Mode 2', 'Mode 3', 'Mode 4']
         # imaginary components
         for eval_sequence, color, label in zip(evals.T, colors, legend):
-            ax.plot(par[array_key], np.imag(eval_sequence),
+            ax.plot(par[array_keys[0]], np.imag(eval_sequence),
                     color=color, label=label, linestyle='--')
 
         # x axis line
@@ -363,16 +385,16 @@ class Meijaard2007Model(object):
 
         # plot the real parts of the eigenvalues
         for eval_sequence, color, label in zip(evals.T, colors, legend):
-            ax.plot(par[array_key], np.real(eval_sequence), color=color,
+            ax.plot(par[array_keys[0]], np.real(eval_sequence), color=color,
                     label=label)
 
         # set labels and limits
         ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
-        ax.set_xlim((par[array_key][0], par[array_key][-1]))
+        ax.set_xlim((par[array_keys[0]][0], par[array_keys[0]][-1]))
 
         ax.grid()
 
-        ax.set_xlabel(array_key)
+        ax.set_xlabel(array_keys[0])
 
         return ax
 
@@ -391,10 +413,8 @@ class Meijaard2007Model(object):
         -----
         Plots are not produced for zero eigenvalues.
         """
-        par, array_key, array_val = self._parse_parameter_overrides(
+        par, array_keys, _ = self._parse_parameter_overrides(
             **parameter_overrides)
-        if array_key in ['v', 'g']:
-            array_val = par[array_key]
         states = [r'\phi', r'\delta', r'\dot{\phi}', r'\dot{\delta}']
         eval_seq, evec_seq = self.calc_eigen(**parameter_overrides)
         eval_seq = np.atleast_2d(eval_seq)
@@ -406,8 +426,8 @@ class Meijaard2007Model(object):
         axes = np.atleast_2d(axes)
         lw = list(range(1, len(states) + 1))
         lw.reverse()
-        for k, (evals, par_val) in enumerate(zip(eval_seq, array_val)):
-            axes[k, 0].set_ylabel('{} = {}'.format(array_key, par_val))
+        for k, (evals, par_val) in enumerate(zip(eval_seq, par[array_keys[0]])):
+            axes[k, 0].set_ylabel('{} = {}'.format(array_keys[0], par_val))
             for i, eVal in enumerate(evals):
                 eVec = evec_seq[k, :, i]
                 maxCom = abs(eVec[:2]).max()
