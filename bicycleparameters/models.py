@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .bicycle import benchmark_par_to_canonical, ab_matrix, sort_modes
+from .bicycle import benchmark_par_to_canonical, ab_matrix, sort_eigenmodes
 
 
 class Meijaard2007Model(object):
@@ -20,6 +20,7 @@ class Meijaard2007Model(object):
        http://doi.org/10.1098/rspa.2007.1857
 
     """
+    state_vars_latex = [r'\phi', r'\delta', r'\dot{\phi}', r'\dot{\delta}']
 
     def __init__(self, benchmark_parameter_set):
         """Initializes the model with the provided parameters.
@@ -69,6 +70,7 @@ class Meijaard2007Model(object):
                 msg = '{} is not a valid parameter, ignoring'
                 warnings.warn(msg.format(key))
             else:
+                # TODO : if the array is a list this may not work
                 if np.isscalar(val):
                     par[key] = float(val)
                 else:  # is an array
@@ -87,6 +89,7 @@ class Meijaard2007Model(object):
                     else:
                         array_key = key
                         array_val = val
+                        par[key] = val
                         found_one = True
 
         return par, array_key, array_val
@@ -135,8 +138,12 @@ class Meijaard2007Model(object):
         """
         par, array_key, array_val = self._parse_parameter_overrides(
             **parameter_overrides)
+        canon_deps = ['IBxx', 'IBxz', 'IByy', 'IBzz', 'IFxx', 'IFyy', 'IHxx',
+                      'IHxz', 'IHyy', 'IHzz', 'IRxx', 'IRyy', 'c', 'lam', 'mB',
+                      'mF', 'mH', 'mR', 'rF', 'rR', 'w', 'xB', 'xH', 'zB',
+                      'zH']
 
-        if array_val is not None:
+        if array_val is not None and array_key in canon_deps:
             M = np.zeros((len(array_val), 2, 2))
             C1 = np.zeros((len(array_val), 2, 2))
             K0 = np.zeros((len(array_val), 2, 2))
@@ -271,6 +278,7 @@ class Meijaard2007Model(object):
 
         _, B = self.form_state_space_matrices(**parameter_overrides)
         evals, evecs = self.calc_eigen(left=True, **parameter_overrides)
+        evals, evecs = sort_eigenmodes(evals, evecs)
 
         def mod_cont(q, b, acute=True):
             """Returns the modal controllability value of the eigenvector q and
@@ -333,8 +341,8 @@ class Meijaard2007Model(object):
         ==========
         ax : Axes
             Matplotlib axes.
-        colors : sequence, len(3)
-            Matplotlib colors for the weave, capsize, and caster modes.
+        colors : sequence, len(4)
+            Matplotlib colors for the 4 modes.
 
         """
 
@@ -342,54 +350,85 @@ class Meijaard2007Model(object):
             fig, ax = plt.subplots()
 
         evals, evecs = self.calc_eigen(**parameter_overrides)
-        wea, cap, cas = sort_modes(evals, evecs)
+        if len(evals.shape) > 1:
+            evals, evecs = sort_eigenmodes(evals, evecs)
+        else:
+            evals, evecs = [evals], [evecs]
 
-        for k, v in parameter_overrides.items():
-            try:
-                v.shape
-            except AttributeError:
-                pass
-            else:
-                speeds = v
+        par, array_key, array_val = self._parse_parameter_overrides(
+            **parameter_overrides)
 
         if colors is None:
-            weave_color = 'C0'
-            capsize_color = 'C1'
-            caster_color = 'C2'
-        else:
-            weave_color = colors[0]
-            capsize_color = colors[1]
-            caster_color = colors[2]
-        legend = ['Imaginary Weave', 'Imaginary Capsize', 'Imaginary Caster',
-                  'Real Weave', 'Real Capsize', 'Real Caster']
-
+            colors = ['C0', 'C1', 'C2', 'C3']
+        legend = ['Mode 1', 'Mode 2', 'Mode 3', 'Mode 4',
+                  'Mode 1', 'Mode 2', 'Mode 3', 'Mode 4']
         # imaginary components
-        ax.plot(speeds, np.abs(np.imag(wea['evals'])), color=weave_color,
-                label=legend[0], linestyle='--')
-        ax.plot(speeds, np.abs(np.imag(cap['evals'])), color=capsize_color,
-                label=legend[1], linestyle='--')
-        ax.plot(speeds, np.abs(np.imag(cas['evals'])), color=caster_color,
-                label=legend[2], linestyle='--')
+        for eval_sequence, color, label in zip(evals.T, colors, legend):
+            ax.plot(par[array_key], np.imag(eval_sequence),
+                    color=color, label=label, linestyle='--')
 
         # x axis line
-        ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
-                linewidth=1.5)
+        #ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
+                #linewidth=1.5)
 
         # plot the real parts of the eigenvalues
-        ax.plot(speeds, np.real(wea['evals']), color=weave_color,
-                label=legend[3])
-        ax.plot(speeds, np.real(cap['evals']), color=capsize_color,
-                label=legend[4])
-        ax.plot(speeds, np.real(cas['evals']), color=caster_color,
-                label=legend[5])
+        for eval_sequence, color, label in zip(evals.T, colors, legend):
+            ax.plot(par[array_key], np.real(eval_sequence), color=color,
+                    label=label)
 
         # set labels and limits
         ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
-        ax.set_xlim((speeds[0], speeds[-1]))
+        ax.set_xlim((par[array_key][0], par[array_key][-1]))
 
-        _, array_key, _ = self._parse_parameter_overrides(
-            **parameter_overrides)
+        ax.grid()
 
         ax.set_xlabel(array_key)
 
         return ax
+
+    def plot_eigenvectors(self, **parameter_overrides):
+        """Plots the components of the eigenvectors in the real and imaginary
+        plane.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        figs : list
+            A list of matplotlib figures.
+        Notes
+        -----
+        Plots are not produced for zero eigenvalues.
+        """
+        par, array_key, array_val = self._parse_parameter_overrides(
+            **parameter_overrides)
+        if array_key in ['v', 'g']:
+            array_val = par[array_key]
+        states = [r'\phi', r'\delta', r'\dot{\phi}', r'\dot{\delta}']
+        eval_seq, evec_seq = self.calc_eigen(**parameter_overrides)
+        eval_seq = np.atleast_2d(eval_seq)
+        evec_seq = np.atleast_2d(evec_seq)
+        # TODO : not needed if no varyied params
+        eval_seq, evec_seq = sort_eigenmodes(eval_seq, evec_seq)
+        fig, axes = plt.subplots(*eval_seq.shape,
+                                 subplot_kw={'projection': 'polar'})
+        axes = np.atleast_2d(axes)
+        lw = list(range(1, len(states) + 1))
+        lw.reverse()
+        for k, (evals, par_val) in enumerate(zip(eval_seq, array_val)):
+            axes[k, 0].set_ylabel('{} = {}'.format(array_key, par_val))
+            for i, eVal in enumerate(evals):
+                eVec = evec_seq[k, :, i]
+                maxCom = abs(eVec[:2]).max()
+                for j, component in enumerate(eVec[:2]):
+                    radius = abs(component) / maxCom
+                    theta = np.angle(component)
+                    axes[k, i].plot([0, theta], [0, radius], lw=lw[j])
+                axes[k, i].set_rmax(1.0)
+                axes[k, i].legend(['$' + s + '$' for s in states])
+                axes[k, i].set_title('Eigenvalue: %1.3f$\pm$%1.3fj' % (eVal.real, eVal.imag))
+
+        #fig.tight_layout()
+
+        return axes
