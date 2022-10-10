@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.integrate as spi
 
 from .bicycle import benchmark_par_to_canonical, ab_matrix, sort_eigenmodes
 
@@ -9,7 +10,8 @@ from .bicycle import benchmark_par_to_canonical, ab_matrix, sort_eigenmodes
 class Meijaard2007Model(object):
     """Whipple-Carvallo model presented in [Meijaard2007]_. It is both linear
     and the minimal model in terms of states and coordinates that fully
-    describe the vehicles dynamics.
+    describe the vehicles dynamics: self-stability and non-minimum phase
+    behavior.
 
     References
     ==========
@@ -344,6 +346,25 @@ class Meijaard2007Model(object):
 
         return mod_ctrb
 
+    def plot_modal_controllability(self, **parameter_overrides):
+
+        par, array_keys, array_len = self._parse_parameter_overrides(
+            **parameter_overrides)
+
+        betas = self.calc_modal_controllability(**parameter_overrides)
+        betas = np.rad2deg(betas)
+        fig, axes = plt.subplots(*betas[0].shape, sharex=True, sharey=True)
+        axes[0, 0].plot(par[array_keys[0]], betas[:, 0, 0])
+        axes[0, 1].plot(par[array_keys[0]], betas[:, 0, 1])
+        axes[1, 0].plot(par[array_keys[0]], betas[:, 1, 0])
+        axes[1, 1].plot(par[array_keys[0]], betas[:, 1, 1])
+        axes[2, 0].plot(par[array_keys[0]], betas[:, 2, 0])
+        axes[2, 1].plot(par[array_keys[0]], betas[:, 2, 1])
+        axes[3, 0].plot(par[array_keys[0]], betas[:, 3, 0])
+        axes[3, 1].plot(par[array_keys[0]], betas[:, 3, 1])
+
+        return axes
+
     def plot_eigenvalue_parts(self, ax=None, colors=None,
                               **parameter_overrides):
         """Returns a Matplotlib axis of the real and imaginary parts of the
@@ -379,10 +400,6 @@ class Meijaard2007Model(object):
             ax.plot(par[array_keys[0]], np.imag(eval_sequence),
                     color=color, label=label, linestyle='--')
 
-        # x axis line
-        #ax.plot(speeds, np.zeros_like(speeds), 'k-', label='_nolegend_',
-                #linewidth=1.5)
-
         # plot the real parts of the eigenvalues
         for eval_sequence, color, label in zip(evals.T, colors, legend):
             ax.plot(par[array_keys[0]], np.real(eval_sequence), color=color,
@@ -413,32 +430,162 @@ class Meijaard2007Model(object):
         -----
         Plots are not produced for zero eigenvalues.
         """
-        par, array_keys, _ = self._parse_parameter_overrides(
+        par, arr_keys, _ = self._parse_parameter_overrides(
             **parameter_overrides)
         states = [r'\phi', r'\delta', r'\dot{\phi}', r'\dot{\delta}']
+
         eval_seq, evec_seq = self.calc_eigen(**parameter_overrides)
-        eval_seq = np.atleast_2d(eval_seq)
-        evec_seq = np.atleast_2d(evec_seq)
-        # TODO : not needed if no varyied params
-        eval_seq, evec_seq = sort_eigenmodes(eval_seq, evec_seq)
+        eval_seq, evec_seq = np.atleast_2d(eval_seq), np.atleast_3d(evec_seq)
+        # TODO : sort_eigenmodes() is doing something funny and not adding the
+        # 4th eigenval, so you often end up with duplicates eigenvalues for one
+        # eigenval and one missing. Also the algorithm may not work well with
+        # spaced out eigenvalues, which is what I've been trying here. You may
+        # have to calculate eigenvals/vec across closer spacing, then sample
+        # out the ones you want. For now, we don't sort coarse spaced
+        # eigenvalues.
+        #if arr_keys:
+            #eval_seq, evec_seq = sort_eigenmodes(eval_seq, evec_seq)
+
         fig, axes = plt.subplots(*eval_seq.shape,
                                  subplot_kw={'projection': 'polar'})
         axes = np.atleast_2d(axes)
+        fig.set_size_inches(axes.shape[1]*3, axes.shape[0]*3)
         lw = list(range(1, len(states) + 1))
         lw.reverse()
-        for k, (evals, par_val) in enumerate(zip(eval_seq, par[array_keys[0]])):
-            axes[k, 0].set_ylabel('{} = {}'.format(array_keys[0], par_val))
-            for i, eVal in enumerate(evals):
-                eVec = evec_seq[k, :, i]
-                maxCom = abs(eVec[:2]).max()
-                for j, component in enumerate(eVec[:2]):
-                    radius = abs(component) / maxCom
+
+        for k, (evals, evecs, par_val) in enumerate(zip(eval_seq, evec_seq,
+                                                        par[arr_keys[0]])):
+
+            axes[k, 0].set_ylabel('{} = {:1.2f}'.format(arr_keys[0], par_val),
+                                  labelpad=30)
+
+            for i, (eigenval, eigenvec) in enumerate(zip(evals, evecs.T)):
+
+                max_com = np.abs(eigenvec[:2]).max()
+
+                for j, component in enumerate(eigenvec[:2]):
+
+                    radius = np.abs(component)/max_com
                     theta = np.angle(component)
                     axes[k, i].plot([0, theta], [0, radius], lw=lw[j])
-                axes[k, i].set_rmax(1.0)
-                axes[k, i].legend(['$' + s + '$' for s in states])
-                axes[k, i].set_title('Eigenvalue: %1.3f$\pm$%1.3fj' % (eVal.real, eVal.imag))
 
-        #fig.tight_layout()
+                axes[k, i].set_rmax(1.0)
+                msg = r'Eigenvalue: {:1.3f}'
+                if eigenval.real >= 0.0:
+                    fontcolor = 'red'  # red indicates unstable
+                else:
+                    fontcolor = 'black'
+                axes[k, i].set_title(msg.format(eigenval),
+                                     fontdict={'color': fontcolor})
+
+        axes[0, 0].legend(['$' + s + '$' for s in states],
+                          loc='upper center', bbox_to_anchor=(0.5, 1.05),
+                          fancybox=True, shadow=True, ncol=4)
+
+        fig.tight_layout()
+
+        return axes
+
+    def simulate(self, times, initial_conditions, input_func=None,
+                 **parameter_overrides):
+        """Returns the
+
+        input_func : function
+            Takes form f(t, x, par).
+        """
+
+        par, arr_keys, _ = self._parse_parameter_overrides(
+            **parameter_overrides)
+
+        if arr_keys:
+            raise ValueError('Can only simulate with fixed parameters.')
+
+        A, B = self.form_state_space_matrices(**parameter_overrides)
+
+        if input_func is None:
+            def eval_rhs(t, x):
+                return A@x
+        else:
+            def eval_rhs(t, x):
+                return A@x + B@input_func(t, x, par)
+
+        res = spi.solve_ivp(eval_rhs,
+                            (times[0], times[-1]),
+                            initial_conditions,
+                            t_eval=times)
+
+        if input_func is None:
+            inputs = np.zeros((len(times), 2))
+        else:
+            inputs = np.empty((len(times), 2))
+            for i, ti in enumerate(times):
+                ui = input_func(ti, res.y[:, i], par)
+                inputs[i, :] = ui[:]
+
+        return res.y.T, inputs
+
+    def plot_simulation(self, times, initial_conditions, input_func=None,
+                        **parameter_overrides):
+
+        res, inputs = self.simulate(times, initial_conditions,
+                                    input_func=input_func,
+                                    **parameter_overrides)
+
+        fig, axes = plt.subplots(3, sharex=True)
+
+        axes[0].plot(times, inputs)
+        axes[0].legend([r'$T_\phi$', r'$T_\delta$'])
+        axes[1].plot(times, np.rad2deg(res[:, :2]))
+        axes[1].legend(['$' + lab + '$' for lab in self.state_vars_latex[:2]])
+        axes[2].plot(times, np.rad2deg(res[:, 2:]))
+        axes[2].legend(['$' + lab + '$' for lab in self.state_vars_latex[2:]])
+
+        axes[2].set_xlabel('Time [s]')
+
+        return axes
+
+    def simulate_modes(self, **parameter_overrides):
+
+        par, arr_keys, _ = self._parse_parameter_overrides(
+            **parameter_overrides)
+
+        if arr_keys:
+            raise ValueError('Can only simulate with fixed parameters.')
+
+        A, B = self.form_state_space_matrices(**parameter_overrides)
+        evals, evecs = self.calc_eigen(**parameter_overrides)
+
+        def eval_rhs(t, x):
+            return A@x
+
+        times = np.linspace(0.0, 10.0, num=1000)
+
+        results = np.empty((4, len(times), 4))
+
+        for i, evec in enumerate(evecs.T):
+            initial_condition = evec.real
+
+            sim_res = spi.solve_ivp(eval_rhs, (times[0], times[-1]),
+                                    initial_condition, t_eval=times)
+            results[i] = sim_res.y.T
+
+        return times, results
+
+    def plot_mode_simulations(self, **parameter_overrides):
+
+        times, results = self.simulate_modes(**parameter_overrides)
+
+        fig, axes = plt.subplots(4, 2, sharex=True)
+
+        for i, res in enumerate(results):
+            axes[i, 0].plot(times, np.rad2deg(results[i, :, :2]))
+            axes[i, 0].legend(['$' + lab + '$'
+                               for lab in self.state_vars_latex[:2]])
+            axes[i, 1].plot(times, np.rad2deg(results[i, :, 2:]))
+            axes[i, 1].legend(['$' + lab + '$'
+                               for lab in self.state_vars_latex[2:]])
+
+        axes[3, 0].set_xlabel('Time [s]')
+        axes[3, 1].set_xlabel('Time [s]')
 
         return axes
