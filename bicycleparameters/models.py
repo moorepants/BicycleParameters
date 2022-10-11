@@ -88,7 +88,7 @@ class Meijaard2007Model(object):
 
     def form_reduced_canonical_matrices(self, **parameter_overrides):
         """Returns the canonical speed and gravity independent matrices for the
-        Whipple-Carvallo bicycle model linearized about the nominal
+        Whipple-Carvallo bicycle model linearized about the nominal upright
         configuration.
 
         Returns
@@ -236,7 +236,7 @@ class Meijaard2007Model(object):
         return A, B
 
     def calc_eigen(self, left=False, **parameter_overrides):
-        """Returns the eigenvalues and eigenvectors of the model.
+        """Returns the right or left eigenvalues and eigenvectors of the model.
 
         Parameters
         ==========
@@ -246,9 +246,10 @@ class Meijaard2007Model(object):
         Returns
         =======
         evals : ndarray, shape(4,) or shape (n, 4)
-            eigenvalues
+            Eigenvalues
         evecs : ndarray, shape(4,4) or shape (n, 4, 4)
-            eigenvectors
+            Eigenvectors, each columns are eigenvectors and are associated with
+            same index of the eigenvalues.
 
         """
         A, B = self.form_state_space_matrices(**parameter_overrides)
@@ -266,28 +267,50 @@ class Meijaard2007Model(object):
                 A = A.T
             return np.linalg.eig(A)
 
-    def calc_modal_controllability(self, **parameter_overrides):
-        """Returns the modal controllability measures.
+    def calc_modal_controllability(self, acute=True, **parameter_overrides):
+        """Returns the modal controllability [1]_ measures for each input and
+        each eigenmode. The modal controllability is defined as the angle
+        between each left eigenvector and each input column.
+
+        x' = A*x + B*u
+
+        A is n x n
+        B is n x m
+
+        The columns of B are associated with the jth input:
+
+        B = [b1, ..., bj, ..., bm]
+
+        The columns of Q are ith left eigenvectors of A, i.e. _, Q = eig(A.T):
+
+        Q = [q1, ..., qi, ..., qn]
+
+        The modal controllability angle beta_ij is defined as:
 
         cos(beta_ij) = |qi.T @ bj|
                        -------------
-                       ||qi|| ||bj||
+                       ||qi||*||bj||
 
         qi : ith left eigenvector
         bj : jth column of B
 
-        A. M. A. Hamdan and A. H. Nayfeh, "Measures of modal controllability
-        and observability for first- and second-order linear systems," Journal
-        of Guidance, Control, and Dynamics, vol. 12, no. 3, pp. 421–428, 1989,
-        doi: 10.2514/3.20424.
-
-
-        When q is complex, the angle calculation is
-        https://en.wikipedia.org/wiki/Dot_product#Complex_vectors
+        When qi is complex, the angle calculation is [2]_:
 
         cos(beta_ij) = Re(qi.H @ bj)
                        -------------
-                       ||qi|| ||bj||
+                       ||qi||*||bj||
+
+        References
+        ==========
+
+        .. [1] A. M. A. Hamdan and A. H. Nayfeh, "Measures of modal
+           controllability and observability for first- and second-order linear
+           systems," Journal of Guidance, Control, and Dynamics, vol. 12, no.
+           3, pp. 421–428, 1989, doi: 10.2514/3.20424.
+
+        .. [2] https://en.wikipedia.org/wiki/Dot_product#Complex_vectors
+
+
         """
 
         _, B = self.form_state_space_matrices(**parameter_overrides)
@@ -337,31 +360,38 @@ class Meijaard2007Model(object):
                 # columns of the evecs and columns of B
                 for i, vi in enumerate(vk.T):
                     for j, bj in enumerate(Bk.T):
-                        mod_ctrb[k, i, j] = mod_cont(vi, bj)
+                        mod_ctrb[k, i, j] = mod_cont(vi, bj, acute=acute)
         else:
             mod_ctrb = np.empty((evecs.shape[1], B.shape[1]))
             for i, vi in enumerate(evecs.T):
                 for j, bj in enumerate(B.T):
-                    mod_ctrb[i, j] = mod_cont(vi, bj)
+                    mod_ctrb[i, j] = mod_cont(vi, bj, acute=acute)
 
         return mod_ctrb
 
-    def plot_modal_controllability(self, **parameter_overrides):
+    def plot_modal_controllability(self, acute=True, **parameter_overrides):
+        """Returns axes shape(4,2) with plots of the modal controllability for
+        each input and each eigenmode."""
 
         par, array_keys, array_len = self._parse_parameter_overrides(
             **parameter_overrides)
 
-        betas = self.calc_modal_controllability(**parameter_overrides)
+        betas = self.calc_modal_controllability(acute=acute,
+                                                **parameter_overrides)
         betas = np.rad2deg(betas)
-        fig, axes = plt.subplots(*betas[0].shape, sharex=True, sharey=True)
-        axes[0, 0].plot(par[array_keys[0]], betas[:, 0, 0])
-        axes[0, 1].plot(par[array_keys[0]], betas[:, 0, 1])
-        axes[1, 0].plot(par[array_keys[0]], betas[:, 1, 0])
-        axes[1, 1].plot(par[array_keys[0]], betas[:, 1, 1])
-        axes[2, 0].plot(par[array_keys[0]], betas[:, 2, 0])
-        axes[2, 1].plot(par[array_keys[0]], betas[:, 2, 1])
-        axes[3, 0].plot(par[array_keys[0]], betas[:, 3, 0])
-        axes[3, 1].plot(par[array_keys[0]], betas[:, 3, 1])
+
+        fig, axes = plt.subplots(*betas[0].shape, sharex=True)
+
+        for i, row in enumerate(axes):
+            row[0].set_ylabel('Mode {}'.format(i + 1))
+            for j, col in enumerate(row):
+                col.plot(par[array_keys[0]], betas[:, i, j])
+
+        axes[3, 0].set_xlabel(array_keys[0])
+        axes[3, 1].set_xlabel(array_keys[0])
+
+        axes[0, 0].set_title(r'Input: $T_\phi$')
+        axes[0, 1].set_title(r'Input: $T_\delta$')
 
         return axes
 
@@ -397,7 +427,7 @@ class Meijaard2007Model(object):
                   'Mode 1', 'Mode 2', 'Mode 3', 'Mode 4']
         # imaginary components
         for eval_sequence, color, label in zip(evals.T, colors, legend):
-            ax.plot(par[array_keys[0]], np.imag(eval_sequence),
+            ax.plot(par[array_keys[0]], np.abs(np.imag(eval_sequence)),
                     color=color, label=label, linestyle='--')
 
         # plot the real parts of the eigenvalues
@@ -419,16 +449,12 @@ class Meijaard2007Model(object):
         """Plots the components of the eigenvectors in the real and imaginary
         plane.
 
-        Parameters
-        ----------
-
         Returns
-        -------
-        figs : list
-            A list of matplotlib figures.
-        Notes
-        -----
-        Plots are not produced for zero eigenvalues.
+        =======
+        axes : ndarray, shape(n, 4)
+            Polar plot axes for each eigenvector (columns). The rows correspond
+            to a varied parameter.
+
         """
         par, arr_keys, _ = self._parse_parameter_overrides(
             **parameter_overrides)
@@ -436,12 +462,18 @@ class Meijaard2007Model(object):
 
         eval_seq, evec_seq = self.calc_eigen(**parameter_overrides)
         eval_seq, evec_seq = np.atleast_2d(eval_seq), np.atleast_3d(evec_seq)
+
+        if eval_seq.shape[0] > 10:
+            msg = ('Plots will be too large, use fewer than 11 values in the '
+                   'varied parameter.')
+            raise ValueError(msg)
+
         # TODO : sort_eigenmodes() is doing something funny and not adding the
-        # 4th eigenval, so you often end up with duplicates eigenvalues for one
-        # eigenval and one missing. Also the algorithm may not work well with
-        # spaced out eigenvalues, which is what I've been trying here. You may
-        # have to calculate eigenvals/vec across closer spacing, then sample
-        # out the ones you want. For now, we don't sort coarse spaced
+        # 4th eigenvalue, so you often end up with duplicates eigenvalues for
+        # one eigenval and one missing. Also the algorithm may not work well
+        # with spaced out eigenvalues, which is what I've been trying here. You
+        # may have to calculate eigenvals/vec across closer spacing, then
+        # sample out the ones you want. For now, we don't sort coarse spaced
         # eigenvalues.
         #if arr_keys:
             #eval_seq, evec_seq = sort_eigenmodes(eval_seq, evec_seq)
@@ -488,10 +520,20 @@ class Meijaard2007Model(object):
 
     def simulate(self, times, initial_conditions, input_func=None,
                  **parameter_overrides):
-        """Returns the
+        """Returns the state and input trajectories at each time value.
 
+        Parameters
+        ==========
+        times : array_like, shape(n,)
+        initial_conditions : array_like, shape(4,)
         input_func : function
-            Takes form f(t, x, par).
+            Takes form u = f(t, x, par) where u is array_like, shape(2,)
+
+        Returns
+        =======
+        states : ndarray, shape(n, 4)
+        inputs : ndatrray, shape(n, 2)
+
         """
 
         par, arr_keys, _ = self._parse_parameter_overrides(
@@ -526,7 +568,20 @@ class Meijaard2007Model(object):
 
     def plot_simulation(self, times, initial_conditions, input_func=None,
                         **parameter_overrides):
+        """Returns the state and input trajectories at each time value.
 
+        Parameters
+        ==========
+        times : array_like, shape(n,)
+        initial_conditions : array_like, shape(4,)
+        input_func : function
+            Takes form u = f(t, x, par) where u is array_like, shape(2,)
+
+        Returns
+        =======
+        axes : ndarray, shape(3,)
+
+        """
         res, inputs = self.simulate(times, initial_conditions,
                                     input_func=input_func,
                                     **parameter_overrides)
