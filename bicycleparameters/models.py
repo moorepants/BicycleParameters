@@ -10,7 +10,7 @@ from .bicycle import benchmark_par_to_canonical, ab_matrix, sort_eigenmodes
 class Meijaard2007Model(object):
     """Whipple-Carvallo model presented in [Meijaard2007]_. It is both linear
     and the minimal model in terms of states and coordinates that fully
-    describe the vehicles dynamics: self-stability and non-minimum phase
+    describe the vehicle's dynamics: self-stability and non-minimum phase
     behavior.
 
     References
@@ -23,14 +23,15 @@ class Meijaard2007Model(object):
 
     """
     state_vars_latex = [r'\phi', r'\delta', r'\dot{\phi}', r'\dot{\delta}']
+    input_vars_latex = [r'T_\phi', r'T_\delta']
 
     def __init__(self, benchmark_parameter_set):
         """Initializes the model with the provided parameters.
 
         Parameters
         ==========
-        benchmark_parameters : dictionary
-            Dictionary that maps floats to the parameter keys containing:
+        benchmark_parameters : Meijaard2007ParameterSet
+            Parameter set that maps floats to the parameter keys containing:
 
             - ``IBxx`` : x moment of inertia of the frame/rider [kg*m**2]
             - ``IBxz`` : xz product of inertia of the frame/rider [kg*m**2]
@@ -51,6 +52,7 @@ class Meijaard2007Model(object):
             - ``mR`` : rear wheel mass [kg]
             - ``rF`` : front wheel radius [m]
             - ``rR`` : rear wheel radius [m]
+            - ``v`` : speed [m/s]
             - ``w`` : wheelbase [m]
             - ``xB`` : x distance to the frame/rider center of mass [m]
             - ``xH`` : x distance to the frame/rider center of mass [m]
@@ -104,7 +106,6 @@ class Meijaard2007Model(object):
 
         Notes
         =====
-
         The canonical matrices complete the following equation:
 
             M*q'' + v*C1*q' + [g*K0 + v**2*K2]*q = f
@@ -168,16 +169,11 @@ class Meijaard2007Model(object):
         """Returns the A and B matrices for the Whipple model linearized about
         the upright constant velocity configuration.
 
-        Parameters
-        ==========
-        speed : float
-            The speed of the bicycle.
-
         Returns
         =======
-        A : ndarray, shape(4,4)
+        A : ndarray, shape(4,4) or shape(n,4,4)
             The state matrix.
-        B : ndarray, shape(4,2)
+        B : ndarray, shape(4,2) or shape(n,4,2)
             The input matrix.
 
         Notes
@@ -246,7 +242,7 @@ class Meijaard2007Model(object):
         Returns
         =======
         evals : ndarray, shape(4,) or shape (n, 4)
-            Eigenvalues
+            Eigenvalues.
         evecs : ndarray, shape(4,4) or shape (n, 4, 4)
             Eigenvectors, each columns are eigenvectors and are associated with
             same index of the eigenvalues.
@@ -259,12 +255,12 @@ class Meijaard2007Model(object):
             evecs = np.zeros(A.shape, dtype='complex128')
             for i, Ai in enumerate(A):
                 if left:
-                    Ai = Ai.T
+                    Ai = np.transpose(Ai)
                 evals[i], evecs[i] = np.linalg.eig(Ai)
             return evals, evecs
         else:
             if left:
-                A = A.T
+                A = np.transpose(A)
             return np.linalg.eig(A)
 
     def calc_modal_controllability(self, acute=True, **parameter_overrides):
@@ -369,7 +365,8 @@ class Meijaard2007Model(object):
 
         return mod_ctrb
 
-    def plot_modal_controllability(self, acute=True, **parameter_overrides):
+    def plot_modal_controllability(self, axes=None, acute=True,
+                                   **parameter_overrides):
         """Returns axes shape(4,2) with plots of the modal controllability for
         each input and each eigenmode."""
 
@@ -380,7 +377,8 @@ class Meijaard2007Model(object):
                                                 **parameter_overrides)
         betas = np.rad2deg(betas)
 
-        fig, axes = plt.subplots(*betas[0].shape, sharex=True)
+        if axes is None:
+            fig, axes = plt.subplots(*betas[0].shape, sharex=True)
 
         for i, row in enumerate(axes):
             row[0].set_ylabel('Mode {}'.format(i + 1))
@@ -599,7 +597,19 @@ class Meijaard2007Model(object):
 
         return axes
 
-    def simulate_modes(self, **parameter_overrides):
+    def simulate_modes(self, times, **parameter_overrides):
+        """Returns simulation results showing the behavior of each
+        eigenmode.
+
+        Parameters
+        ==========
+        times : array_like, shape(n,)
+
+        Returns
+        =======
+        results : ndarray, shape(4, n, 4)
+
+        """
 
         par, arr_keys, _ = self._parse_parameter_overrides(
             **parameter_overrides)
@@ -613,8 +623,6 @@ class Meijaard2007Model(object):
         def eval_rhs(t, x):
             return A@x
 
-        times = np.linspace(0.0, 10.0, num=1000)
-
         results = np.empty((4, len(times), 4))
 
         for i, evec in enumerate(evecs.T):
@@ -624,11 +632,12 @@ class Meijaard2007Model(object):
                                     initial_condition, t_eval=times)
             results[i] = sim_res.y.T
 
-        return times, results
+        return results
 
-    def plot_mode_simulations(self, **parameter_overrides):
+    def plot_mode_simulations(self, times, **parameter_overrides):
+        """Returns matplotlib subplot axes with a simulation of each mode."""
 
-        times, results = self.simulate_modes(**parameter_overrides)
+        results = self.simulate_modes(times, **parameter_overrides)
 
         fig, axes = plt.subplots(4, 2, sharex=True)
 
