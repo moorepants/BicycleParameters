@@ -1220,7 +1220,8 @@ the pathToData argument.""".format(bicycleName, pathToData)
         grid : boolean, optional
             If true, displays a grid on the plot.
         show_legend: boolean, optional
-            If true, displays a legend describing the different parts of the solution shown.
+            If true, displays a legend describing the different parts of the
+            solution shown.
 
         Returns
         -------
@@ -1243,17 +1244,18 @@ the pathToData argument.""".format(bicycleName, pathToData)
         figsize = [fig_height*GOLDEN_RATIO, fig_height]
         params = {
             'axes.labelsize': 8,
-            # TODO : text.fontsize no longer supported in matplotlib
-            #'text.fontsize': 10,
+            'text.fontsize': 10,
             'legend.fontsize': 8,
             'xtick.labelsize': 6,
             'ytick.labelsize': 6,
             'figure.figsize': figsize
             }
+        # NOTE : text.fontsize no longer supported in matplotlib
         try:
             plt.rcParams.update(params)
         except KeyError:
             del params['text.fontsize']
+            params['font.size'] = 10
             plt.rcParams.update(params)
 
         if fig is None:

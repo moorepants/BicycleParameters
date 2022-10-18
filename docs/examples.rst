@@ -279,14 +279,14 @@ real and imaginary parts of the eigenvalues as a function of speed::
 
   >>> import numpy as np
   >>> speeds = np.linspace(0., 10., num=100)
-  >>> bicycle.plot_eigenvalues_vs_speed(speeds)
+  >>> bicycle.plot_eigenvalues_vs_speed(speeds, show=True)
 
 .. image:: eigenvaluesVsSpeed.png
 
 You can also compare the eigenvalues of two or more bicycles::
 
   >>> yellowrev = bp.Bicycle('Yellowrev')
-  >>> bp.plot_eigenvalues([bicycle, yellowrev], speeds)
+  >>> bp.plot_eigenvalues([bicycle, yellowrev], speeds, show=True)
 
 .. image:: eigCompare.png
 
@@ -492,7 +492,7 @@ displays a simplified depiction::
 
 The eigenvalue plot also relfects the changes::
 
-  >>> bicycle.plot_eigenvalues_vs_speed(speeds)
+  >>> bicycle.plot_eigenvalues_vs_speed(speeds, show=True)
 
 .. image:: bicycleRiderEig.png
 

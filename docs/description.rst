@@ -62,7 +62,7 @@ Example Code
     >>> par = rigid.parameters['Benchmark']
     >>> rigid.plot_bicycle_geometry()
     >>> speeds = np.linspace(0., 10., num=100)
-    >>> rigid.plot_eigenvalues_vs_speed(speeds)
+    >>> rigid.plot_eigenvalues_vs_speed(speeds, show=True)
 
 .. _references:
 
