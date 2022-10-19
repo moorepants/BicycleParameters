@@ -27,6 +27,7 @@ jobs:
         with:
           environment-file: conda/bicycleparameters-dev${{ matrix.dependency-set }}.yml
           environment-name: bicycleparameters-dev${{ matrix.dependency-set }}
+          cache-env: true
           extra-specs: |
             python=${{ matrix.python-version }}
       - name: run tests
