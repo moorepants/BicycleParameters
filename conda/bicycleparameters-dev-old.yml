@@ -21,4 +21,3 @@ dependencies:
   - numpydoc
   - pytest
   - sphinx >=1.8.5
-

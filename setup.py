@@ -24,8 +24,15 @@ setup(
         'yeadon>=1.3.0',
     ],
     extras_require={
-        'doc': ['sphinx', 'numpydoc'],
-        'app': ['dash>=2', 'dash-bootstrap-components'],
+        'doc': [
+            'sphinx>=1.8.5',
+            'numpydoc>=0.7.0'
+        ],
+        'app': [
+            'dash>=2',
+            'dash-bootstrap-components',
+            'pandas>=0.25.3'
+        ],
     },
     tests_require=['nose'],
     test_suite='nose.collector',
@@ -33,6 +40,7 @@ setup(
                  'Programming Language :: Python :: 3.7',
                  'Programming Language :: Python :: 3.8',
                  'Programming Language :: Python :: 3.9',
+                 'Programming Language :: Python :: 3.10',
                  'Operating System :: OS Independent',
                  'Development Status :: 5 - Production/Stable',
                  'Intended Audience :: Science/Research',
