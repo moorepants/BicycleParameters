@@ -1,5 +1,5 @@
 import numpy as np
-from nose.tools import assert_raises
+from pytest import raises
 
 from ..parameter_sets import Meijaard2007ParameterSet
 from ..models import Meijaard2007Model
@@ -86,12 +86,12 @@ def test_parse_parameter_overrides():
     np.testing.assert_allclose(par['zH'], [5.0, 6.0, 7.0])
     assert array_len == 3
 
-    with assert_raises(ValueError):
+    with raises(ValueError):
         par, array_keys, array_len = model._parse_parameter_overrides(
             zH=[5.0, 6.0], v=[1.0, 2.0, 3.0])
 
 
-def test_Meijaard2007Model(show=True):
+def test_Meijaard2007Model(show=False):
 
     parameter_set = Meijaard2007ParameterSet(meijaard2007_parameters, True)
 

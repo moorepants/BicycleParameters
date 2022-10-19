@@ -23,6 +23,7 @@ setup(
         'uncertainties>=3.1.2',
         'yeadon>=1.3.0',
     ],
+    python_requires='>=3.6',
     extras_require={
         'doc': [
             'sphinx>=1.8.5',
@@ -34,8 +35,8 @@ setup(
             'pandas>=0.25.3'
         ],
     },
-    tests_require=['nose'],
-    test_suite='nose.collector',
+    entry_points={'console_scripts':
+                  ['bicycleparameters = bicycleparameters.app:app.run_server']},
     classifiers=['Programming Language :: Python',
                  'Programming Language :: Python :: 3.7',
                  'Programming Language :: Python :: 3.8',
