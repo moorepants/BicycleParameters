@@ -170,13 +170,13 @@ the pathToData argument.""".format(bicycleName, pathToData)
         return desc
 
     def save_parameters(self, filetype='text'):
-        """
-        Saves all the parameter sets to file.
+        """Saves all the parameter sets to file.
 
         Parameters
-        ----------
+        ==========
+
         filetype : string, optional
-            - 'text' : a text file with parameters as `c = 0.10+/-0.01\n`
+            - 'text' : a text file with parameters as ``c = 0.10+/-0.01``
             - 'matlab' : matlab .mat file
             - 'pickle' : python pickled dictionary
 
@@ -500,6 +500,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                               centerOfMass=True, inertiaEllipse=True):
         """Returns a figure showing the basic bicycle geometry, the centers of
         mass and the moments of inertia.
+
         Parameters
         ==========
         show : boolean, optional
@@ -512,13 +513,16 @@ the pathToData argument.""".format(bicycleName, pathToData)
             If true the mass center of each rigid body will be displayed.
         inertiaEllipse : boolean optional
             If true inertia ellipses for each rigid body will be displayed.
+
         Returns
         =======
         fig : matplotlib.pyplot.Figure
+
         Notes
         =====
         If the flywheel is defined, it's center of mass corresponds to the
         front wheel and is not depicted in the plot.
+
         """
         par = io.remove_uncertainties(self.parameters['Benchmark'])
         parts = get_parts_in_parameters(par)

@@ -268,33 +268,36 @@ class Meijaard2007Model(object):
         each eigenmode. The modal controllability is defined as the angle
         between each left eigenvector and each input column.
 
-        x' = A*x + B*u
+        Notes
+        =====
 
-        A is n x n
-        B is n x m
+        ``x' = A*x + B*u``
+
+        - A is n x n
+        - B is n x m
 
         The columns of B are associated with the jth input:
 
-        B = [b1, ..., bj, ..., bm]
+        ``B = [b1, ..., bj, ..., bm]``
 
-        The columns of Q are ith left eigenvectors of A, i.e. _, Q = eig(A.T):
+        The columns of Q are ith left eigenvectors of A, i.e. _, ``Q = eig(A.T)``:
 
-        Q = [q1, ..., qi, ..., qn]
+        ``Q = [q1, ..., qi, ..., qn]``
 
-        The modal controllability angle beta_ij is defined as:
+        The modal controllability angle beta_ij is defined as::
 
-        cos(beta_ij) = |qi.T @ bj|
-                       -------------
-                       ||qi||*||bj||
+           cos(beta_ij) = |qi.T @ bj|
+                          -------------
+                          ||qi||*||bj||
 
-        qi : ith left eigenvector
-        bj : jth column of B
+        - qi : ith left eigenvector
+        - bj : jth column of B
 
-        When qi is complex, the angle calculation is [2]_:
+        When qi is complex, the angle calculation is [2]_::
 
-        cos(beta_ij) = Re(qi.H @ bj)
-                       -------------
-                       ||qi||*||bj||
+           cos(beta_ij) = Re(qi.H @ bj)
+                          -------------
+                          ||qi||*||bj||
 
         References
         ==========
