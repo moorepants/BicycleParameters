@@ -1,1 +1,1 @@
-web: gunicorn bicycleparameters.cycle_app:server
+web: gunicorn bicycleparameters.app:server
