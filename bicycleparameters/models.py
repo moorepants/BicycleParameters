@@ -22,8 +22,8 @@ class Meijaard2007Model(object):
        http://doi.org/10.1098/rspa.2007.1857
 
     """
-    state_vars_latex = [r'\phi', r'\delta', r'\dot{\phi}', r'\dot{\delta}']
     input_vars_latex = [r'T_\phi', r'T_\delta']
+    state_vars_latex = [r'\phi', r'\delta', r'\dot{\phi}', r'\dot{\delta}']
 
     def __init__(self, benchmark_parameter_set):
         """Initializes the model with the provided parameters.
@@ -63,6 +63,27 @@ class Meijaard2007Model(object):
         self.parameter_set = benchmark_parameter_set
 
     def _parse_parameter_overrides(self, **parameter_overrides):
+        """Returns the model's parameter dictionary with the overridden
+        parameters replaced.
+
+        Parameters
+        ==========
+        parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
+
+        Returns
+        =======
+        par : dictionary
+            Copy of self.parameter_set.parameters with overidden parameter
+            values.
+        array_keys : list
+            All parameter key strings that hold arrays.
+        array_len : None or int
+            If there are arrays, this is the common length.
+
+        """
 
         par = self.parameter_set.parameters.copy()
 
@@ -166,8 +187,8 @@ class Meijaard2007Model(object):
             return benchmark_par_to_canonical(par)
 
     def form_state_space_matrices(self, **parameter_overrides):
-        """Returns the A and B matrices for the Whipple model linearized about
-        the upright constant velocity configuration.
+        """Returns the A and B matrices for the Whipple-Carvallo model
+        linearized about the upright constant velocity configuration.
 
         Returns
         =======
@@ -232,18 +253,20 @@ class Meijaard2007Model(object):
         return A, B
 
     def calc_eigen(self, left=False, **parameter_overrides):
-        """Returns the right or left eigenvalues and eigenvectors of the model.
+        """Returns the right (or left) eigenvalues and eigenvectors of the
+        linear model.
 
         Parameters
         ==========
         left : boolean, optional
-            If true, the left eigenvectors will be returned, i.e. A.T*v=lam*v.
+            If true, the left eigenvectors will be returned, i.e.
+            ``A.T*v=lam*v``.
 
         Returns
         =======
-        evals : ndarray, shape(4,) or shape (n, 4)
+        evals : ndarray, shape(4,) or shape (n,4)
             Eigenvalues.
-        evecs : ndarray, shape(4,4) or shape (n, 4, 4)
+        evecs : ndarray, shape(4,4) or shape (n,4,4)
             Eigenvectors, each columns are eigenvectors and are associated with
             same index of the eigenvalues.
 
@@ -268,6 +291,18 @@ class Meijaard2007Model(object):
         each eigenmode. The modal controllability is defined as the angle
         between each left eigenvector and each input column.
 
+        Parameters
+        ==========
+        acute : boolean, optional
+           If true only angles from 0 to pi/2 will be returned from the
+           arrcos() computation. If false, angles from -pi/2 to pi/2 will be
+           returned.
+
+        Returns
+        =======
+        beta : ndarray, shape(4,2) or shape(n, 4,2)
+            Modal controllability angle for each eigenmode and each input.
+
         Notes
         =====
 
@@ -280,7 +315,8 @@ class Meijaard2007Model(object):
 
         ``B = [b1, ..., bj, ..., bm]``
 
-        The columns of Q are ith left eigenvectors of A, i.e. _, ``Q = eig(A.T)``:
+        The columns of Q are ith left eigenvectors of A, i.e. _, ``Q =
+        eig(A.T)``:
 
         ``Q = [q1, ..., qi, ..., qn]``
 
