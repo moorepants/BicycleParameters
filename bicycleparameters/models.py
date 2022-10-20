@@ -526,14 +526,18 @@ class Meijaard2007Model(object):
         Parameters
         ==========
         times : array_like, shape(n,)
+            Monotonic increasing time values to simulate over.
         initial_conditions : array_like, shape(4,)
+            Initial values of the states.
         input_func : function
-            Takes form u = f(t, x, par) where u is array_like, shape(2,)
+            Takes form u = f(t, x) where u is array_like, shape(2,).
 
         Returns
         =======
         states : ndarray, shape(n, 4)
+            State trajectories over n time values.
         inputs : ndatrray, shape(n, 2)
+            Input trajectories over n time values.
 
         """
 
@@ -550,7 +554,7 @@ class Meijaard2007Model(object):
                 return A@x
         else:
             def eval_rhs(t, x):
-                return A@x + B@input_func(t, x, par)
+                return A@x + B@input_func(t, x)
 
         res = spi.solve_ivp(eval_rhs,
                             (times[0], times[-1]),
@@ -562,7 +566,7 @@ class Meijaard2007Model(object):
         else:
             inputs = np.empty((len(times), 2))
             for i, ti in enumerate(times):
-                ui = input_func(ti, res.y[:, i], par)
+                ui = input_func(ti, res.y[:, i])
                 inputs[i, :] = ui[:]
 
         return res.y.T, inputs
@@ -574,13 +578,17 @@ class Meijaard2007Model(object):
         Parameters
         ==========
         times : array_like, shape(n,)
+            Monotonic increasing time values to simulate over.
         initial_conditions : array_like, shape(4,)
+            Initial values of the states.
         input_func : function
-            Takes form u = f(t, x, par) where u is array_like, shape(2,)
+            Takes form u = f(t, x) where u is array_like, shape(2,).
 
         Returns
         =======
         axes : ndarray, shape(3,)
+            Three subplots that plot the input trajectories, state angle
+            trajectories, and state angular rates.
 
         """
         res, inputs = self.simulate(times, initial_conditions,
@@ -607,10 +615,13 @@ class Meijaard2007Model(object):
         Parameters
         ==========
         times : array_like, shape(n,)
+            Monotonic increasing time values to simulate over.
 
         Returns
         =======
         results : ndarray, shape(4, n, 4)
+            State trajectories for each mode with the shape corresponding to
+            (mode, time, state).
 
         """
 
@@ -638,8 +649,20 @@ class Meijaard2007Model(object):
         return results
 
     def plot_mode_simulations(self, times, **parameter_overrides):
-        """Returns matplotlib subplot axes with a simulation of each mode."""
+        """Returns matplotlib subplot axes with a simulation of each mode.
 
+        Parameters
+        ==========
+        times : array_like, shape(n,)
+            Monotonic increasing time values to simulate over.
+
+        Returns
+        =======
+        axes : ndarray, shape(4,2)
+            Subplot axes with the modes on the rows and the angles in the first
+            column and the angular rates in the second column.
+
+        """
         results = self.simulate_modes(times, **parameter_overrides)
 
         fig, axes = plt.subplots(4, 2, sharex=True)
