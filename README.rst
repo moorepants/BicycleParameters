@@ -16,7 +16,7 @@ of the Whipple-Carvallo bicycle model.
    * - CI Status
      - |GHCI|
    * - Render App
-     - `Bicycle Dynamics App <https://bicycle-dynamics.onrender.com`_
+     - `Bicycle Dynamics App <https://bicycle-dynamics.onrender.com>`_
 
 .. |PyPi| image:: https://img.shields.io/pypi/v/BicycleParameters.svg
    :target: https://pypi.org/project/BicycleParameters/
