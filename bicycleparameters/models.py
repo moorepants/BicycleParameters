@@ -286,7 +286,7 @@ class Meijaard2007Model(object):
                 A = np.transpose(A)
             return np.linalg.eig(A)
 
-    def calc_modal_controllability(self, acute=True, **parameter_overrides):
+    def _calc_modal_controllability(self, acute=True, **parameter_overrides):
         """Returns the modal controllability [1]_ measures for each input and
         each eigenmode. The modal controllability is defined as the angle
         between each left eigenvector and each input column.
@@ -404,7 +404,7 @@ class Meijaard2007Model(object):
 
         return mod_ctrb
 
-    def plot_modal_controllability(self, axes=None, acute=True,
+    def _plot_modal_controllability(self, axes=None, acute=True,
                                    **parameter_overrides):
         """Returns axes shape(4,2) with plots of the modal controllability for
         each input and each eigenmode."""
@@ -412,8 +412,8 @@ class Meijaard2007Model(object):
         par, array_keys, array_len = self._parse_parameter_overrides(
             **parameter_overrides)
 
-        betas = self.calc_modal_controllability(acute=acute,
-                                                **parameter_overrides)
+        betas = self._calc_modal_controllability(acute=acute,
+                                                 **parameter_overrides)
         betas = np.rad2deg(betas)
 
         if axes is None:
