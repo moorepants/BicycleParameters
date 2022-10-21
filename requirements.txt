@@ -1,4 +1,4 @@
-# build dependencies for running the app on heroku
+# build dependencies for running the app on heroku or render
 DynamicistToolKit
 dash>=2
 dash-bootstrap-components

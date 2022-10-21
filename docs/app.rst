@@ -2,10 +2,9 @@ Bicycle Dynamics Analysis App
 =============================
 
 The Bicycle Dynamics Analysis App provides a GUI for using the
-BicycleParameters Python program on the web. Using Dash, we transform
-Python code into HTML and CSS which is nicely rendered within a web
-browser. The application is available at
-https://bicycleparameters.herokuapp.com/.
+BicycleParameters Python program on the web. Using Dash, we transform Python
+code into HTML and CSS which is nicely rendered within a web browser. The
+application is available at https://bicycle-dynamics.onrender.com/.
 
 Directory Structure
 -------------------

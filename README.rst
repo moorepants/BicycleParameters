@@ -15,8 +15,8 @@ of the Whipple-Carvallo bicycle model.
      - |RTD|
    * - CI Status
      - |GHCI|
-   * - Heroku App
-     - |heroku|
+   * - Render App
+     - `Bicycle Dynamics App <https://bicycle-dynamics.onrender.com`_
 
 .. |PyPi| image:: https://img.shields.io/pypi/v/BicycleParameters.svg
    :target: https://pypi.org/project/BicycleParameters/
@@ -25,10 +25,6 @@ of the Whipple-Carvallo bicycle model.
    :target: https://anaconda.org/conda-forge/bicycleparameters
 
 .. |GHCI| image:: https://github.com/moorepants/BicycleParameters/actions/workflows/test.yml/badge.svg
-
-.. |heroku| image:: http://heroku-badge.herokuapp.com/?app=bicycleparameters&svg=1
-   :target: https://bicycleparameters.herokuapp.com
-   :alt: Heroku Application
 
 .. |RTD| image:: https://readthedocs.org/projects/bicycleparameters/badge/?version=latest
    :target: https://bicycleparameters.readthedocs.io/en/latest/?badge=latest

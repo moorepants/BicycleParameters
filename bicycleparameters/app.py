@@ -75,7 +75,7 @@ GENERAL_LABELS = ['Wheel Base [m]:',
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.COSMO])
 app.title = 'Bicycle Dynamics Analysis App'
-server = app.server  # needed for heroku
+server = app.server  # needed for heroku or render
 
 
 # app.layout defines the visual GUI elements on the website
