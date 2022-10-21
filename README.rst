@@ -119,7 +119,7 @@ Documentation
 =============
 
 Please refer to the `online documentation
-<http://packages.python.org/BicycleParameters>`_ for more information.
+<https://bicycleparameters.readthedocs.io/>`_ for more information.
 
 Grant Information
 =================
