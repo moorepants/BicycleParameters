@@ -6,7 +6,7 @@ The eigenvalues are a function of 27 parameters as defined in [3]. The
 eigenvalues can be used to assess the uncontrolled stability ("self-stability")
 of a given bicycle design as well as characterize the growth and decay rates
 and oscillatory nature of the time evolutions of the two degrees of freedom:
-roll angle and steer angle.
+roll and steer.
 
 # Inputs
 
@@ -35,7 +35,7 @@ for. This corresponds to the abscissa of the "Eigenvalues vs. Speed" plot.
 
 ## Model Parameters
 
-The numerical values of 26 parameters can be edited in the table. These
+The numerical values of 27 parameters can be edited in the table. These
 parameters are defined in [3]. Select the numerical value, change the number to
 the desired number, and press enter to see the figures update. Note the units
 of the parameters. The "Reset Table" button will change all of the values in
@@ -69,9 +69,19 @@ The software that powers the website is open source and information on it can
 be found here:
 
 - Github Repository: https://github.com/moorepants/BicycleParameters
-- Documentation: https://pythonhosted.org/BicycleParameters/index.html
+- Documentation: https://bicycleparameters.readthedocs.io
 
 Contributions and issue reports are welcome!
+
+This software is partially based upon work supported by the National Science
+Foundation under [Grant No.
+0928339](https://www.nsf.gov/awardsearch/showAward?AWD_ID=0928339). Any
+opinions, findings, and conclusions or recommendations expressed in this
+material are those of the authors and do not necessarily reflect the views of
+the National Science Foundation.
+
+This software is partially based upon work supported by the TKI CLICKNL grant
+"Fiets van de Toekomst"(Grant No. TKI1706).
 
 # References
 

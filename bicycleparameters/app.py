@@ -1,29 +1,35 @@
 import os
 import time
 
-from dash.dependencies import Input, Output
-import dash
-import dash_bootstrap_components as dbc
+try:
+    import dash
+except ImportError:
+    msg = ('Dash not installed, make sure to install the optional '
+           'dependencies for the web app.')
+    raise ImportError(msg)
+
+from dash import dash_table as tbl
 from dash import dcc
 from dash import html
-from dash import dash_table as tbl
+from dash.dependencies import Input, Output
+import dash_bootstrap_components as dbc
 import numpy as np
+
+# TODO : should this be a relative import?
 import bicycleparameters as bp
 
+PATH_TO_THIS_FILE = os.path.dirname(os.path.abspath(__file__))
+PATH_TO_APP_DATA = os.path.join(PATH_TO_THIS_FILE, 'app-data')
+PATH_TO_ASSETS = os.path.join(PATH_TO_THIS_FILE, 'assets')
 
+# list of all the whipple-carvallo parameters
 
-path_to_this_file = os.path.dirname(os.path.abspath(__file__))
-path_to_app_data = os.path.join(path_to_this_file, 'app-data')
-path_to_assets = os.path.join(path_to_this_file, 'assets')
-
-# list of all the whipple-carvello parameters
-
-pList = ['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
-         'w', 'c', 'lam', 'g',
-         'xB', 'zB', 'mB',
-         'IBxx', 'IByy', 'IBzz', 'IBxz',
-         'xH', 'zH', 'mH',
-         'IHxx', 'IHyy', 'IHzz', 'IHxz']
+par_list = ['rF', 'mF', 'IFxx', 'IFyy', 'rR', 'mR', 'IRxx', 'IRyy',
+            'w', 'c', 'lam', 'g',
+            'xB', 'zB', 'mB',
+            'IBxx', 'IByy', 'IBzz', 'IBxz',
+            'xH', 'zH', 'mH',
+            'IHxx', 'IHyy', 'IHzz', 'IHxz']
 
 # list of bicycle models in the dropdown menu
 
@@ -202,7 +208,7 @@ app.layout = html.Div([
                                        lg=8,
                                        align='end')],
                               className="my-2"),
-                      dbc.Row([dbc.Col(dcc.Markdown(open(os.path.join(path_to_assets, 'app-explanation.md')).read()),
+                      dbc.Row([dbc.Col(dcc.Markdown(open(os.path.join(PATH_TO_ASSETS, 'app-explanation.md')).read()),
                                        width='auto',
                                        className='my-2')
                                ])
@@ -212,7 +218,7 @@ app.layout = html.Div([
 # create a set of Benchmark parameters with uncertainties removed
 
 def new_par(bike_name):
-    bike = bp.Bicycle(bike_name, pathToData=path_to_app_data)
+    bike = bp.Bicycle(bike_name, pathToData=PATH_TO_APP_DATA)
     par = bike.parameters['Benchmark']
     parPure = bp.io.remove_uncertainties(par)
     return parPure
@@ -237,9 +243,9 @@ def populate_wheel_data(value, n_clicks):
         wheelLabels.append({'label': i})
     for i in range(8):
         if i < 4:
-            fW.append({'fW': wheelPure.get(pList[i])})
+            fW.append({'fW': wheelPure.get(par_list[i])})
         else:
-            rW.append({'rW': wheelPure.get(pList[i])})
+            rW.append({'rW': wheelPure.get(par_list[i])})
     for c, d, e in zip(wheelLabels, fW, rW):
         zipped = {}
         zipped.update(c)
@@ -255,11 +261,11 @@ def populate_wheel_data(value, n_clicks):
     fA = []
     for i in FRAME_LABELS:
         frameLabels.append({'label': i})
-    for i in range(12, len(pList)):
+    for i in range(12, len(par_list)):
         if i < 19:
-            rB.append({'rB': framePure.get(pList[i])})
+            rB.append({'rB': framePure.get(par_list[i])})
         else:
-            fA.append({'fA': framePure.get(pList[i])})
+            fA.append({'fA': framePure.get(par_list[i])})
     for c, d, e in zip(frameLabels, rB, fA):
         zipped = {}
         zipped.update(c)
@@ -275,7 +281,7 @@ def populate_wheel_data(value, n_clicks):
     for i in GENERAL_LABELS:
         genLabels.append({'label': i})
     for i in range(8, 12):
-        data.append({'data': genPure.get(pList[i])})
+        data.append({'data': genPure.get(par_list[i])})
 
     # converts radians to degrees for display in the table
     lamD = data[2]
@@ -325,7 +331,7 @@ def plot_update(value, wheel, frame, general, options, slider):
     speeds = np.linspace(minBound, maxBound, num=int(steps))
 
     # create Bike using default data based on dropdown menu value
-    Bike = bp.Bicycle(value, pathToData=path_to_app_data)
+    Bike = bp.Bicycle(value, pathToData=PATH_TO_APP_DATA)
 
     # convert steer axis tilt into radians if recieving values from datatable
     # edits
@@ -340,16 +346,16 @@ def plot_update(value, wheel, frame, general, options, slider):
         newP = []
         for p in range(8):
             if p < 4:
-                newP.extend([pList[p], wheelData[p].get('fW')])
+                newP.extend([par_list[p], wheelData[p].get('fW')])
             else:
-                newP.extend([pList[p], wheelData[p-4].get('rW')])
-        for p in range(12, len(pList)):
+                newP.extend([par_list[p], wheelData[p-4].get('rW')])
+        for p in range(12, len(par_list)):
             if p < 19:
-                newP.extend([pList[p], frameData[p-12].get('rB')])
+                newP.extend([par_list[p], frameData[p-12].get('rB')])
             else:
-                newP.extend([pList[p], frameData[p-19].get('fA')])
+                newP.extend([par_list[p], frameData[p-19].get('fA')])
         for p in range(8, 12):
-            newP.extend([pList[p], genData[p-8].get('data')])
+            newP.extend([par_list[p], genData[p-8].get('data')])
 
         # inserts user edited data into the default Bike created earlier
         for i in range(0, len(newP), 2):
