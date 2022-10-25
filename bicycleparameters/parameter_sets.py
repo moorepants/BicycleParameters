@@ -31,7 +31,8 @@ from .conversions import convert_principal_to_benchmark
 
 
 def _com_symbol(ax, center, radius, color='b', label=None):
-    '''Returns axis with center of mass symbol.'''
+    """Returns matplotlib axis with center of mass symbol and possibly a label
+    added."""
     c = patches.Circle(center, radius=radius, fill=False)
     w1 = patches.Wedge(center, radius, 0., 90., color=color, ec=None,
                        alpha=0.5)
@@ -48,6 +49,7 @@ def _com_symbol(ax, center, radius, color='b', label=None):
 
 
 def _plot_geometry_from_benchmark(ax, parameters, show_steer_axis=True):
+    """Returns a matplotlib axis with the basic bicycle geometry plotted."""
 
     p = parameters
 
@@ -80,7 +82,7 @@ class ParameterSet(ABC):
     """A parameter set is a collection of constants with associated floating
     point values that are present in a set of differential algebraic equations
     that represent a bicycle model. These pairs are typically defined in a
-    specific academic article, dissertation, book chapter or section and
+    specific academic article, dissertation, book chapter, or section and
     subclasses should be named in a way that ties them to that written work.
 
     Parameter sets can be converted to equivalent parameter sets, but only by
@@ -96,7 +98,7 @@ class ParameterSet(ABC):
     the constants in a model.
 
     Inertial parameters can be associated with a specific rigid body present
-    (this inherently assumes a rigid body definition in the model).
+    (this inherently assumes a rigid body definition in the multibody model).
 
     """
 
@@ -200,7 +202,7 @@ class Meijaard2007ParameterSet(ParameterSet):
         'xB': r'x_B',
         'xH': r'x_H',
         'zB': r'z_B',
-        'zH': r'z-H',
+        'zH': r'z_H',
     }
 
     body_labels = ['B', 'F', 'H', 'R']
@@ -311,13 +313,13 @@ class Meijaard2007ParameterSet(ParameterSet):
         """
         if len(bodies) == 1:
             return self.form_mass_center_vector(bodies[0])
-
         else:
             coordinates = []
             masses = []
             for body in bodies:
                 masses.append(self.parameters['m{}'.format(body)])
-                coordinates.append(self.form_mass_center_vector(body).squeeze())
+                coordinates.append(
+                    self.form_mass_center_vector(body).squeeze())
 
             coordinates = np.array(coordinates).T
 
@@ -487,6 +489,8 @@ class Meijaard2007ParameterSet(ParameterSet):
         return ax
 
     def plot_principal_radii_of_gyration(self, bodies=None, ax=None):
+        """Returns a matplotlib axis with principal radii of all bodies
+        shown."""
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -736,6 +740,8 @@ class Moore2019ParameterSet(ParameterSet):
         return ax
 
     def plot_mass_centers(self, bodies=None, ax=None):
+        """Returns a matplotlib axes with a mass center symbols for the
+        specified bodies to the plot."""
 
         if ax is None:
             fig, ax = plt.subplots()
