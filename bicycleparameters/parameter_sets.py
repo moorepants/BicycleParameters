@@ -250,6 +250,9 @@ class Meijaard2007ParameterSet(ParameterSet):
         self.includes_rider = includes_rider
         self._generate_body_colors()
 
+    def to_benchmark(self):
+        return self.parameters
+
     def _calc_derived_params(self):
         # These parameters are needed but are not specified by the user.
         p = self.parameters

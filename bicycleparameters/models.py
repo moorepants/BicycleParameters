@@ -25,13 +25,13 @@ class Meijaard2007Model(object):
     input_vars_latex = [r'T_\phi', r'T_\delta']
     state_vars_latex = [r'\phi', r'\delta', r'\dot{\phi}', r'\dot{\delta}']
 
-    def __init__(self, benchmark_parameter_set):
-        """Initializes the model with the provided parameters.
-
+    def __init__(self, parameter_set):
+        """Initializes the model with the provided parameter set.
         Parameters
         ==========
-        benchmark_parameters : Meijaard2007ParameterSet
-            Parameter set that maps floats to the parameter keys containing:
+        parameter_set : Meijaard2007ParameterSet
+            The ParameterSet must have a .to_benchmark() method that returns a
+            dictionary that maps floats to the parameter keys containing:
 
             - ``IBxx`` : x moment of inertia of the frame/rider [kg*m**2]
             - ``IBxz`` : xz product of inertia of the frame/rider [kg*m**2]
@@ -60,7 +60,7 @@ class Meijaard2007Model(object):
             - ``zH`` : z distance to the frame/rider center of mass [m]
 
         """
-        self.parameter_set = benchmark_parameter_set
+        self.parameter_set = parameter_set
 
     def _parse_parameter_overrides(self, **parameter_overrides):
         """Returns the model's parameter dictionary with the overridden
@@ -85,7 +85,7 @@ class Meijaard2007Model(object):
 
         """
 
-        par = self.parameter_set.parameters.copy()
+        par = self.parameter_set.to_benchmark().copy()
 
         array_len = None
         array_keys = []
