@@ -43,6 +43,18 @@ OPTIONS = ['Benchmark',
            'Silver',
            'Yellow',
            'Yellowrev']
+OPT_LABELS = [
+    'Benchmark',
+    'Browser (no rider)',
+    'Browserins (no rider)',
+    'Crescendo (no rider)',
+    'Fisher (no rider)',
+    'Pista (no rider)',
+    'Rigid (no rider)',
+    'Silver (no rider)',
+    'Yellow (no rider)',
+    'Yellowrev (no rider)',
+]
 
 WHEEL_COLUMNS = [{'name': '', 'id': 'label', 'type': 'text', 'editable': False},
                  {'name': 'Front Wheel [F]', 'id': 'fW', 'type': 'numeric'},
@@ -109,8 +121,7 @@ app.layout = html.Div([
                                                          className='centered'),
                                                  dcc.Dropdown(id='bike-dropdown',
                                                               value='Benchmark',
-                                                              options=[
-                                                                  {'label': i, 'value': i} for i in OPTIONS],
+                                                              options=[{'label': k, 'value': v} for k, v in zip(OPT_LABELS, OPTIONS)],
                                                               style={'color': 'black'}),
                                                  dcc.Checklist(id='geometry-checklist',
                                                                options=[{'label': 'Show Centers of Mass ', 'value': 'centers'},
