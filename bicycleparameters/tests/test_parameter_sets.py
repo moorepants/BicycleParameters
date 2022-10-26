@@ -12,10 +12,15 @@ PARDIR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 def test_Meijaard2007ParameterSet(plot=False):
 
-    with open(os.path.join(PARDIR_PATH, 'benchmark-benchmark.yml'), 'r') as f:
+    filepath = os.path.join(PARDIR_PATH, 'benchmark-benchmark.yml')
+    with open(filepath, 'r') as f:
         benchmark_par = yaml.load(f, Loader=yaml.FullLoader)['values']
 
     pset = Meijaard2007ParameterSet(benchmark_par, True)
+
+    pset2 = Meijaard2007ParameterSet.from_yaml(filepath)
+
+    assert pset.parameters == pset2.parameters
 
     assert pset.includes_rider is True
     assert pset.parameters['v'] == 5.0
@@ -89,7 +94,7 @@ def test_conversion(plot=False):
         par_dict = yaml.load(f, Loader=yaml.FullLoader)['values']
     pset = Moore2019ParameterSet(par_dict)
     pset.plot_all()
-    bench_pset = pset.to_benchmark()
+    bench_pset = pset.to_parameterization('Meijaard2007')
     bench_pset.plot_all()
     if plot:
         plt.show()

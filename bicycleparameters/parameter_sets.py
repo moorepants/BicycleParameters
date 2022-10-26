@@ -18,6 +18,7 @@ models.
 
 """
 from abc import ABC
+import os
 
 import yaml
 import numpy as np
@@ -117,6 +118,12 @@ class ParameterSet(ABC):
         cls_name = self.__class__.__name__
         self.parameterization = cls_name.split('ParameterSet')[0]
 
+    @classmethod
+    def from_yaml(cls, path_to_file):
+        with open(os.path.join(path_to_file), 'r') as f:
+            yaml_data = yaml.load(f, Loader=yaml.FullLoader)
+        return ParameterSet(yaml_data['values'])
+
     def _generate_body_colors(self):
         prop_cycle = plt.rcParams['axes.prop_cycle']
         colors = prop_cycle.by_key()['color']
@@ -139,9 +146,20 @@ class ParameterSet(ABC):
         """Returns a specific parameter set based on the provided
         parameterization name.
 
+        Parameters
+        ==========
+        name : string
+            The name of the parameterization. These should correspond to a
+            subclass of a ``ParameterSet`` and the name will be the string that
+            precedes "ParameterSet". For example, the parameterization name of
+            ``Meijaard2007ParameterSet`` is ``Meijaard2007``.
+
         Returns
         =======
         ParmeterSet
+            If a different parameterization is requested and this class can
+            convert itself, it will return a new parameter set of the correct
+            parameterization.
 
         """
         if name == self.parameterization:
@@ -261,6 +279,16 @@ class Meijaard2007ParameterSet(ParameterSet):
         self.parameters = parameters
         self.includes_rider = includes_rider
         self._generate_body_colors()
+
+    @classmethod
+    def from_yaml(cls, path_to_file):
+
+        with open(os.path.join(path_to_file), 'r') as f:
+            yaml_data = yaml.load(f, Loader=yaml.FullLoader)
+            benchmark_par = yaml_data['values']
+            rider = yaml_data['rider']
+
+        return Meijaard2007ParameterSet(benchmark_par, rider)
 
     def _calc_derived_params(self):
         # These parameters are needed but are not specified by the user.
