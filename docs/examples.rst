@@ -516,7 +516,7 @@ Parameter Sets
 Parameter sets represent a set of constants in a multibody dynamics model.
 These constants have a name and an associated floating point value. This
 mapping from name to value is stored in a dictionary and then passed to a
-`:class:ParameterSet`. Below are the parameters for the Meijaard et al. 2007
+:py:class:`ParameterSet`. Below are the parameters for the Meijaard et al. 2007
 paper with some realistic initial values.
 
 .. plot::
