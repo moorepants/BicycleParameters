@@ -636,3 +636,36 @@ parameter values:
    :context: close-figs
 
    model.plot_eigenvectors(v=[1.0, 3.0, 5.0, 7.0])
+
+The eigenmodes can be simulated for specific parameter values:
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   times = np.linspace(0.0, 5.0, num=100)
+
+   model.plot_mode_simulations(times, v=6.0)
+
+A general simulation from initial conditions can also be run:
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   x0 = np.deg2rad([5.0, -3.0, 0.0, 0.0])
+
+   model.plot_simulation(times, x0, v=6.0)
+
+Inputs can be applied in the simulation, for example a simple positive feedback
+derivative controller on roll:
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   x0 = np.deg2rad([5.0, -3.0, 0.0, 0.0])
+
+   model.plot_simulation(times, x0,
+       input_func=lambda t, x: np.array([0.0, 50.0*x[2]]),
+       v=2.0)
