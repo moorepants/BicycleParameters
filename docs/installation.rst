@@ -9,17 +9,23 @@ likely work with older versions.
 
 Required
 --------
-- `Python 2.7 or >= 3.3 <http://www.python.org/>`_
-- `Numpy >= 1.6.1 <http://numpy.scipy.org/>`_
-- `Scipy >= 0.9.0 <http://www.scipy.org/>`_
-- `Matplotlib >= 1.1.1 <http://matplotlib.sourceforge.net/>`_
-- `Uncertainties >= 2.0.0 <http://pypi.python.org/pypi/uncertainties/>`_
-- `yeadon >= 1.1.0 <http://pypi.python.org/pypi/yeadon/>`_
-- `DynamicistToolKit >= 0.1.0
-  <http://pypi.python.org/pypi/DynamicistToolKit>`_
+
+- `DynamicistToolKit >= 0.5.3 <http://pypi.python.org/pypi/DynamicistToolKit>`_
+- `Matplotlib >= 3.1.2 <https://matplotlib.org/>`_
+- `NumPy >= 1.17.4 <https://numpy.org/>`_
+- `Python >= 3.7 <http://www.python.org/>`_
+- `SciPy >= 1.3.3 <https://scipy.org/>`_
+- `Uncertainties >= 3.1.2 <https://pythonhosted.org/uncertainties/>`_
+- `yeadon >= 1.3.0 <http://pypi.python.org/pypi/yeadon/>`_
 
 Optional
 --------
+
+These are required to run the Dash web application:
+
+- `Dash >= 2.0 <https://plotly.com/dash/>`_
+- `dash-bootstrap-components <https://github.com/facultyai/dash-bootstrap-components>`_
+- `Pandas <https://pandas.pydata.org/>`_
 
 These are required to build the documentation:
 
@@ -29,11 +35,21 @@ These are required to build the documentation:
 Installation
 ============
 
-The easiest method to download and install is with ``pip``::
+We recommend installing BicycleParameters with conda_ or pip_.
+
+.. _conda: https://docs.conda.io
+.. _pip: https://pip.pypa.io
+
+For conda::
+
+  $ conda install -c conda-forge bicycleparameters
+
+For pip::
 
   $ pip install BicycleParameters
 
-There are other options for getting the source code:
+The package can also be installed from the source code. The options for getting
+the source code are:
 
 1. Clone the source code with Git: ``git clone
    git://github.com/moorepants/BicycleParameters.git``
@@ -47,7 +63,7 @@ Once you have the source code navigate to the directory and run::
 
   >>> python setup.py install
 
-This will install the software into your system and you should be able to
-import it with::
+This will install the software into your system. You can check if it installs
+with::
 
-  >>> import bicycleparameters
+   $ python -c "import bicycleparameters"
