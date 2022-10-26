@@ -1,0 +1,8 @@
+DynamicistToolKit
+matplotlib
+numpy
+numpydoc
+pandas
+pyyaml
+scipy
+uncertainties

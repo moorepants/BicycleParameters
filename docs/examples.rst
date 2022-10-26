@@ -506,3 +506,133 @@ but is useful none-the-less.::
   >>> bicycle.add_rider('Jason', draw=True)
 
 .. image:: human.png
+
+Using Models and Parameter Sets
+===============================
+
+Parameter Sets
+--------------
+
+Parameter sets represent a set of constants in a multibody dynamics model.
+These constants have a name and an associated floating point value. This
+mapping from name to value is stored in a dictionary and then passed to a
+`:class:ParameterSet`. Below are the parameters for the Meijaard et al. 2007
+paper with some realistic initial values.
+
+.. plot::
+   :include-source: True
+   :context:
+
+   par = {
+       'IBxx': 11.3557360401,
+       'IBxz': -1.96756380745,
+       'IByy': 12.2177848012,
+       'IBzz': 3.12354397008,
+       'IFxx': 0.0904106601579,
+       'IFyy': 0.149389340425,
+       'IHxx': 0.253379594731,
+       'IHxz': -0.0720452391817,
+       'IHyy': 0.246138810935,
+       'IHzz': 0.0955770796289,
+       'IRxx': 0.0883819364527,
+       'IRyy': 0.152467620286,
+       'c': 0.0685808540382,
+       'g': 9.81,
+       'lam': 0.399680398707,
+       'mB': 81.86,
+       'mF': 2.02,
+       'mH': 3.22,
+       'mR': 3.11,
+       'rF': 0.34352982332,
+       'rR': 0.340958858855,
+       'v': 1.0,
+       'w': 1.121,
+       'xB': 0.289099434117,
+       'xH': 0.866949640247,
+       'zB': -1.04029228321,
+       'zH': -0.748236400835,
+   }
+
+The associated parameter set can be created with this dictionary:
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+
+   par_set = Meijaard2007ParameterSet(par, True)
+
+Once the parameter set is available there are various methods that help you
+calculate and visualize the properties of this parameter set. This set
+describes the geometry, mass, and inertia of a bicycle. You can plot the
+geometry like so:
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   par_set.plot_geometry()
+
+You can then add symbols representing the mass centers of the four bodies like
+so:
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   ax = par_set.plot_geometry()
+   par_set.plot_mass_centers(ax=ax)
+
+The geometry, mass, and inertial information can all be plotted:
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   par_set.plot_all()
+
+Models
+------
+
+Parameter sets can be associated with a model and the model can be used to
+compute and visualize properties of the model's dynamics.
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   from bicycleparameters.models import Meijaard2007Model
+
+   model = Meijaard2007Model(par_set)
+
+The root locus with respect to any parameter, for example speed ``v``, can be
+plotted:
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   speeds = np.linspace(-10.0, 10.0, num=200)
+
+   model.plot_eigenvalue_parts(v=speeds)
+
+You can choose any parameter in the dictionary to generate the root locus and
+also override other parameters.
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   wheelbases = np.linspace(0.2, 5.0, num=50)
+
+   model.plot_eigenvalue_parts(v=6.0, w=wheelbases)
+
+The eigenvector components can be created for each mode and for a series of
+parameter values:
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   model.plot_eigenvectors(v=[1.0, 3.0, 5.0, 7.0])
