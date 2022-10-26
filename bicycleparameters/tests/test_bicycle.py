@@ -1,6 +1,42 @@
+import os
+
 import numpy as np
 
 from ..bicycle import sort_eigenmodes
+
+from dtk import bicycle as dtkbicycle
+
+# local dependencies
+import bicycleparameters
+from bicycleparameters import bicycle
+
+
+def test_benchmark_to_canonical():
+    M, C1, K0, K2 = dtkbicycle.benchmark_matrices()
+    par = dtkbicycle.benchmark_parameters()
+
+    bpM, bpC1, bpK0, bpK2 = bicycle.benchmark_par_to_canonical(par)
+
+    np.testing.assert_allclose(M, bpM)
+    np.testing.assert_allclose(C1, bpC1)
+    np.testing.assert_allclose(K0, bpK0)
+    np.testing.assert_allclose(K2, bpK2)
+
+
+def test_benchmark_eigenvalues():
+
+    expected = dtkbicycle.benchmark_matrices()
+    path_to_package = os.path.split(bicycleparameters.__file__)[0]
+    path_to_data = os.path.join(path_to_package, '..', 'data')
+
+    benchmark = bicycleparameters.Bicycle('Benchmark', path_to_data, True,
+                                          True)
+    M, C1, K0, K2 = benchmark.canonical(nominal=True)
+
+    np.testing.assert_allclose(M, expected[0])
+    np.testing.assert_allclose(C1, expected[1])
+    np.testing.assert_allclose(K0, expected[2])
+    np.testing.assert_allclose(K2, expected[3])
 
 
 def test_sort_eigenmodes():
