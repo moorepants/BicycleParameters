@@ -30,8 +30,9 @@ class Meijaard2007Model(object):
         Parameters
         ==========
         parameter_set : Meijaard2007ParameterSet
-            The ParameterSet must have a .to_benchmark() method that returns a
-            dictionary that maps floats to the parameter keys containing:
+            The ``paramter_set.to_parameterization('meijaard2007')`` must
+            return a dictionary that maps floats to the parameter keys
+            containing:
 
             - ``IBxx`` : x moment of inertia of the frame/rider [kg*m**2]
             - ``IBxz`` : xz product of inertia of the frame/rider [kg*m**2]
@@ -60,7 +61,7 @@ class Meijaard2007Model(object):
             - ``zH`` : z distance to the frame/rider center of mass [m]
 
         """
-        self.parameter_set = parameter_set
+        self.parameter_set = parameter_set.to_parameterization('Meijaard2007')
 
     def _parse_parameter_overrides(self, **parameter_overrides):
         """Returns the model's parameter dictionary with the overridden
@@ -85,7 +86,7 @@ class Meijaard2007Model(object):
 
         """
 
-        par = self.parameter_set.to_benchmark().copy()
+        par = self.parameter_set.parameters.copy()
 
         array_len = None
         array_keys = []

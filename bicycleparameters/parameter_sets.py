@@ -18,7 +18,6 @@ models.
 
 """
 from abc import ABC
-import os
 
 import yaml
 import numpy as np
@@ -102,8 +101,6 @@ class ParameterSet(ABC):
 
     """
 
-    parameterization = None
-
     def _check_parameters(self, parameters):
         """Ensures that each parameter in par_strings is present in parameters
         and that the values are floats."""
@@ -117,6 +114,8 @@ class ParameterSet(ABC):
 
     def __init__(self, par_dict):
         self._check_parameters(par_dict)
+        cls_name = self.__class__.__name__
+        self.parameterization = cls_name.split('ParameterSet')[0]
 
     def _generate_body_colors(self):
         prop_cycle = plt.rcParams['axes.prop_cycle']
@@ -135,6 +134,21 @@ class ParameterSet(ABC):
         ax.set_aspect('equal')
         ax.set_xlabel(r'$x$ [m]')
         ax.set_ylabel(r'$z$ [m]')
+
+    def to_parameterization(self, name):
+        """Returns a specific parameter set based on the provided
+        parameterization name.
+
+        Returns
+        =======
+        ParmeterSet
+
+        """
+        if name == self.parameterization:
+            return self
+        else:
+            msg = '{} is not an avaialble parameter set'
+            raise ValueError(msg.format(name))
 
     def to_yaml(self, fname):
         """Writes parameters to file in the YAML format."""
@@ -171,8 +185,6 @@ class Meijaard2007ParameterSet(ParameterSet):
        http://doi.org/10.1098/rspa.2007.1857
 
     """
-
-    parameterization = 'meijaard2007'
 
     # maps "Python" string to LaTeX version
     par_strings = {
@@ -249,9 +261,6 @@ class Meijaard2007ParameterSet(ParameterSet):
         self.parameters = parameters
         self.includes_rider = includes_rider
         self._generate_body_colors()
-
-    def to_benchmark(self):
-        return self.parameters
 
     def _calc_derived_params(self):
         # These parameters are needed but are not specified by the user.
@@ -576,8 +585,6 @@ class Moore2019ParameterSet(ParameterSet):
 
     """
 
-    parameterization = 'moore2019'
-
     non_min_par_strings = {
         'alphaF': r'\alpha_F',
         'alphaR': r'\alpha_R',
@@ -668,9 +675,24 @@ class Moore2019ParameterSet(ParameterSet):
 
         return pext
 
-    def to_benchmark(self):
-        b = convert_principal_to_benchmark(self.parameters)
-        return Meijaard2007ParameterSet(b, True)
+    def to_parameterization(self, name):
+        """Returns a specific parameter set based on the provided
+        parameterization name.
+
+        Returns
+        =======
+        ParmeterSet
+
+        """
+        if name == self.parameterization:
+            return self
+        elif name == 'Meijaard2007':
+            b = convert_principal_to_benchmark(self.parameters)
+            # Moore2019 always includes the rider
+            return Meijaard2007ParameterSet(b, True)
+        else:
+            msg = '{} is not an avaialble parameter set'
+            raise ValueError(msg.format(name))
 
     def plot_geometry(self, show_steer_axis=True, ax=None):
         """Returns a matplotlib axes with the simplest drawing of the bicycle's
