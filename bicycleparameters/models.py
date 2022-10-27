@@ -165,6 +165,32 @@ class Meijaard2007Model(Model):
         ``g``
             Acceleration due to gravity.
 
+        Examples
+        ========
+
+        >>> from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+        >>> from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+        >>> from bicycleparameters.models import Meijaard2007Model
+        >>> p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+        >>> m = Meijaard2007Model(p)
+        >>> M, C1, K0, K2 = m.form_reduced_canonical_matrices()
+        >>> M
+        array([[102.78013216,   1.53582801],
+               [  1.53582801,   0.24890226]])
+        >>> C1
+        array([[ 0.       , 26.3947333],
+               [-0.4503006,  1.037066 ]])
+        >>> K0
+        array([[-89.32195981,  -1.74159477],
+               [ -1.74159477,  -0.67769624]])
+        >>> K2
+        array([[ 0.        , 74.12543   ],
+               [ 0.        ,  1.57021553]])
+        >>> M, _, _, _ = m.form_reduced_canonical_matrices(mB=150.0)
+        >>> M
+        array([[176.52178763,   2.69074048],
+               [  2.69074048,   0.26699004]])
+
         """
         par, array_keys, array_len = self._parse_parameter_overrides(
             **parameter_overrides)
@@ -231,6 +257,26 @@ class Meijaard2007Model(Model):
             u = |roll torque | = |Tphi  |
                 |steer torque|   |Tdelta|
 
+        Examples
+        ========
+
+        >>> from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+        >>> from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+        >>> from bicycleparameters.models import Meijaard2007Model
+        >>> p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+        >>> m = Meijaard2007Model(p)
+        >>> A, B = m.form_state_space_matrices()
+        >>> A
+        array([[ 0.        ,  0.        ,  1.        ,  0.        ],
+               [ 0.        ,  0.        ,  0.        ,  1.        ],
+               [ 8.26150335, -0.9471634 , -0.02977958, -0.21430735],
+               [17.66475151, 26.24590352,  1.99289841, -2.84419587]])
+        >>> B
+        array([[ 0.        ,  0.        ],
+               [ 0.        ,  0.        ],
+               [ 0.01071772, -0.06613267],
+               [-0.06613267,  4.42570676]])
+
         """
         par, array_keys, array_len = self._parse_parameter_overrides(
             **parameter_overrides)
@@ -287,6 +333,28 @@ class Meijaard2007Model(Model):
         evecs : ndarray, shape(4,4) or shape (n,4,4)
             Eigenvectors, each columns are eigenvectors and are associated with
             same index of the eigenvalues.
+
+        Examples
+        ========
+
+        >>> from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+        >>> from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+        >>> from bicycleparameters.models import Meijaard2007Model
+        >>> p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+        >>> m = Meijaard2007Model(p)
+        >>> evals, evecs = m.calc_eigen()
+        >>> evals
+        array([-6.74423162+0.j        , -2.9146438 +0.j        ,
+                3.39244999+0.61085077j,  3.39244999-0.61085077j])
+        >>> evecs
+        array([[ 0.00197344+0.j        , -0.2953538 +0.j        ,
+                 0.04320146-0.0753826j ,  0.04320146+0.0753826j ],
+               [ 0.14665803+0.j        ,  0.13447333+0.j        ,
+                -0.26053575+0.04691255j, -0.26053575-0.04691255j],
+               [-0.01330934+0.j        ,  0.86085111+0.j        ,
+                 0.1926063 -0.22934205j,  0.1926063 +0.22934205j],
+               [-0.98909574+0.j        , -0.39194186+0.j        ,
+                -0.91251108+0.j        , -0.91251108-0.j        ]])
 
         """
         A, B = self.form_state_space_matrices(**parameter_overrides)
@@ -462,6 +530,21 @@ class Meijaard2007Model(Model):
         colors : sequence, len(4)
             Matplotlib colors for the 4 modes.
 
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           import numpy as np
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           from bicycleparameters.models import Meijaard2007Model
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           m = Meijaard2007Model(p)
+           m.plot_eigenvalue_parts(v=np.linspace(0.0, 10.0, num=101))
+
         """
 
         if ax is None:
@@ -509,6 +592,21 @@ class Meijaard2007Model(Model):
         axes : ndarray, shape(n, 4)
             Polar plot axes for each eigenvector (columns). The rows correspond
             to a varied parameter.
+
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           import numpy as np
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           from bicycleparameters.models import Meijaard2007Model
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           m = Meijaard2007Model(p)
+           m.plot_eigenvectors(v=[1.0, 3.0, 5.0])
 
         """
         par, arr_keys, _ = self._parse_parameter_overrides(
@@ -644,6 +742,23 @@ class Meijaard2007Model(Model):
             Three subplots that plot the input trajectories, state angle
             trajectories, and state angular rates.
 
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           import numpy as np
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           from bicycleparameters.models import Meijaard2007Model
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           m = Meijaard2007Model(p)
+           times = np.linspace(0.0, 5.0, num=51)
+           x0 = np.deg2rad([10.0, 5.0, 0.0, 0.0])
+           m.plot_simulation(times, x0, v=6.0)
+
         """
         res, inputs = self.simulate(times, initial_conditions,
                                     input_func=input_func,
@@ -715,6 +830,22 @@ class Meijaard2007Model(Model):
         axes : ndarray, shape(4,2)
             Subplot axes with the modes on the rows and the angles in the first
             column and the angular rates in the second column.
+
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           import numpy as np
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           from bicycleparameters.models import Meijaard2007Model
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           m = Meijaard2007Model(p)
+           times = np.linspace(0.0, 5.0, num=51)
+           m.plot_mode_simulations(times, v=6.0)
 
         """
         results = self.simulate_modes(times, **parameter_overrides)
