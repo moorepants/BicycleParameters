@@ -1,13 +1,25 @@
+from abc import ABC
 import warnings
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import scipy.integrate as spi
 
 from .bicycle import benchmark_par_to_canonical, ab_matrix, sort_eigenmodes
 
 
-class Meijaard2007Model(object):
+class Model(ABC):
+    """A model is a set of differential algebraic equations in time that have:
+    constants and time varying (coordinates, speeds, and exogenous inputs).
+    The model can be nonlinear, linear, have algebraic constraints, or not.  A
+    parameter set is associated with a particular parameterization of one or
+    more models.
+
+    """
+    pass
+
+
+class Meijaard2007Model(Model):
     """Whipple-Carvallo model presented in [Meijaard2007]_. It is both linear
     and the minimal model in terms of states and coordinates that fully
     describe the vehicle's dynamics: self-stability and non-minimum phase
@@ -22,11 +34,14 @@ class Meijaard2007Model(object):
        http://doi.org/10.1098/rspa.2007.1857
 
     """
+    input_vars = ['Tphi', 'Tdelta']
+    state_vars = ['phi', 'delta', 'phidot', 'deltadot']
     input_vars_latex = [r'T_\phi', r'T_\delta']
     state_vars_latex = [r'\phi', r'\delta', r'\dot{\phi}', r'\dot{\delta}']
 
     def __init__(self, parameter_set):
         """Initializes the model with the provided parameter set.
+
         Parameters
         ==========
         parameter_set : Meijaard2007ParameterSet
@@ -77,7 +92,7 @@ class Meijaard2007Model(object):
         Returns
         =======
         par : dictionary
-            Copy of self.parameter_set.parameters with overidden parameter
+            Copy of self.parameter_set.parameters with overridden parameter
             values.
         array_keys : list
             All parameter key strings that hold arrays.
@@ -128,14 +143,14 @@ class Meijaard2007Model(object):
 
         Notes
         =====
-        The canonical matrices complete the following equation:
+        The canonical matrices complete the following equation::
 
             M*q'' + v*C1*q' + [g*K0 + v**2*K2]*q = f
 
         where:
 
-            q = [phi, delta]
-            f = [Tphi, Tdelta]
+        - q = [phi, delta]
+        - f = [Tphi, Tdelta]
 
         ``phi``
             Bicycle roll angle.
@@ -200,19 +215,21 @@ class Meijaard2007Model(object):
 
         Notes
         =====
-        ``A`` and ``B`` describe the Whipple model in state space form:
+        ``A`` and ``B`` describe the Whipple model in state space form::
 
             x' = A * x + B * u
 
-        where
+        where the states are::
 
-        The states are [roll angle,
-                        steer angle,
-                        roll rate,
-                        steer rate]
+            x = |roll angle | = |phi     |
+                |steer angle|   |delta   |
+                |roll rate  |   |phidot  |
+                |steer rate |   |deltadot|
 
-        The inputs are [roll torque,
-                        steer torque]
+        and the inputs are::
+
+            u = |roll torque | = |Tphi  |
+                |steer torque|   |Tdelta|
 
         """
         par, array_keys, array_len = self._parse_parameter_overrides(
@@ -373,11 +390,11 @@ class Meijaard2007Model(object):
             # vdot takes the complex conjugate of the first argument before
             # taking the dot product.
             num = np.real(np.vdot(q, b))  # Re(q.H @ b)
-            #num = np.real(b @ np.conjugate(q).T)
+            # num = np.real(b @ np.conjugate(q).T)
 
-            #norm_q = np.abs(np.sqrt(np.conjugate(q).T @ q))
-            #norm_b = np.sqrt(b.T @ b)
-            #den = norm_q*norm_b
+            # norm_q = np.abs(np.sqrt(np.conjugate(q).T @ q))
+            # norm_b = np.sqrt(b.T @ b)
+            # den = norm_q*norm_b
 
             # norm() returns a real valued answer for the 2-norm
             den = np.linalg.norm(q)*np.linalg.norm(b)
@@ -406,7 +423,7 @@ class Meijaard2007Model(object):
         return mod_ctrb
 
     def _plot_modal_controllability(self, axes=None, acute=True,
-                                   **parameter_overrides):
+                                    **parameter_overrides):
         """Returns axes shape(4,2) with plots of the modal controllability for
         each input and each eigenmode."""
 
@@ -435,7 +452,7 @@ class Meijaard2007Model(object):
 
     def plot_eigenvalue_parts(self, ax=None, colors=None,
                               **parameter_overrides):
-        """Returns a Matplotlib axis of the real and imaginary parts of the
+        """Returns a matplotlib axis of the real and imaginary parts of the
         eigenvalues plotted against the provided parameter.
 
         Parameters
@@ -513,8 +530,8 @@ class Meijaard2007Model(object):
         # may have to calculate eigenvals/vec across closer spacing, then
         # sample out the ones you want. For now, we don't sort coarse spaced
         # eigenvalues.
-        #if arr_keys:
-            #eval_seq, evec_seq = sort_eigenmodes(eval_seq, evec_seq)
+        # if arr_keys:
+            # eval_seq, evec_seq = sort_eigenmodes(eval_seq, evec_seq)
 
         fig, axes = plt.subplots(*eval_seq.shape,
                                  subplot_kw={'projection': 'polar'})
