@@ -124,6 +124,7 @@ class ParameterSet(ABC):
     def _finalize_plot(self, ax):
         ax = self._invert_yaxis(ax)
         ax.set_aspect('equal')
+        ax.autoscale()  # needed for the plots with only patches
         ax.set_xlabel(r'$x$ [m]')
         ax.set_ylabel(r'$z$ [m]')
 
@@ -420,6 +421,18 @@ class Meijaard2007ParameterSet(ParameterSet):
         ax : AxesSubplot, optional
             An axes to draw on, otherwise one is created.
 
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           p.plot_geometry()
+
         """
 
         p = self.parameters
@@ -445,6 +458,18 @@ class Meijaard2007ParameterSet(ParameterSet):
         ax: matplotlib Axes, optional
             An axes to plot on.
 
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           p.plot_mass_centers()
+
         """
 
         if ax is None:
@@ -456,6 +481,8 @@ class Meijaard2007ParameterSet(ParameterSet):
         for b in bodies:
             ax = self.plot_body_mass_center(b, ax=ax)
 
+        self._finalize_plot(ax)
+
         return ax
 
     def plot_body_mass_center(self, b, ax=None):
@@ -465,9 +492,21 @@ class Meijaard2007ParameterSet(ParameterSet):
         Parameters
         ==========
         b : string
-            The body string: D, F, H, P, or R
+            The body string: F, H, B, or R
         ax : SubplotAxes, optional
             Axes to plot on.
+
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           p.plot_body_mass_center('B')
 
         """
 
@@ -483,7 +522,6 @@ class Meijaard2007ParameterSet(ParameterSet):
         radius = p['w'] / 10
         ax = _com_symbol(ax, (x, z), radius, color=self.body_colors[b],
                          label=b)
-
         self._finalize_plot(ax)
 
         return ax
@@ -518,8 +556,21 @@ class Meijaard2007ParameterSet(ParameterSet):
 
     def plot_body_principal_radii_of_gyration(self, b, ax=None):
         """Returns a matplotlib axes with lines and a circle that indicate the
-        principal radii of gyration of the specified body."""
+        principal radii of gyration of the specified body.
 
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           p.plot_body_principal_radii_of_gyration('B')
+
+        """
         if ax is None:
             fig, ax = plt.subplots()
 
@@ -553,8 +604,21 @@ class Meijaard2007ParameterSet(ParameterSet):
 
     def plot_principal_radii_of_gyration(self, bodies=None, ax=None):
         """Returns a matplotlib axis with principal radii of all bodies
-        shown."""
+        shown.
 
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           p.plot_principal_radii_of_gyration()
+
+        """
         if ax is None:
             fig, ax = plt.subplots()
 
@@ -564,12 +628,28 @@ class Meijaard2007ParameterSet(ParameterSet):
         for b in bodies:
             ax = self.plot_body_principal_radii_of_gyration(b, ax=ax)
 
+        self._finalize_plot(ax)
+
         return ax
 
     def plot_body_principal_inertia_ellipsoid(self, b, ax=None):
         """Returns a matplotlib axes with an ellipse that respresnts the XZ
         plane view of a constant density ellipsoid which has the same principal
-        moments and axes of inertia as the body."""
+        moments and axes of inertia as the body.
+
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           p.plot_body_principal_inertia_ellipsoid('H')
+
+        """
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -588,6 +668,8 @@ class Meijaard2007ParameterSet(ParameterSet):
                                   color=self.body_colors[b])
         ax.add_patch(ellipse)
 
+        self._finalize_plot(ax)
+
         return ax
 
     def plot_principal_inertia_ellipsoids(self, bodies=None, ax=None):
@@ -599,6 +681,18 @@ class Meijaard2007ParameterSet(ParameterSet):
         ax : AxesSubplot, optional
             An axes to draw on, otherwise one is created.
 
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           p.plot_principal_inertia_ellipsoids()
+
         """
         if ax is None:
             fig, ax = plt.subplots()
@@ -609,12 +703,27 @@ class Meijaard2007ParameterSet(ParameterSet):
         for b in bodies:
             ax = self.plot_body_principal_inertia_ellipsoid(b, ax=ax)
 
+        self._finalize_plot(ax)
+
         return ax
 
     def plot_all(self, ax=None):
         """Returns matplotlib axes with the geometry and inertial
-        representations of all bodies of the bicycle parameter set."""
+        representations of all bodies of the bicycle parameter set.
 
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           p.plot_all()
+
+        """
         if ax is None:
             fig, ax = plt.subplots()
 
@@ -738,6 +847,18 @@ class Moore2019ParameterSet(ParameterSet):
         =======
         ParmeterSet
 
+        Examples
+        ========
+
+        >>> from bicycleparameters.parameter_dicts import moore2019_browser_jason
+        >>> from bicycleparameters.parameter_sets import Moore2019ParameterSet
+        >>> moore_set = Moore2019ParameterSet(moore2019_browser_jason)
+        >>> moore_set.mass_center_of('P', 'D')
+        array([ 0.31156277,  0.        , -1.03972442])
+        >>> meijaard_set = moore_set.to_parameterization('Meijaard2007')
+        >>> meijaard_set.mass_center_of('B')
+        array([ 0.31156277,  0.        , -1.03972442])
+
         """
         if name == self.parameterization:
             return self
@@ -761,6 +882,18 @@ class Moore2019ParameterSet(ParameterSet):
         ax : AxesSubplot, optional
             An axes to draw on, otherwise one is created.
 
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import moore2019_browser_jason
+           from bicycleparameters.parameter_sets import Moore2019ParameterSet
+           p = Moore2019ParameterSet(moore2019_browser_jason)
+           p.plot_geometry()
+
         """
 
         p = self.parameters
@@ -777,7 +910,21 @@ class Moore2019ParameterSet(ParameterSet):
 
     def plot_person_diamond(self, show_cross=False, ax=None):
         """Plots a diamond that represents the approximate person's physical
-        extents."""
+        extents.
+
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import moore2019_browser_jason
+           from bicycleparameters.parameter_sets import Moore2019ParameterSet
+           p = Moore2019ParameterSet(moore2019_browser_jason)
+           p.plot_person_diamond()
+
+        """
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -821,7 +968,21 @@ class Moore2019ParameterSet(ParameterSet):
 
     def plot_mass_centers(self, bodies=None, ax=None):
         """Returns a matplotlib axes with a mass center symbols for the
-        specified bodies to the plot."""
+        specified bodies to the plot.
+
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import moore2019_browser_jason
+           from bicycleparameters.parameter_sets import Moore2019ParameterSet
+           p = Moore2019ParameterSet(moore2019_browser_jason)
+           p.plot_mass_centers()
+
+        """
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -831,6 +992,8 @@ class Moore2019ParameterSet(ParameterSet):
 
         for b in bodies:
             ax = self.plot_body_mass_center(b, ax=ax)
+
+        self._finalize_plot(ax)
 
         return ax
 
@@ -844,6 +1007,18 @@ class Moore2019ParameterSet(ParameterSet):
             The body string: D, F, H, P, or R
         ax : SubplotAxes, optional
             Axes to plot on.
+
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import moore2019_browser_jason
+           from bicycleparameters.parameter_sets import Moore2019ParameterSet
+           p = Moore2019ParameterSet(moore2019_browser_jason)
+           p.plot_body_mass_center('D')
 
         """
 
@@ -873,6 +1048,18 @@ class Moore2019ParameterSet(ParameterSet):
         bodies : list of strings
             Either ['D', 'F', 'H', 'P', 'R'] or a subset thereof.
 
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import moore2019_browser_jason
+           from bicycleparameters.parameter_sets import Moore2019ParameterSet
+           p = Moore2019ParameterSet(moore2019_browser_jason)
+           p.plot_principal_radii_of_gyration()
+
         """
 
         if ax is None:
@@ -884,11 +1071,27 @@ class Moore2019ParameterSet(ParameterSet):
         for b in bodies:
             ax = self.plot_body_principal_radii_of_gyration(b, ax=ax)
 
+        self._finalize_plot(ax)
+
         return ax
 
     def plot_body_principal_radii_of_gyration(self, b, ax=None):
         """Returns a matplotlib axes with lines and a circle that indicate the
-        principal radii of gyration of the specified body."""
+        principal radii of gyration of the specified body.
+
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import moore2019_browser_jason
+           from bicycleparameters.parameter_sets import Moore2019ParameterSet
+           p = Moore2019ParameterSet(moore2019_browser_jason)
+           p.plot_body_principal_radii_of_gyration('P')
+
+        """
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -929,7 +1132,21 @@ class Moore2019ParameterSet(ParameterSet):
     def plot_body_principal_inertia_ellipsoid(self, b, ax=None):
         """Returns a matplotlib axes with an ellipse that respresnts the XZ
         plane view of a constant density ellipsoid which has the same principal
-        moments and axes of inertia as the body."""
+        moments and axes of inertia as the body.
+
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import moore2019_browser_jason
+           from bicycleparameters.parameter_sets import Moore2019ParameterSet
+           p = Moore2019ParameterSet(moore2019_browser_jason)
+           p.plot_body_principal_inertia_ellipsoid('P')
+
+        """
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -964,6 +1181,18 @@ class Moore2019ParameterSet(ParameterSet):
         ax : AxesSubplot, optional
             An axes to draw on, otherwise one is created.
 
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import moore2019_browser_jason
+           from bicycleparameters.parameter_sets import Moore2019ParameterSet
+           p = Moore2019ParameterSet(moore2019_browser_jason)
+           p.plot_principal_inertia_ellipsoids()
+
         """
         if ax is None:
             fig, ax = plt.subplots()
@@ -974,11 +1203,27 @@ class Moore2019ParameterSet(ParameterSet):
         for b in bodies:
             ax = self.plot_body_principal_inertia_ellipsoid(b, ax=ax)
 
+        self._finalize_plot(ax)
+
         return ax
 
     def plot_all(self, ax=None):
         """Returns matplotlib axes with the geometry and inertial
-        representations of all bodies of the bicycle parameter set."""
+        representations of all bodies of the bicycle parameter set.
+
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: close-figs
+
+           from bicycleparameters.parameter_dicts import moore2019_browser_jason
+           from bicycleparameters.parameter_sets import Moore2019ParameterSet
+           p = Moore2019ParameterSet(moore2019_browser_jason)
+           p.plot_all()
+
+        """
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -989,4 +1234,64 @@ class Moore2019ParameterSet(ParameterSet):
         ax = self.plot_geometry(ax=ax)
         ax = self.plot_mass_centers(ax=ax)
 
+        self._finalize_plot(ax)
+
         return ax
+
+    def mass_center_of(self, *bodies):
+        """Returns the vector locating the center of mass of the collection of
+        bodies.
+
+        Parameters
+        ==========
+        bodies : iterable of strings
+
+        Returns
+        =======
+        com : ndarray, shape(3,)
+            Vector locating the center of mass of the bodies givien in
+            ``bodies``.
+
+        """
+        if len(bodies) == 1:
+            return self.form_mass_center_vector(bodies[0])
+        else:
+            coordinates = []
+            masses = []
+            for body in bodies:
+                masses.append(self.parameters['m{}'.format(body)])
+                coordinates.append(
+                    self.form_mass_center_vector(body))
+
+            coordinates = np.array(coordinates).T
+
+            mass, com = total_com(coordinates, masses)
+
+            return com
+
+    def form_mass_center_vector(self, body):
+        """Returns a (3, 1) NumPy array representing the vector to the mass
+        center of the body.
+
+        Parameters
+        ==========
+        body : string
+            One of 'P', 'D', 'F', 'H', 'R'.
+
+        Returns
+        =======
+        ndarray, shape(3,)
+            A vector containing the X, Y, and X coordinates of the mass center
+            of the body.
+
+
+        """
+
+        p = self.parameters.copy()
+        p.update(self._calc_derived_params())
+
+        x = p['x{}'.format(body)]
+        y = p['y{}'.format(body)]
+        z = p['z{}'.format(body)]
+
+        return np.array([x, y, z])
