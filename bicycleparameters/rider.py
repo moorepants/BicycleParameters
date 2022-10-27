@@ -60,7 +60,7 @@ def yeadon_vec_to_bicycle_vec(vector, measured_bicycle_par,
                    [0.0],
                    [-hbb + (-lsp - lst) * np.sin(lambdast)]])  # bz
 
-    vector_wrt_bike =  yeadon_origin_in_bike_frame + rot_mat * vector
+    vector_wrt_bike = yeadon_origin_in_bike_frame + rot_mat * vector
 
     return vector_wrt_bike
 

@@ -7,6 +7,7 @@ from uncertainties import umath, unumpy
 # local modules
 from .geometry import calculate_l1_l2, fwheel_to_handlebar_ref
 
+
 def cartesian(arrays, out=None):
     """Generate a cartesian product of input arrays.
 
@@ -97,6 +98,7 @@ def center_of_mass(slopes, intercepts):
 
     return com[0], com[1]
 
+
 def com_line(alpha, a, par, part, l1, l2):
     '''Returns the slope and intercept for the line that passes through the
     part's center of mass with reference to the benchmark bicycle coordinate
@@ -133,8 +135,8 @@ def com_line(alpha, a, par, part, l1, l2):
 
     '''
 
-    # beta is the angle between the x bike frame and the x pendulum frame, rotation
-    # about positive y
+    # beta is the angle between the x bike frame and the x pendulum frame,
+    # rotation about positive y
     beta = par['lam'] - alpha * pi / 180
 
     # calculate the slope of the center of mass line
@@ -150,12 +152,14 @@ def com_line(alpha, a, par, part, l1, l2):
     # this is the handlebar (without fork)
     elif part == 'G':
         u1, u2 = fwheel_to_handlebar_ref(par['lam'], l1, l2)
-        b = -a / umath.cos(beta) - (par['rF'] + u2) + (par['w'] - u1) * umath.tan(beta)
+        b = (-a/umath.cos(beta) - (par['rF'] + u2) + (par['w'] -
+                                                      u1)*umath.tan(beta))
     else:
         print(part, "doesn't exist")
         raise KeyError
 
     return m, b, beta
+
 
 def part_com_lines(mp, par, forkIsSplit):
     '''Returns the slopes and intercepts for all of the center of mass lines
@@ -182,14 +186,14 @@ def part_com_lines(mp, par, forkIsSplit):
     if forkIsSplit:
         l1, l2 = calculate_l1_l2(mp['h6'], mp['h7'], mp['d5'],
                                  mp['d6'], mp['l'])
-        slopes = {'B':[], 'G':[], 'S':[]}
-        intercepts = {'B':[], 'G':[], 'S':[]}
-        betas = {'B':[], 'G':[], 'S':[]}
+        slopes = {'B': [], 'G': [], 'S': []}
+        intercepts = {'B': [], 'G': [], 'S': []}
+        betas = {'B': [], 'G': [], 'S': []}
     else:
         l1, l2 = 0., 0.
-        slopes = {'B':[], 'H':[]}
-        intercepts = {'B':[], 'H':[]}
-        betas = {'B':[], 'H':[]}
+        slopes = {'B': [], 'H': []}
+        intercepts = {'B': [], 'H': []}
+        betas = {'B': [], 'H': []}
 
     # get the alpha keys and put them in order
     listOfAlphaKeys = [x for x in mp.keys() if x.startswith('alpha')]
@@ -206,6 +210,7 @@ def part_com_lines(mp, par, forkIsSplit):
         betas[part].append(beta)
 
     return slopes, intercepts, betas
+
 
 def total_com(coordinates, masses):
     '''Returns the center of mass of a group of objects if the indivdual

@@ -1,5 +1,6 @@
 from math import ceil
 
+
 class Table():
     """A class for generating tables of the measurment and parameter data
     associated with a bicycle. """
@@ -36,8 +37,8 @@ class Table():
         except TypeError:
             allVariables += self.bicycle.parameters[self.source].keys()
         # remove duplicates and sort
-        self.allVariables = sorted(list(set(allVariables)),
-                key=lambda x: x.lower())
+        self.allVariables = sorted(list(set(allVariables)), key=lambda x:
+                                   x.lower())
 
     def generate_table_data(self):
         """Generates a list of data for a table."""
@@ -91,7 +92,7 @@ class Table():
         table.insert(0, ['Variable'])
         for i, bicycle in enumerate(self.bicycles):
             if self.latex:
-                table[0] += [':math:`v`', ':math:`\sigma`']
+                table[0] += [':math:`v`', r':math:`\sigma`']
             else:
                 table[0] += ['v', 'sigma']
 
@@ -146,6 +147,7 @@ class Table():
 
         return rstTable
 
+
 def to_latex(var):
     """Returns a latex representation for a given variable string name.
 
@@ -163,20 +165,20 @@ def to_latex(var):
 
     latexMap = {'f': 'f',
                 'w': 'w',
-                'gamma': '\gamma',
+                'gamma': r'\gamma',
                 'g': 'g',
                 'lcs': 'l_{cs}',
                 'hbb': 'h_{bb}',
                 'lsp': 'l_{sp}',
                 'lst': 'l_{st}',
-                'lamst': '\lambda_{st}',
+                'lamst': r'\lambda_{st}',
                 'whb': 'w_{hb}',
                 'LhbF': 'l_{hbF}',
                 'LhbR': 'l_{hbR}',
                 'd': 'd',
                 'l': 'l',
                 'c': 'c',
-                'lam': '\lambda',
+                'lam': r'\lambda',
                 'xcl': 'x_{cl}',
                 'zcl': 'z_{cl}',
                 'ds1': 'd_{s1}',
@@ -198,6 +200,7 @@ def to_latex(var):
             raise
 
     return latex
+
 
 def uround(value):
     '''Returns a string representation of a value with an uncertainity which

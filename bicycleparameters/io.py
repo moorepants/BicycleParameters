@@ -6,6 +6,7 @@ import numpy as np
 from uncertainties import ufloat_fromstr
 from scipy.io import loadmat
 
+
 def filename_to_dict(filename):
     '''Returns a dictionay of values based on the pendulum data file name.
 
@@ -17,13 +18,14 @@ def filename_to_dict(filename):
     o.append(trial)
     breakdown = ['bicycle', 'part', 'pendulum', 'angleOrder', 'trial']
     dat = {}
-    for word, val  in zip(breakdown, o):
+    for word, val in zip(breakdown, o):
         dat[word] = val
     return dat
 
+
 def load_parameter_text_file(pathToFile):
-    """
-    Returns a dictionary of float and/or ufloat parameters from a parameter file.
+    """Returns a dictionary of float and/or ufloat parameters from a parameter
+    file.
 
     Parameters
     ----------
@@ -71,29 +73,31 @@ def load_parameter_text_file(pathToFile):
 
     return parameters
 
+
 def load_pendulum_mat_file(pathToFile):
     '''Returns a dictionay containing the data from the pendulum data mat file.
 
     '''
     pendDat = {}
     loadmat(pathToFile, mdict=pendDat)
-    #clean up the matlab imports
+    # clean up the matlab imports
     del(pendDat['__globals__'], pendDat['__header__'], pendDat['__version__'])
     for k, v in pendDat.items():
         try:
-            #change to an ascii string
+            # change to an ascii string
             pendDat[k] = v[0].encode('ascii')
         except:
-            #if an array of a single number
+            # if an array of a single number
             if np.shape(v)[0] == 1:
                 pendDat[k] = v[0][0]
-            #else if the notes are empty
+            # else if the notes are empty
             elif np.shape(v)[0] == 0:
                 pendDat[k] = ''
-            #else it is the data which needs to be a one dimensional array
+            # else it is the data which needs to be a one dimensional array
             else:
                 pendDat[k] = v.reshape((len(v),))
     return pendDat
+
 
 def remove_uncertainties(dictionary):
     '''Returns a dictionary with the uncertainties removed.'''
@@ -110,6 +114,7 @@ def remove_uncertainties(dictionary):
                 # this is the case if the value is a float
                 noUncert[k] = v
     return noUncert
+
 
 def write_parameter_text_file(pathToTxtFile, parDict):
     '''Writes parameter set to file.
@@ -139,9 +144,9 @@ def write_parameter_text_file(pathToTxtFile, parDict):
         f.close()
         del f
         ans = None
-        while ans !=  'y' and ans != 'n':
-            ans = raw_input("%s exists already. Are you sure you want" \
-                            " to overwrite it? (y or n)\n" % pathToTxtFile)
+        while ans != 'y' and ans != 'n':
+            ans = input("%s exists already. Are you sure you want"
+                        " to overwrite it? (y or n)\n" % pathToTxtFile)
         if ans == 'y':
             f = open(pathToTxtFile, 'w')
     except IOError:
@@ -159,27 +164,27 @@ def write_parameter_text_file(pathToTxtFile, parDict):
         print("%s was not saved." % pathToTxtFile)
         return False
 
+
 def space_out_camel_case(s, output='string'):
-        """Adds spaces to a camel case string.  Failure to space out string
-        returns the original string.
+    """Adds spaces to a camel case string. Failure to space out string returns
+    the original string.
 
-        Examples
-        --------
-        >>> space_out_camel_case('DMLSServicesOtherBSTextLLC')
-        'DMLS Services Other BS Text LLC'
-        >>> space_out_camel_case('DMLSServicesOtherBSTextLLC', output='list')
-        ['DMLS', 'Services', 'Other', 'BS', 'Text', 'LLC']
+    Examples
+    --------
+    >>> space_out_camel_case('DMLSServicesOtherBSTextLLC')
+    'DMLS Services Other BS Text LLC'
+    >>> space_out_camel_case('DMLSServicesOtherBSTextLLC', output='list')
+    ['DMLS', 'Services', 'Other', 'BS', 'Text', 'LLC']
 
-        """
-        if output == 'string':
-            return re.sub('((?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z]))', ' ',
-                          s).strip()
-        elif output == 'list':
-            string = re.sub('((?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z]))', ' ',
-                            s).strip()
-            return string.split(' ')
-        else:
-            raise ValueError
+    """
+    if output == 'string':
+        return re.sub('((?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z]))', ' ', s).strip()
+    elif output == 'list':
+        string = re.sub('((?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z]))', ' ', s).strip()
+        return string.split(' ')
+    else:
+        raise ValueError
+
 
 def write_periods_to_file(pathToRawFile, mp):
     '''Writes the provided periods to file.

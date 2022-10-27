@@ -6,6 +6,7 @@ from uncertainties import unumpy, umath
 
 from .bicycle import trail, lambda_from_abc
 
+
 def calculate_benchmark_geometry(mp, par):
     '''Returns the wheelbase, steer axis tilt and the trail.
 
@@ -23,11 +24,11 @@ def calculate_benchmark_geometry(mp, par):
 
     '''
     # calculate the wheel radii
-    par['rF'] = mp['dF'] / 2./ pi / mp['nF']
-    par['rR'] = mp['dR'] / 2./ pi / mp['nR']
+    par['rF'] = mp['dF'] / 2. / pi / mp['nF']
+    par['rR'] = mp['dR'] / 2. / pi / mp['nR']
 
     # calculate the frame/fork fundamental geometry
-    if 'w' in mp.keys(): # if there is a wheelbase
+    if 'w' in mp.keys():  # if there is a wheelbase
         # steer axis tilt in radians
         par['lam'] = pi / 180. * (90. - mp['gamma'])
         # wheelbase
@@ -54,6 +55,7 @@ def calculate_benchmark_geometry(mp, par):
         pass
 
     return par
+
 
 def calculate_abc_geometry(h, d):
     '''Returns the perpendicular distance geometry for the bicycle from the raw
@@ -87,9 +89,10 @@ def calculate_abc_geometry(h, d):
     c = umath.sqrt(-(a - b)**2 + (d + .5 * (d2 + d3))**2)
     return a, b, c
 
+
 def calculate_l1_l2(h6, h7, d5, d6, l):
-    '''Returns the distance along (l2) and perpendicular (l1) to the steer axis from the
-    front wheel center to the handlebar reference point.
+    '''Returns the distance along (l2) and perpendicular (l1) to the steer axis
+    from the front wheel center to the handlebar reference point.
 
     Parameters
     ----------
@@ -126,10 +129,11 @@ def calculate_l1_l2(h6, h7, d5, d6, l):
     l2 = l0 * umath.cos(gamma)
     return l1, l2
 
+
 def calc_two_link_angles(L1, L2, D):
-    '''Solves a simple case of the two-link revolute joint inverse
-    kinematics problem. Both output angles are positive. The simple case
-    is taht the end of the second link lies on the x-axis.
+    '''Solves a simple case of the two-link revolute joint inverse kinematics
+    problem. Both output angles are positive. The simple case is that the end
+    of the second link lies on the x-axis.
 
     Parameters
     ----------
@@ -149,10 +153,11 @@ def calc_two_link_angles(L1, L2, D):
 
     '''
 
-    theta1 = np.arccos( (L1**2 + D**2 - L2**2) / (2.0 * L1 * D) )
-    theta2 = theta1 + np.arcsin( L1 / L2 * np.sin( theta1 ) )
+    theta1 = np.arccos((L1**2 + D**2 - L2**2) / (2.0 * L1 * D))
+    theta2 = theta1 + np.arcsin(L1 / L2 * np.sin(theta1))
 
     return theta1, theta2
+
 
 def fwheel_to_handlebar_ref(lam, l1, l2):
     '''Returns the distance along the benchmark coordinates from the front
@@ -176,6 +181,7 @@ def fwheel_to_handlebar_ref(lam, l1, l2):
     u2 = u1 / umath.tan(lam) + l1 / umath.sin(lam)
     return u1, u2
 
+
 def fundamental_geometry_plot_data(par):
     '''Returns the coordinates for line end points of the bicycle fundamental
     geometry.
@@ -191,10 +197,9 @@ def fundamental_geometry_plot_data(par):
     z : ndarray
 
     '''
-    d1 = np.cos(par['lam']) * (par['c'] + par['w'] -
-                par['rR'] * np.tan(par['lam']))
-    d3 = -np.cos(par['lam']) * (par['c'] - par['rF'] *
-                np.tan(par['lam']))
+    d1 = np.cos(par['lam']) * (par['c'] + par['w'] - par['rR'] *
+                               np.tan(par['lam']))
+    d3 = -np.cos(par['lam']) * (par['c'] - par['rF'] * np.tan(par['lam']))
     x = np.zeros(4, dtype=object)
     z = np.zeros(4, dtype=object)
     x[0] = 0.
@@ -207,6 +212,7 @@ def fundamental_geometry_plot_data(par):
     z[3] = -par['rF']
 
     return x, z
+
 
 def distance_to_steer_axis(w, c, lam, point):
     """Returns the minimal distance from the steer axis to the given point when
@@ -232,14 +238,13 @@ def distance_to_steer_axis(w, c, lam, point):
     pointOnAxis1 = np.array([w + c,
                              0.,
                              0.])
-    pointOnAxis2 = pointOnAxis1 +\
-                   np.array([-umath.sin(lam),
-                             0.,
-                             -umath.cos(lam)])
+    pointOnAxis2 = (pointOnAxis1 + np.array([-umath.sin(lam), 0.,
+                                             -umath.cos(lam)]))
     pointsOnLine = np.array([pointOnAxis1, pointOnAxis2]).T
 
     # this is the distance from the assembly com to the steer axis
     return point_to_line_distance(point, pointsOnLine)
+
 
 def point_to_line_distance(point, pointsOnLine):
     '''Returns the minimal distance from a point to a line in three
@@ -270,6 +275,7 @@ def point_to_line_distance(point, pointsOnLine):
 
     return distance
 
+
 def project_point_on_line(line, point):
     '''Returns point of projection.
 
@@ -287,13 +293,15 @@ def project_point_on_line(line, point):
 
     '''
     m, b = line
-    c , d = point
+    c, d = point
     x = (m * d + c - m * b) / (m**2. + 1.)
     y = (m**2. * d + m * c + b) / (m**2. + 1.)
     return x, y
 
-def vec_angle(v1,v2):
-    '''Returns the interior angle between two vectors using the dot product. Inputs do not need to be unit vectors.
+
+def vec_angle(v1, v2):
+    '''Returns the interior angle between two vectors using the dot product.
+    Inputs do not need to be unit vectors.
 
     Parameters
     ----------
@@ -307,8 +315,9 @@ def vec_angle(v1,v2):
     angle : float
         (radians) interior angle between v1 and v2.
     '''
-    return np.arccos( float(np.dot(v1.T,v2)) / (
-           np.linalg.norm(v1) * np.linalg.norm(v2) ) )
+    return np.arccos(float(np.dot(v1.T, v2)) / (np.linalg.norm(v1) *
+                                                np.linalg.norm(v2)))
+
 
 def vec_project(vec, direction):
     '''Vector projection into a plane, where the plane is defined by a

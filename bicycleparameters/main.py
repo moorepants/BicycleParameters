@@ -495,7 +495,6 @@ the pathToData argument.""".format(bicycleName, pathToData)
             self.riderName = riderName
             self.hasRider = True
 
-
     def plot_bicycle_geometry(self, show=True, pendulum=True,
                               centerOfMass=True, inertiaEllipse=True):
         """Returns a figure showing the basic bicycle geometry, the centers of
@@ -728,7 +727,6 @@ the pathToData argument.""".format(bicycleName, pathToData)
         # practice in other Python libraries.
 
         return fig
-
 
     def _plot_bicycle_geometry_plotly(self, show=True, pendulum=True,
                                       centerOfMass=True, inertiaEllipse=True):
@@ -1019,15 +1017,14 @@ the pathToData argument.""".format(bicycleName, pathToData)
             start = rider.yeadon_vec_to_bicycle_vec(human.K2.pos, mpar, bpar)
             end = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
 
-        fig1.update_layout(#title_x=0.5,
-                           title=dict(text='Bicycle geometry',
+        fig1.update_layout(title=dict(text='Bicycle geometry',
                            font=dict(family="Segoe UI light", size=25)),
                            yaxis_title='z-axis [m]',
                            font_family="Source Sans Pro",
                            hoverlabel=dict(font_family="Source Sans Pro"))
 
-        fig1.update_layout(yaxis=dict(autorange=True, showgrid=False, ticks='outside',
-                                      showticklabels=True))
+        fig1.update_layout(yaxis=dict(autorange=True, showgrid=False,
+                                      ticks='outside', showticklabels=True))
         fig1.update_layout(xaxis=dict(autorange=True, showgrid=False, ticks='',
                                       showticklabels=False))
         if show:
@@ -1427,12 +1424,10 @@ the pathToData argument.""".format(bicycleName, pathToData)
                               annotation_text="Self stability",
                               annotation_position='top left',
                               # fillcolor="blue", opacity=0.25,
-                              fillcolor = 'rgba(71,147,231,0.5)',
+                              fillcolor='rgba(71,147,231,0.5)',
                               line_width=0, row=1, col=1)
 
-        fig.update_layout(
-                          # title_x=0.5,
-                          title=dict(text='Eigenvalues vs velocity',
+        fig.update_layout(title=dict(text='Eigenvalues vs velocity',
                           font=dict(family="Segoe UI light", size=25)),
                           font_family="Source Sans Pro",
                           plot_bgcolor='rgba(39,128,227,0.15)',

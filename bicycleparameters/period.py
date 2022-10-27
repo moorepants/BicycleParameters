@@ -12,6 +12,7 @@ from uncertainties import ufloat
 # local modules
 from .io import load_pendulum_mat_file
 
+
 def average_rectified_sections(data):
     '''Returns a slice of an oscillating data vector based on the max and min
     of the mean of the sections created by retifiying the data.
@@ -63,6 +64,7 @@ def average_rectified_sections(data):
 
     return data[maxInd:minInd]
 
+
 def calc_periods_for_files(directory, filenames, forkIsSplit):
     '''Calculates the period for all filenames in directory.
 
@@ -89,7 +91,7 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
         '''Splits a path into a list of its parts.'''
         components = []
         while True:
-            (path,tail) = os.path.split(path)
+            (path, tail) = os.path.split(path)
             if tail == "":
                 components.reverse()
                 return components
@@ -135,6 +137,7 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
 
     return periods
 
+
 def check_for_period(mp, forkIsSplit):
     '''Returns whether the fork is split into two pieces and whether the period
     calculations need to happen again.
@@ -157,7 +160,7 @@ def check_for_period(mp, forkIsSplit):
 
     '''
     forcePeriodCalc = False
-    #Check to see if mp contains at enough periods to not need
+    # Check to see if mp contains at enough periods to not need
     # recalculation
     ncTSum = 0
     ntTSum = 0
@@ -177,6 +180,7 @@ def check_for_period(mp, forkIsSplit):
             forcePeriodCalc = True
 
     return forcePeriodCalc
+
 
 def fit_goodness(ym, yp):
     '''
@@ -206,6 +210,7 @@ def fit_goodness(ym, yp):
     SSE = SST - SSR
     rsq = SSR / SST
     return rsq, SSE, SST, SSR
+
 
 def get_period(data, sampleRate, pathToPlotFile):
     '''Returns the period and uncertainty for data resembling a decaying
@@ -239,9 +244,9 @@ def get_period(data, sampleRate, pathToPlotFile):
         return a + b * (c + d)
 
     # initial guesses
-    #p0 = np.array([1.35, -.5, -.75, 0.01, 3.93]) # guess from delft
-    #p0 = np.array([2.5, -.75, -.75, 0.001, 4.3]) # guess from ucd
-    p0 = make_guess(data, sampleRate) # tries to make a good guess
+    # p0 = np.array([1.35, -.5, -.75, 0.01, 3.93]) # guess from delft
+    # p0 = np.array([2.5, -.75, -.75, 0.001, 4.3]) # guess from ucd
+    p0 = make_guess(data, sampleRate)  # tries to make a good guess
 
     # create the error function
     errfunc = lambda p, t, y: fitfunc(p, t) - y
@@ -287,11 +292,13 @@ def get_period(data, sampleRate, pathToPlotFile):
     # return the period
     return T
 
+
 def get_period_from_truncated(data, sampleRate, pathToPlotFile):
-    #dataRec = average_rectified_sections(data)
+    # dataRec = average_rectified_sections(data)
     dataRec = data
     dataGood = select_good_data(dataRec, 0.1)
     return get_period(dataGood, sampleRate, pathToPlotFile)
+
 
 def get_period_key(matData, forkIsSplit):
     '''Returns a dictionary key for the period entries.
@@ -332,12 +339,12 @@ def get_period_key(matData, forkIsSplit):
         subscripts['Rod'] = 'P'
 
     # used to convert word ordinals to numbers
-    ordinal = {'First' : '1',
-               'Second' : '2',
-               'Third' : '3',
-               'Fourth' : '4',
-               'Fifth' : '5',
-               'Sixth' : '6'}
+    ordinal = {'First': '1',
+               'Second': '2',
+               'Third': '3',
+               'Fourth': '4',
+               'Fifth': '5',
+               'Sixth': '6'}
     try:
         orienWord = matData['angleOrder']
     except:
@@ -347,6 +354,7 @@ def get_period_key(matData, forkIsSplit):
     orienNum = ordinal[orienWord]
     return 'T' + pend + part + orienNum
 
+
 def get_sample_rate(matData):
     '''Returns the sample rate for the data.'''
     if 'ActualRate' in matData.keys():
@@ -354,6 +362,7 @@ def get_sample_rate(matData):
     else:
         sampleRate = matData['sampleRate']
     return sampleRate
+
 
 def jac_fitfunc(p, t):
     '''
@@ -386,6 +395,7 @@ def jac_fitfunc(p, t):
               c - p[2] * s))
     return jac.T
 
+
 def make_guess(data, sampleRate):
     '''Returns a decent starting point for fitting the decaying oscillation
     function.
@@ -411,7 +421,8 @@ def make_guess(data, sampleRate):
     # the third is the amplitude for the cos function
     p[2] = slope * np.max(data)
 
-    # the fourth is the damping ratio and is typically small, 0.001 < zeta < 0.02
+    # the fourth is the damping ratio and is typically small, 0.001 < zeta <
+    # 0.02
     p[3] = 0.001
 
     # the fifth is the undamped natural frequency
@@ -427,11 +438,12 @@ def make_guess(data, sampleRate):
     # get the samples per period
     samplesPerPeriod = 2*np.mean(np.diff(zero))
     # now the frequency
-    p[4] = (samplesPerPeriod / float(sampleRate) /2. / pi)**-1
+    p[4] = (samplesPerPeriod / float(sampleRate) / 2. / pi)**-1
     if np.isnan(p[4]):
         p[4] = 4.
 
     return p
+
 
 def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
     '''Plot fitted data over the measured
@@ -458,7 +470,7 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
 
     '''
     # figure properties
-    figwidth = 4. # in inches
+    figwidth = 4.  # in inches
     goldenMean = (np.sqrt(5) - 1.0) / 2.0
     figsize = [figwidth, figwidth * goldenMean]
     params = {#'backend': 'ps',
@@ -496,6 +508,7 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
     else:
         pass
     return fig
+
 
 def select_good_data(data, percent):
 

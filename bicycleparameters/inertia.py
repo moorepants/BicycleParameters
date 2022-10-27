@@ -7,6 +7,7 @@ import numpy as np
 # local modules
 from .com import total_com
 
+
 def combine_bike_rider(bicyclePar, riderPar):
     """
     Combines the inertia of the bicycle frame with the
@@ -62,6 +63,7 @@ def combine_bike_rider(bicyclePar, riderPar):
 
     return bicyclePar
 
+
 def compound_pendulum_inertia(m, g, l, T):
     '''Returns the moment of inertia for an object hung as a compound
     pendulum.
@@ -87,6 +89,7 @@ def compound_pendulum_inertia(m, g, l, T):
     I = (T / 2. / pi)**2. * m * g * l - m * l**2.
 
     return I
+
 
 def inertia_components(jay, beta):
     '''Returns the 2D orthogonal inertia tensor.
@@ -114,6 +117,7 @@ def inertia_components(jay, beta):
     betaMat = unumpy.matrix(np.vstack((cb**2, -2 * sb * cb, sb**2)).T)
     eye = np.squeeze(np.asarray(np.dot(betaMat.I, jay)))
     return eye
+
 
 def parallel_axis(Ic, m, d):
     '''Returns the moment of inertia of a body about a different point.
@@ -144,6 +148,7 @@ def parallel_axis(Ic, m, d):
     dMat[2] = np.array([-a * c, -b * c, a**2 + b**2])
     return Ic + m * dMat
 
+
 def part_inertia_tensor(par, part):
     '''Returns an inertia tensor for a particular part for the benchmark
     parameter set.
@@ -168,9 +173,9 @@ def part_inertia_tensor(par, part):
 
     '''
     if isinstance(par['mB'], UFloat):
-        dtype=object
+        dtype = object
     else:
-        dtype='float64'
+        dtype = 'float64'
     I = np.zeros((3, 3), dtype=dtype)
     # front or rear wheel
     if part in 'FRD':
@@ -184,9 +189,10 @@ def part_inertia_tensor(par, part):
                          ['xz', None, 'zz']])
     for i, row in enumerate(axes):
         for j, col in enumerate(row):
-            if col != None:
+            if col is not None:
                 I[i, j] = par['I' + part + col]
     return I
+
 
 def principal_axes(I):
     '''Returns the principal moments of inertia and the orientation.
@@ -210,15 +216,17 @@ def principal_axes(I):
     C = C.T[indices]
     return Ip, C
 
+
 def rotate_inertia_tensor(I, angle):
     '''Returns inertia tensor rotated through angle. Only for 2D'''
     ca = umath.cos(angle)
     sa = umath.sin(angle)
-    C    =  np.array([[ca, 0., -sa],
-                      [0., 1., 0.],
-                      [sa, 0., ca]])
-    Irot =  np.dot(C, np.dot(I, C.T))
+    C = np.array([[ca, 0., -sa],
+                  [0., 1., 0.],
+                  [sa, 0., ca]])
+    Irot = np.dot(C, np.dot(I, C.T))
     return Irot
+
 
 def tor_inertia(k, T):
     '''Calculate the moment of inertia for an ideal torsional pendulm
@@ -238,6 +246,7 @@ def tor_inertia(k, T):
 
     return I
 
+
 def torsional_pendulum_stiffness(I, T):
     '''Calculate the stiffness of a torsional pendulum with a known moment of
     inertia.
@@ -254,6 +263,7 @@ def torsional_pendulum_stiffness(I, T):
     '''
     k = 4. * I * pi**2 / T**2
     return k
+
 
 def tube_inertia(l, m, ro, ri):
     '''Calculate the moment of inertia for a tube (or rod) where the x axis is

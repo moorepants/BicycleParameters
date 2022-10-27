@@ -4,6 +4,7 @@ import numpy as np
 from scipy.optimize import newton
 from uncertainties import umath, ufloat
 
+
 def ab_matrix(M, C1, K0, K2, v, g):
     '''Calculate the A and B matrices for the Whipple bicycle model linearized
     about the upright configuration.
@@ -40,7 +41,8 @@ def ab_matrix(M, C1, K0, K2, v, g):
     '''
 
     invM = (1. / (M[0, 0] * M[1, 1] - M[0, 1] * M[1, 0]) *
-           np.array([[M[1, 1], -M[0, 1]], [-M[1, 0], M[0, 0]]], dtype=M.dtype))
+            np.array([[M[1, 1], -M[0, 1]], [-M[1, 0], M[0, 0]]],
+                     dtype=M.dtype))
 
     a11 = np.zeros((2, 2))
     a12 = np.eye(2)
@@ -53,6 +55,7 @@ def ab_matrix(M, C1, K0, K2, v, g):
     B = np.vstack((np.zeros((2, 2)), invM))
 
     return A, B
+
 
 def benchmark_par_to_canonical(p):
     '''Returns the canonical matrices of the Whipple bicycle model linearized
@@ -82,73 +85,72 @@ def benchmark_par_to_canonical(p):
 
     '''
     mT = p['mR'] + p['mB'] + p['mH'] + p['mF']
-    xT = (p['xB'] * p['mB'] + p['xH'] * p['mH'] + p['w'] * p['mF']) / mT
-    zT = (-p['rR'] * p['mR'] + p['zB'] * p['mB'] +
-          p['zH'] * p['mH'] - p['rF'] * p['mF']) / mT
+    xT = (p['xB']*p['mB'] + p['xH']*p['mH'] + p['w']*p['mF']) / mT
+    zT = (-p['rR']*p['mR'] + p['zB']*p['mB'] +
+          p['zH']*p['mH'] - p['rF']*p['mF']) / mT
 
     ITxx = (p['IRxx'] + p['IBxx'] + p['IHxx'] + p['IFxx'] + p['mR'] *
-            p['rR']**2 + p['mB'] * p['zB']**2 + p['mH'] * p['zH']**2 + p['mF']
-            * p['rF']**2)
-    ITxz = (p['IBxz'] + p['IHxz'] - p['mB'] * p['xB'] * p['zB'] -
-            p['mH'] * p['xH'] * p['zH'] + p['mF'] * p['w'] * p['rF'])
+            p['rR']**2 + p['mB']*p['zB']**2 + p['mH']*p['zH']**2 +
+            p['mF']*p['rF']**2)
+    ITxz = (p['IBxz'] + p['IHxz'] - p['mB']*p['xB']*p['zB'] -
+            p['mH']*p['xH']*p['zH'] + p['mF']*p['w']*p['rF'])
     p['IRzz'] = p['IRxx']
     p['IFzz'] = p['IFxx']
     ITzz = (p['IRzz'] + p['IBzz'] + p['IHzz'] + p['IFzz'] +
-            p['mB'] * p['xB']**2 + p['mH'] * p['xH']**2 + p['mF'] * p['w']**2)
+            p['mB']*p['xB']**2 + p['mH']*p['xH']**2 + p['mF']*p['w']**2)
 
     mA = p['mH'] + p['mF']
-    xA = (p['xH'] * p['mH'] + p['w'] * p['mF']) / mA
-    zA = (p['zH'] * p['mH'] - p['rF']* p['mF']) / mA
+    xA = (p['xH']*p['mH'] + p['w']*p['mF']) / mA
+    zA = (p['zH']*p['mH'] - p['rF']*p['mF']) / mA
 
-    IAxx = (p['IHxx'] + p['IFxx'] + p['mH'] * (p['zH'] - zA)**2 +
-            p['mF'] * (p['rF'] + zA)**2)
-    IAxz = (p['IHxz'] - p['mH'] * (p['xH'] - xA) * (p['zH'] - zA) + p['mF'] *
-            (p['w'] - xA) * (p['rF'] + zA))
-    IAzz = (p['IHzz'] + p['IFzz'] + p['mH'] * (p['xH'] - xA)**2 + p['mF'] *
+    IAxx = (p['IHxx'] + p['IFxx'] + p['mH']*(p['zH'] - zA)**2 +
+            p['mF']*(p['rF'] + zA)**2)
+    IAxz = (p['IHxz'] - p['mH']*(p['xH'] - xA)*(p['zH'] - zA) + p['mF'] *
+            (p['w'] - xA)*(p['rF'] + zA))
+    IAzz = (p['IHzz'] + p['IFzz'] + p['mH']*(p['xH'] - xA)**2 + p['mF'] *
             (p['w'] - xA)**2)
-    uA = (xA - p['w'] - p['c']) * umath.cos(p['lam']) - zA * umath.sin(p['lam'])
-    IAll = (mA * uA**2 + IAxx * umath.sin(p['lam'])**2 +
-            2 * IAxz * umath.sin(p['lam']) * umath.cos(p['lam']) +
-            IAzz * umath.cos(p['lam'])**2)
-    IAlx = (-mA * uA * zA + IAxx * umath.sin(p['lam']) + IAxz *
-            umath.cos(p['lam']))
-    IAlz = (mA * uA * xA + IAxz * umath.sin(p['lam']) + IAzz *
-            umath.cos(p['lam']))
+    uA = (xA - p['w'] - p['c'])*umath.cos(p['lam']) - zA*umath.sin(p['lam'])
+    IAll = (mA*uA**2 + IAxx*umath.sin(p['lam'])**2 +
+            2*IAxz*umath.sin(p['lam'])*umath.cos(p['lam']) +
+            IAzz*umath.cos(p['lam'])**2)
+    IAlx = (-mA*uA*zA + IAxx*umath.sin(p['lam']) + IAxz*umath.cos(p['lam']))
+    IAlz = (mA*uA*xA + IAxz*umath.sin(p['lam']) + IAzz*umath.cos(p['lam']))
 
-    mu = p['c'] / p['w'] * umath.cos(p['lam'])
+    mu = p['c'] / p['w']*umath.cos(p['lam'])
 
     SR = p['IRyy'] / p['rR']
     SF = p['IFyy'] / p['rF']
     ST = SR + SF
-    SA = mA * uA + mu * mT * xT
+    SA = mA*uA + mu*mT*xT
 
     Mpp = ITxx
-    Mpd = IAlx + mu * ITxz
+    Mpd = IAlx + mu*ITxz
     Mdp = Mpd
-    Mdd = IAll + 2 * mu * IAlz + mu**2 * ITzz
+    Mdd = IAll + 2*mu*IAlz + mu**2*ITzz
     M = np.array([[Mpp, Mpd], [Mdp, Mdd]])
 
-    K0pp = mT * zT # this value only reports to 13 digit precision it seems?
+    K0pp = mT*zT  # this value only reports to 13 digit precision it seems?
     K0pd = -SA
     K0dp = K0pd
-    K0dd = -SA * umath.sin(p['lam'])
+    K0dd = -SA*umath.sin(p['lam'])
     K0 = np.array([[K0pp, K0pd], [K0dp, K0dd]])
 
     K2pp = 0.
-    K2pd = (ST - mT * zT) / p['w'] * umath.cos(p['lam'])
+    K2pd = (ST - mT*zT) / p['w']*umath.cos(p['lam'])
     K2dp = 0.
-    K2dd = (SA + SF * umath.sin(p['lam'])) / p['w'] * umath.cos(p['lam'])
+    K2dd = (SA + SF*umath.sin(p['lam'])) / p['w']*umath.cos(p['lam'])
     K2 = np.array([[K2pp, K2pd], [K2dp, K2dd]])
 
     C1pp = 0.
     C1pd = (mu*ST + SF*umath.cos(p['lam']) + ITxz / p['w'] *
             umath.cos(p['lam']) - mu*mT*zT)
-    C1dp = -(mu * ST + SF * umath.cos(p['lam']))
-    C1dd = (IAlz / p['w'] * umath.cos(p['lam']) + mu * (SA +
-            ITzz / p['w'] * umath.cos(p['lam'])))
+    C1dp = -(mu*ST + SF*umath.cos(p['lam']))
+    C1dd = (IAlz / p['w']*umath.cos(p['lam']) + mu*(SA +
+            ITzz / p['w']*umath.cos(p['lam'])))
     C1 = np.array([[C1pp, C1pd], [C1dp, C1dd]])
 
     return M, C1, K0, K2
+
 
 def lambda_from_abc(rF, rR, a, b, c):
     '''Returns the steer axis tilt, lamba, for the parameter set based on the
@@ -173,7 +175,7 @@ def lambda_from_abc(rF, rR, a, b, c):
     '''
     def lam_equality(lam, rF, rR, a, b, c):
         return umath.sin(lam) - (rF - rR + c * umath.cos(lam)) / (a + b)
-    guess = umath.atan(c / (a + b)) # guess based on equal wheel radii
+    guess = umath.atan(c / (a + b))  # guess based on equal wheel radii
 
     # The following assumes that the uncertainty calculated for the guess is
     # the same as the uncertainty for the true solution. This is not true! and
@@ -281,14 +283,16 @@ def sort_modes(evals, evecs):
         used = []
         for j, e in enumerate(speed):
             try:
-                x, y = np.real(evalsorg[i, j].nominal_value), np.imag(evalsorg[i, j].nominal_value)
+                x = np.real(evalsorg[i, j].nominal_value)
+                y = np.imag(evalsorg[i, j].nominal_value)
             except:
                 x, y = np.real(evalsorg[i, j]), np.imag(evalsorg[i, j])
             # for each eigenvalue at the next speed
             dist = np.zeros(4)
             for k, eignext in enumerate(evals[i + 1]):
                 try:
-                    xn, yn = np.real(eignext.nominal_value), np.imag(eignext.nominal_value)
+                    xn = np.real(eignext.nominal_value)
+                    yn = np.imag(eignext.nominal_value)
                 except:
                     xn, yn = np.real(eignext), np.imag(eignext)
                 # distance between points in the real/imag plane
@@ -302,10 +306,11 @@ def sort_modes(evals, evecs):
             evecsorg[i + 1, :, j] = evecs[i + 1, :, np.argmin(dist)]
             # keep track of the indices we've used
             used.append(np.argmin(dist))
-    weave = {'evals' : evalsorg[:, 2:], 'evecs' : evecsorg[:, :, 2:]}
-    capsize = {'evals' : evalsorg[:, 1], 'evecs' : evecsorg[:, :, 1]}
-    caster = {'evals' : evalsorg[:, 0], 'evecs' : evecsorg[:, :, 0]}
+    weave = {'evals': evalsorg[:, 2:], 'evecs': evecsorg[:, :, 2:]}
+    capsize = {'evals': evalsorg[:, 1], 'evecs': evecsorg[:, :, 1]}
+    caster = {'evals': evalsorg[:, 0], 'evecs': evecsorg[:, :, 0]}
     return weave, capsize, caster
+
 
 def trail(rF, lam, fo):
     '''Calculate the trail and mechanical trail.
