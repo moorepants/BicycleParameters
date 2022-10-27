@@ -12,6 +12,7 @@ Release Notes
 - Dropped support for Python 2.7, 3.4, 3.5, and 3.6.
 - Moved to mamba and Github action based continuous integration testing.
 - Introduced new modules for future class hierarchies and better design.
+- ``bicycleparameters/test/`` moved to ``bicycleparameters/tests/``.
 
 1.0.0
 -----
