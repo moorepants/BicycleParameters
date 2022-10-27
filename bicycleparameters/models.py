@@ -535,7 +535,7 @@ class Meijaard2007Model(Model):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            import numpy as np
            from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
@@ -598,7 +598,7 @@ class Meijaard2007Model(Model):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            import numpy as np
            from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
@@ -747,7 +747,7 @@ class Meijaard2007Model(Model):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            import numpy as np
            from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
@@ -836,7 +836,7 @@ class Meijaard2007Model(Model):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            import numpy as np
            from bicycleparameters.parameter_dicts import meijaard2007_browser_jason

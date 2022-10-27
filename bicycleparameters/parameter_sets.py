@@ -426,7 +426,7 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
            from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
@@ -463,7 +463,7 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
            from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
@@ -501,7 +501,7 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
            from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
@@ -563,7 +563,7 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
            from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
@@ -611,7 +611,7 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
            from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
@@ -642,7 +642,7 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
            from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
@@ -686,7 +686,7 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
            from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
@@ -716,7 +716,7 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
            from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
@@ -887,7 +887,7 @@ class Moore2019ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import moore2019_browser_jason
            from bicycleparameters.parameter_sets import Moore2019ParameterSet
@@ -917,7 +917,7 @@ class Moore2019ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import moore2019_browser_jason
            from bicycleparameters.parameter_sets import Moore2019ParameterSet
@@ -975,7 +975,7 @@ class Moore2019ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import moore2019_browser_jason
            from bicycleparameters.parameter_sets import Moore2019ParameterSet
@@ -1013,7 +1013,7 @@ class Moore2019ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import moore2019_browser_jason
            from bicycleparameters.parameter_sets import Moore2019ParameterSet
@@ -1053,7 +1053,7 @@ class Moore2019ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import moore2019_browser_jason
            from bicycleparameters.parameter_sets import Moore2019ParameterSet
@@ -1084,7 +1084,7 @@ class Moore2019ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import moore2019_browser_jason
            from bicycleparameters.parameter_sets import Moore2019ParameterSet
@@ -1139,7 +1139,7 @@ class Moore2019ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import moore2019_browser_jason
            from bicycleparameters.parameter_sets import Moore2019ParameterSet
@@ -1186,7 +1186,7 @@ class Moore2019ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import moore2019_browser_jason
            from bicycleparameters.parameter_sets import Moore2019ParameterSet
@@ -1216,7 +1216,7 @@ class Moore2019ParameterSet(ParameterSet):
 
         .. plot::
            :include-source: True
-           :context: close-figs
+           :context: reset
 
            from bicycleparameters.parameter_dicts import moore2019_browser_jason
            from bicycleparameters.parameter_sets import Moore2019ParameterSet
