@@ -21,6 +21,7 @@ def test_Meijaard2007ParameterSet(plot=False):
     pset2 = Meijaard2007ParameterSet.from_yaml(filepath)
 
     assert pset.parameters == pset2.parameters
+    assert pset2.includes_rider
 
     assert pset.includes_rider is True
     assert pset.parameters['v'] == 5.0
@@ -31,10 +32,10 @@ def test_Meijaard2007ParameterSet(plot=False):
     np.testing.assert_allclose(pset.form_inertia_tensor('H'),
                                expected_IH)
 
-    expected_comB = np.array([[0.3], [0.0], [-0.9]])
-    expected_comF = np.array([[1.02], [0.0], [-0.35]])
-    expected_comH = np.array([[0.9], [0.0], [-0.7]])
-    expected_comR = np.array([[0.0], [0.0], [-0.3]])
+    expected_comB = np.array([0.3, 0.0, -0.9])
+    expected_comF = np.array([1.02, 0.0, -0.35])
+    expected_comH = np.array([0.9, 0.0, -0.7])
+    expected_comR = np.array([0.0, 0.0, -0.3])
 
     np.testing.assert_allclose(expected_comB,
                                pset.form_mass_center_vector('B'))
