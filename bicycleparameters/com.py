@@ -8,8 +8,7 @@ from uncertainties import umath, unumpy
 from .geometry import calculate_l1_l2, fwheel_to_handlebar_ref
 
 def cartesian(arrays, out=None):
-    """
-    Generate a cartesian product of input arrays.
+    """Generate a cartesian product of input arrays.
 
     Parameters
     ----------
@@ -49,13 +48,14 @@ def cartesian(arrays, out=None):
     if out is None:
         out = np.zeros([n, len(arrays)], dtype=dtype)
 
-    m = n / arrays[0].size
-    out[:,0] = np.repeat(arrays[0], m)
+    m = n // arrays[0].size
+    out[:, 0] = np.repeat(arrays[0], m)
     if arrays[1:]:
-        cartesian(arrays[1:], out=out[0:m,1:])
+        cartesian(arrays[1:], out=out[0:m, 1:])
         for j in range(1, arrays[0].size):
-            out[j*m:(j+1)*m,1:] = out[0:m,1:]
+            out[j*m:(j+1)*m, 1:] = out[0:m, 1:]
     return out
+
 
 def center_of_mass(slopes, intercepts):
     '''Returns the center of mass relative to the slopes and intercepts
