@@ -1,22 +1,3 @@
-"""
-
-A model is a set of differential algebraic equations in time that have:
-constants and time varying (coordinates, speeds, and exongenous inputs). The
-model can be nonlinear, linear, have algebraic constraints, or not.
-
-A parameter set is a collection of constant-value pairs. These pairs are
-typically defined in a specific academic article, dissertation, book chapter or
-section.
-
-The model has to be in a particular configuration to convert one parameter set
-to another. For a bicycle alone, this nominal configuration is the upright,
-zero steer state. If rider configuration is included, then some nomial
-configuration would need to be defined.
-
-A parameter set is associated with a particular parameterization of one or more
-models.
-
-"""
 from abc import ABC
 import os
 
@@ -81,26 +62,30 @@ def _plot_geometry_from_benchmark(ax, parameters, show_steer_axis=True):
 class ParameterSet(ABC):
     """A parameter set is a collection of constants with associated floating
     point values that are present in a set of differential algebraic equations
-    that represent a bicycle model. These pairs are typically defined in a
-    specific academic article, dissertation, book chapter, or section and
+    that represent a multibody bicycle model. These pairs are typically defined
+    in a specific academic article, dissertation, book chapter, or section and
     subclasses should be named in a way that ties them to that written work.
-
-    Parameter sets can be converted to equivalent parameter sets, but only by
-    assuming a particular model configuration. The obvious configuration for a
-    bicycle model is the upright, zero steer state. But if, for example, a
-    rider configuration is included, then some nominal configuration would need
-    to be defined for conversion consistency.
+    Parameter sets must be named with this pattern ``NameOfMySetParameterSet``
+    where ``NameOfMySet`` is a unique name other than something that includes
+    ``ParameterSet``.
 
     A parameter set, or a subset of the parameters, can be used with multiple
-    different models.
+    different models. A parameter set is associated with a particular
+    parameterization of one or more models. Parameter sets can be converted to
+    equivalent parameter sets, but only by assuming a particular model
+    configuration. The obvious configuration for a bicycle model is the
+    upright, zero steer state. But if, for example, a rider configuration is
+    included, then some nominal configuration would need to be defined for
+    conversion consistency.
 
     Each parameter set should have a unique set of ASCII strings that represent
     the constants in a model.
 
-    Inertial parameters can be associated with a specific rigid body present
-    (this inherently assumes a rigid body definition in the multibody model).
-
     """
+    par_strings = {
+        'aR': r'a_R',
+        'beta': r'\beta',
+    }
 
     def _check_parameters(self, parameters):
         """Ensures that each parameter in par_strings is present in parameters
@@ -122,7 +107,7 @@ class ParameterSet(ABC):
     def from_yaml(cls, path_to_file):
         with open(os.path.join(path_to_file), 'r') as f:
             yaml_data = yaml.load(f, Loader=yaml.FullLoader)
-        return ParameterSet(yaml_data['values'])
+        return cls(yaml_data['values'])
 
     def _generate_body_colors(self):
         prop_cycle = plt.rcParams['axes.prop_cycle']
@@ -240,6 +225,13 @@ class Meijaard2007ParameterSet(ParameterSet):
     def __init__(self, parameters, includes_rider):
         """Initializes a parameter set based on Meijaard2007.
 
+        The four bodies are:
+
+        - B: rear frame + rigid rider
+        - F: front wheel
+        - H: front frame (fork & handlebars)
+        - R: rear wheel
+
         Parameters
         ==========
         parameters : dictionary
@@ -288,7 +280,7 @@ class Meijaard2007ParameterSet(ParameterSet):
             benchmark_par = yaml_data['values']
             rider = yaml_data['rider']
 
-        return Meijaard2007ParameterSet(benchmark_par, rider)
+        return cls(benchmark_par, rider)
 
     def _calc_derived_params(self):
         # These parameters are needed but are not specified by the user.
@@ -321,9 +313,18 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         Returns
         =======
-        ndarray, shape(3, 1)
+        ndarray, shape(3,)
             A vector containing the X, Y, and X coordinates of the mass center
             of the body.
+
+        Examples
+        ========
+
+        >>> from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+        >>> from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+        >>> p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+        >>> p.form_mass_center_vector('B')
+        array([ 0.28909943,  0.        , -1.04029228])
 
         """
 
@@ -334,7 +335,7 @@ class Meijaard2007ParameterSet(ParameterSet):
         y = p['y{}'.format(body)]
         z = p['z{}'.format(body)]
 
-        return np.array([[x], [y], [z]])
+        return np.array([x, y, z])
 
     def mass_center_of(self, *bodies):
         """Returns the vector locating the center of mass of the collection of
@@ -350,6 +351,15 @@ class Meijaard2007ParameterSet(ParameterSet):
             Vector locating the center of mass of the bodies givien in
             ``bodies``.
 
+        Examples
+        ========
+
+        >>> from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+        >>> from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+        >>> p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+        >>> p.mass_center_of('B', 'H')
+        array([ 0.31096918,  0.        , -1.02923892])
+
         """
         if len(bodies) == 1:
             return self.form_mass_center_vector(bodies[0])
@@ -359,7 +369,7 @@ class Meijaard2007ParameterSet(ParameterSet):
             for body in bodies:
                 masses.append(self.parameters['m{}'.format(body)])
                 coordinates.append(
-                    self.form_mass_center_vector(body).squeeze())
+                    self.form_mass_center_vector(body))
 
             coordinates = np.array(coordinates).T
 
@@ -369,7 +379,20 @@ class Meijaard2007ParameterSet(ParameterSet):
 
     def form_inertia_tensor(self, body):
         """Returns the inertia tensor with respect to the global coordinate
-        system and the body's mass center."""
+        system and the body's mass center.
+
+        Examples
+        ========
+
+        >>> from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+        >>> from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+        >>> p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+        >>> p.form_inertia_tensor('H')
+        array([[ 0.25337959,  0.        , -0.07204524],
+               [ 0.        ,  0.24613881,  0.        ],
+               [-0.07204524,  0.        ,  0.09557708]])
+
+        """
 
         p = self.parameters.copy()
         p.update(self._calc_derived_params())
@@ -604,7 +627,11 @@ class Meijaard2007ParameterSet(ParameterSet):
 
 
 class Moore2019ParameterSet(ParameterSet):
-    """Represents the parameters of the benchmark bicycle presented in [1]_
+    """Represents the parameters of the bicycle parameterization presented in
+    [1]_.
+
+    References
+    ==========
 
     .. [1] Moore, Jason K.; Hubbard, Mont (2019): Expanded Optimization for
        Discovering Optimal Lateral Handling Bicycles. Proceedings of Bicycle
@@ -668,6 +695,8 @@ class Moore2019ParameterSet(ParameterSet):
         'zP': r'z_P',
     }
 
+    body_labels = ['D', 'F', 'H', 'P', 'R']
+
     def __init__(self, parameters):
         """Initializes a parameter set based on Moore2019.
 
@@ -679,8 +708,6 @@ class Moore2019ParameterSet(ParameterSet):
         """
         super().__init__(parameters)
         self.parameters = parameters
-
-        self.body_labels = ['D', 'F', 'H', 'P', 'R']
         self._generate_body_colors()
 
     def _calc_derived_params(self):
