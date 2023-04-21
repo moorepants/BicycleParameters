@@ -9,8 +9,16 @@ from matplotlib.patches import Ellipse, Wedge
 from uncertainties import unumpy
 import matplotlib.pyplot as plt
 import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
+
+try:
+    import plotly
+except ImportError:
+    px = None
+    go = None
+else:
+    del plotly
+    import plotly.express as px
+    import plotly.graph_objects as go
 
 # local module imports
 from . import bicycle
@@ -752,6 +760,8 @@ the pathToData argument.""".format(bicycleName, pathToData)
         fig1 : A plotly figure
 
         """
+        if px is None:
+            raise ImportError('plotly is not installed')
         par = io.remove_uncertainties(self.parameters['Benchmark'])
         parts = get_parts_in_parameters(par)
 
@@ -1339,6 +1349,8 @@ the pathToData argument.""".format(bicycleName, pathToData)
     def _plot_eigenvalues_vs_speed_plotly(self, speeds, fig=None, show=True,
                                           largest=False,
                                           stability_region=True):
+        if px is None:
+            raise ImportError('plotly is not installed')
         speeds = np.sort(speeds)
         if fig is None:
             fig = go.Figure(layout_yaxis_range=[-10, 10])

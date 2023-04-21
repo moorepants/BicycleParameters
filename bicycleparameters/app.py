@@ -8,11 +8,26 @@ except ImportError:
            'dependencies for the web app.')
     raise ImportError(msg)
 
+try:
+    import dash_bootstrap_components as dbc
+except ImportError:
+    msg = ('dash_bootstrap_components not installed, make sure to install the '
+           'optional dependencies for the web app.')
+    raise ImportError(msg)
+
+try:
+    import pandas
+except ImportError:
+    msg = ('pandas not installed, make sure to install the optional '
+           'dependencies for the web app.')
+    raise ImportError(msg)
+else:
+    del pandas
+
 from dash import dash_table as tbl
 from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
-import dash_bootstrap_components as dbc
 import numpy as np
 
 # TODO : should this be a relative import?
