@@ -3,24 +3,24 @@ import time
 
 try:
     import dash
-except ImportError:
+except ImportError as e:
     msg = ('Dash not installed, make sure to install the optional '
            'dependencies for the web app.')
-    raise ImportError(msg)
+    raise ImportError(msg) from e
 
 try:
     import dash_bootstrap_components as dbc
-except ImportError:
+except ImportError as e:
     msg = ('dash_bootstrap_components not installed, make sure to install the '
            'optional dependencies for the web app.')
-    raise ImportError(msg)
+    raise ImportError(msg) from e
 
 try:
     import pandas
-except ImportError:
+except ImportError as e:
     msg = ('pandas not installed, make sure to install the optional '
            'dependencies for the web app.')
-    raise ImportError(msg)
+    raise ImportError(msg) from e
 else:
     del pandas
 
