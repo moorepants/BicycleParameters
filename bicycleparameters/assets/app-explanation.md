@@ -62,7 +62,7 @@ these speeds.
 
 # Colophon
 
-This website was designed by Noah Sanders and Julie van Vlerken with mentorship
+This website was designed by Lyla Sanders and Julie van Vlerken with mentorship
 from Jason K. Moore and Andrew Dressel.
 
 The software that powers the website is open source and information on it can
