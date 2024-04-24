@@ -91,7 +91,7 @@ def center_of_mass(slopes, intercepts):
     # for each line intersection...
     for j, row in enumerate(comb):
         sl = np.array([slopes[row[0]], slopes[row[1]]])
-        a = unumpy.matrix(np.vstack((-sl, np.ones((2)))).T)
+        a = unumpy.array(np.vstack((-sl, np.ones((2)))).T)
         b = np.array([intercepts[row[0]], intercepts[row[1]]])
         lineX[j] = np.dot(a.I, b)
     com = np.mean(lineX, axis=0)

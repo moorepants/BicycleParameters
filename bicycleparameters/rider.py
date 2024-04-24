@@ -15,7 +15,7 @@ def yeadon_vec_to_bicycle_vec(vector, measured_bicycle_par,
     """
     Parameters
     ----------
-    vector : np.matrix, shape(3, 1)
+    vector : ndarray, shape(3, 1)
         A vector from the Yeadon origin to a point expressed in the Yeadon
         reference frame.
     measured_bicycle_par : dictionary
@@ -25,7 +25,7 @@ def yeadon_vec_to_bicycle_vec(vector, measured_bicycle_par,
 
     Returns
     -------
-    vector_wrt_bike : np.matrix, shape(3, 1)
+    vector_wrt_bike : ndarray, shape(3, 1)
         The vector from the bicycle origin to the same point above expressed
         in the bicycle reference frame.
 
@@ -34,7 +34,7 @@ def yeadon_vec_to_bicycle_vec(vector, measured_bicycle_par,
     # This is the rotation matrix that relates Yeadon's reference frame
     # to the bicycle reference frame.
     # vector_expressed_in_bike = rot_mat * vector_expressed_in_yeadon)
-    rot_mat = np.matrix([[0.0, -1.0, 0.0],
+    rot_mat = np.array([[0.0, -1.0, 0.0],
                         [-1.0, 0.0, 0.0],
                         [0.0, 0.0, -1.0]])
 
@@ -56,11 +56,12 @@ def yeadon_vec_to_bicycle_vec(vector, measured_bicycle_par,
 
     # bicycle origin to yeadon origin expressed in bicycle frame
     yeadon_origin_in_bike_frame = \
-        np.matrix([[np.sqrt(lcs**2 - (-hbb + rR)**2) + (-lsp - lst) * np.cos(lambdast)],  # bx
-                   [0.0],
-                   [-hbb + (-lsp - lst) * np.sin(lambdast)]])  # bz
+        np.array([[np.sqrt(lcs**2 - (-hbb + rR)**2) +
+                   (-lsp - lst) * np.cos(lambdast)],  # bx
+                  [0.0],
+                  [-hbb + (-lsp - lst) * np.sin(lambdast)]])  # bz
 
-    vector_wrt_bike = yeadon_origin_in_bike_frame + rot_mat * vector
+    vector_wrt_bike = yeadon_origin_in_bike_frame + rot_mat @ vector
 
     return vector_wrt_bike
 
