@@ -16,23 +16,23 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'DynamicistToolKit>=0.5.3',
-        'matplotlib>=3.1.2',
-        'numpy>=1.17.4',
-        'pyyaml>=5.3.1',
-        'scipy>=1.3.3',
-        'uncertainties>=3.1.2',
+        'matplotlib>=3.5.1',
+        'numpy>=1.21.5',
+        'pyyaml>=5.4.1',
+        'scipy>=1.8.0',
+        'uncertainties>=3.1.5',
         'yeadon>=1.3.0',
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     extras_require={
         'doc': [
-            'sphinx>=1.8.5',
-            'numpydoc>=0.7.0'
+            'sphinx>=4.3.2',
+            'numpydoc>=1.2'
         ],
         'app': [
             'dash>=2',
             'dash-bootstrap-components',
-            'pandas>=0.25.3'
+            'pandas>=1.3.5'
         ],
     },
     entry_points={'console_scripts':
@@ -42,6 +42,8 @@ setup(
                  'Programming Language :: Python :: 3.8',
                  'Programming Language :: Python :: 3.9',
                  'Programming Language :: Python :: 3.10',
+                 'Programming Language :: Python :: 3.11',
+                 'Programming Language :: Python :: 3.12',
                  'Operating System :: OS Independent',
                  'Development Status :: 5 - Production/Stable',
                  'Intended Audience :: Science/Research',
