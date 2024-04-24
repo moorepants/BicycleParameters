@@ -37,11 +37,11 @@ Required
 --------
 
 - `DynamicistToolKit >= 0.5.3 <http://pypi.python.org/pypi/DynamicistToolKit>`_
-- `Matplotlib >= 3.1.2 <https://matplotlib.org/>`_
-- `NumPy >= 1.17.4 <https://numpy.org/>`_
-- `Python >= 3.7 <http://www.python.org/>`_
-- `SciPy >= 1.3.3 <https://scipy.org/>`_
-- `Uncertainties >= 3.1.2 <https://pythonhosted.org/uncertainties/>`_
+- `Matplotlib >= 3.5.1 <https://matplotlib.org/>`_
+- `NumPy >= 1.21.5 <https://numpy.org/>`_
+- `Python >= 3.8 <http://www.python.org/>`_
+- `SciPy >= 1.8.0 <https://scipy.org/>`_
+- `Uncertainties >= 3.1.5 <https://pythonhosted.org/uncertainties/>`_
 - `yeadon >= 1.3.0 <http://pypi.python.org/pypi/yeadon/>`_
 
 Optional
@@ -51,12 +51,12 @@ These are required to run the Dash web application:
 
 - `Dash >= 2.0 <https://plotly.com/dash/>`_
 - `dash-bootstrap-components <https://github.com/facultyai/dash-bootstrap-components>`_
-- `Pandas <https://pandas.pydata.org/>`_
+- `Pandas >= 1.3.5 <https://pandas.pydata.org/>`_
 
 These are required to build the documentation:
 
-- `Sphinx <http://sphinx.pocoo.org/>`_
-- `Numpydoc <http://pypi.python.org/pypi/numpydoc>`_
+- `Sphinx >= 4.3.2 <http://sphinx.pocoo.org/>`_
+- `Numpydoc >= 1.2 <http://pypi.python.org/pypi/numpydoc>`_
 
 Installation
 ============
