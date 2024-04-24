@@ -18,6 +18,6 @@ dependencies:
   - plotly
   # dev
   - nose
-  - numpydoc
+  - numpydoc <1.6
   - pytest
   - sphinx >=1.8.5
