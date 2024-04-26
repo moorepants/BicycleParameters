@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+1.1.1
+-----
+
+- Ensure that the app's data files are installed.
+
 1.1.0
 -----
 
