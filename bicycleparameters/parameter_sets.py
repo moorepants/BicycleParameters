@@ -810,6 +810,27 @@ class Moore2019ParameterSet(ParameterSet):
     """Represents the parameters of the bicycle parameterization presented in
     [1]_.
 
+    The four bodies are:
+
+    - D: rear frame
+    - F: front wheel
+    - H: front frame (fork & handlebars)
+    - P: rigid rider
+    - R: rear wheel
+
+    Parameters
+    ==========
+    parameters : dictionary
+        A dictionary mapping variable names to values.
+
+    Attributes
+    ==========
+    par_strings : dictionary
+        Maps ASCII strings to their LaTeX string.
+    body_labels : list of strings
+        Single capital letters that correspond to the five rigid bodies in the
+        model.
+
     References
     ==========
 
@@ -878,14 +899,6 @@ class Moore2019ParameterSet(ParameterSet):
     body_labels = ['D', 'F', 'H', 'P', 'R']
 
     def __init__(self, parameters):
-        """Initializes a parameter set based on Moore2019.
-
-        Parameters
-        ==========
-        parameters : dictionary
-            A dictionary mapping variable names to values.
-
-        """
         super().__init__(parameters)
         self.parameters = parameters
         self._generate_body_colors()
@@ -914,9 +927,20 @@ class Moore2019ParameterSet(ParameterSet):
         """Returns a specific parameter set based on the provided
         parameterization name.
 
+        Parameters
+        ==========
+        name : string
+            The name of the parameterization. These should correspond to a
+            subclass of a ``ParameterSet`` and the name will be the string that
+            precedes "ParameterSet". For example, the parameterization name of
+            ``Meijaard2007ParameterSet`` is ``Meijaard2007``.
+
         Returns
         =======
         ParmeterSet
+            If a different parameterization is requested and this class can
+            convert itself, it will return a new parameter set of the correct
+            parameterization.
 
         Examples
         ========
@@ -983,6 +1007,13 @@ class Moore2019ParameterSet(ParameterSet):
         """Plots a diamond that represents the approximate person's physical
         extents.
 
+        Parameters
+        ==========
+        show_cross : boolean, optional
+            Plots a cross in the diamond that spans opposite vertices.
+        ax : AxesSubplot, optional
+            An axes to draw on, otherwise one is created.
+
         Examples
         ========
 
@@ -1041,6 +1072,14 @@ class Moore2019ParameterSet(ParameterSet):
         """Returns a matplotlib axes with a mass center symbols for the
         specified bodies to the plot.
 
+        Parameters
+        ==========
+        bodies: list of strings, optional
+            A subset of the strings present in the class attribute
+            ``body_labels``.
+        ax: matplotlib Axes, optional
+            An axes to plot on.
+
         Examples
         ========
 
@@ -1068,13 +1107,13 @@ class Moore2019ParameterSet(ParameterSet):
 
         return ax
 
-    def plot_body_mass_center(self, b, ax=None):
+    def plot_body_mass_center(self, body, ax=None):
         """Returns a matplotlib axes with a mass center symbol for the
         specified body to the plot.
 
         Parameters
         ==========
-        b : string
+        body : string
             The body string: D, F, H, P, or R
         ax : SubplotAxes, optional
             Axes to plot on.
@@ -1100,11 +1139,11 @@ class Moore2019ParameterSet(ParameterSet):
         p.update(self._calc_derived_params())
 
         # mass center
-        x = p['x{}'.format(b)]
-        z = p['z{}'.format(b)]
+        x = p['x{}'.format(body)]
+        z = p['z{}'.format(body)]
         radius = max(p['w'], p['lP']) / 30
         ax = _com_symbol(ax, (x, z), radius,
-                         color=self.body_colors[b], label=b)
+                         color=self.body_colors[body], label=body)
 
         self._finalize_plot(ax)
 
@@ -1116,8 +1155,10 @@ class Moore2019ParameterSet(ParameterSet):
 
         Parameters
         ==========
-        bodies : list of strings
+        bodies : list of strings, optional
             Either ['D', 'F', 'H', 'P', 'R'] or a subset thereof.
+        ax : AxesSubplot, optional
+            An axes to draw on, otherwise one is created.
 
         Examples
         ========
@@ -1146,9 +1187,16 @@ class Moore2019ParameterSet(ParameterSet):
 
         return ax
 
-    def plot_body_principal_radii_of_gyration(self, b, ax=None):
+    def plot_body_principal_radii_of_gyration(self, body, ax=None):
         """Returns a matplotlib axes with lines and a circle that indicate the
         principal radii of gyration of the specified body.
+
+        Parameters
+        ==========
+        body : string
+            The body string: D, F, H, P, or R
+        ax : SubplotAxes, optional
+            Axes to plot on.
 
         Examples
         ========
@@ -1170,17 +1218,17 @@ class Moore2019ParameterSet(ParameterSet):
         p = self.parameters.copy()
         p.update(self._calc_derived_params())
 
-        x = p['x{}'.format(b)]
-        z = p['z{}'.format(b)]
-        kyy = p['k{}yy'.format(b)]
-        kaa = p['k{}aa'.format(b)]
-        kbb = p['k{}bb'.format(b)]
-        alpha = p['alpha{}'.format(b)]  # angle between x and aa about y
+        x = p['x{}'.format(body)]
+        z = p['z{}'.format(body)]
+        kyy = p['k{}yy'.format(body)]
+        kaa = p['k{}aa'.format(body)]
+        kbb = p['k{}bb'.format(body)]
+        alpha = p['alpha{}'.format(body)]  # angle between x and aa about y
 
         linestyle = '--'
 
         c = patches.Circle((x, z), radius=kyy, fill=False,
-                           color=self.body_colors[b], linestyle=linestyle)
+                           color=self.body_colors[body], linestyle=linestyle)
         ax.add_patch(c)
 
         # NOTE : -alpha is required because we are mapping the xz axes to a new
@@ -1188,22 +1236,29 @@ class Moore2019ParameterSet(ParameterSet):
         # screen
         ax.plot([x - kbb*np.cos(-alpha), x + kbb*np.cos(-alpha)],
                 [z - kbb*np.sin(-alpha), z + kbb*np.sin(-alpha)],
-                color=self.body_colors[b], linestyle=linestyle)
+                color=self.body_colors[body], linestyle=linestyle)
 
         ax.plot([x - kaa*np.cos(-alpha - np.pi/2),
                  x + kaa*np.cos(-alpha - np.pi/2)],
                 [z - kaa*np.sin(-alpha - np.pi/2),
                  z + kaa*np.sin(-alpha - np.pi/2)],
-                color=self.body_colors[b], linestyle=linestyle)
+                color=self.body_colors[body], linestyle=linestyle)
 
         self._finalize_plot(ax)
 
         return ax
 
-    def plot_body_principal_inertia_ellipsoid(self, b, ax=None):
+    def plot_body_principal_inertia_ellipsoid(self, body, ax=None):
         """Returns a matplotlib axes with an ellipse that respresnts the XZ
         plane view of a constant density ellipsoid which has the same principal
         moments and axes of inertia as the body.
+
+        Parameters
+        ==========
+        body : string
+            The body string: D, F, H, P, or R
+        ax : SubplotAxes, optional
+            Axes to plot on.
 
         Examples
         ========
@@ -1225,18 +1280,18 @@ class Moore2019ParameterSet(ParameterSet):
         p = self.parameters.copy()
         p.update(self._calc_derived_params())
 
-        kaa = p['k{}aa'.format(b)]
-        kbb = p['k{}bb'.format(b)]
-        kyy = p['k{}yy'.format(b)]
-        alpha = p['alpha{}'.format(b)]
+        kaa = p['k{}aa'.format(body)]
+        kbb = p['k{}bb'.format(body)]
+        kyy = p['k{}yy'.format(body)]
+        alpha = p['alpha{}'.format(body)]
 
         width = np.sqrt(5/2*(-kaa**2 + kyy**2 + kbb**2))
         height = np.sqrt(5/2*(kaa**2 + kyy**2 - kbb**2))
 
-        ellipse = patches.Ellipse((p['x{}'.format(b)],
-                                   p['z{}'.format(b)]), width, height,
+        ellipse = patches.Ellipse((p['x{}'.format(body)],
+                                   p['z{}'.format(body)]), width, height,
                                   angle=-np.rad2deg(alpha), fill=False,
-                                  color=self.body_colors[b])
+                                  color=self.body_colors[body])
         ax.add_patch(ellipse)
 
         self._finalize_plot(ax)
@@ -1249,8 +1304,11 @@ class Moore2019ParameterSet(ParameterSet):
 
         Parameters
         ==========
-        ax : AxesSubplot, optional
-            An axes to draw on, otherwise one is created.
+        bodies: list of strings, optional
+            A subset of the strings present in the class attribute
+            ``body_labels``.
+        ax: matplotlib Axes, optional
+            An axes to plot on.
 
         Examples
         ========
@@ -1281,6 +1339,11 @@ class Moore2019ParameterSet(ParameterSet):
     def plot_all(self, ax=None):
         """Returns matplotlib axes with the geometry and inertial
         representations of all bodies of the bicycle parameter set.
+
+        Parameters
+        ==========
+        ax: matplotlib Axes, optional
+            An axes to plot on.
 
         Examples
         ========
@@ -1316,11 +1379,12 @@ class Moore2019ParameterSet(ParameterSet):
         Parameters
         ==========
         bodies : iterable of strings
+            Subset from ``body_labels``.
 
         Returns
         =======
         com : ndarray, shape(3,)
-            Vector locating the center of mass of the bodies givien in
+            Vector locating the center of mass of the bodies given in
             ``bodies``.
 
         """
@@ -1341,8 +1405,8 @@ class Moore2019ParameterSet(ParameterSet):
             return com
 
     def form_mass_center_vector(self, body):
-        """Returns a (3, 1) NumPy array representing the vector to the mass
-        center of the body.
+        """Returns an array representing the vector to the mass center of the
+        body.
 
         Parameters
         ==========
@@ -1354,7 +1418,6 @@ class Moore2019ParameterSet(ParameterSet):
         ndarray, shape(3,)
             A vector containing the X, Y, and X coordinates of the mass center
             of the body.
-
 
         """
 
