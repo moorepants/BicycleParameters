@@ -58,6 +58,7 @@ OPTIONS = ['Benchmark',
            'Silver',
            'Yellow',
            'Yellowrev']
+
 OPT_LABELS = [
     'Benchmark',
     'Browser (no rider)',

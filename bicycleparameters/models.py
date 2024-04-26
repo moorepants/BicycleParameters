@@ -8,7 +8,7 @@ import scipy.integrate as spi
 from .bicycle import benchmark_par_to_canonical, ab_matrix, sort_eigenmodes
 
 
-class Model(ABC):
+class _Model(ABC):
     """A model is a set of differential algebraic equations in time that have:
     constants and time varying (coordinates, speeds, and exogenous inputs).
     The model can be nonlinear, linear, have algebraic constraints, or not.  A
@@ -19,11 +19,55 @@ class Model(ABC):
     pass
 
 
-class Meijaard2007Model(Model):
+class Meijaard2007Model(_Model):
     """Whipple-Carvallo model presented in [Meijaard2007]_. It is both linear
     and the minimal model in terms of states and coordinates that fully
     describe the vehicle's dynamics: self-stability and non-minimum phase
     behavior.
+
+    Parameters
+    ==========
+    parameter_set : ParameterSet
+        The ``paramter_set.to_parameterization('meijaard2007')`` must
+        return a dictionary that maps floats to the parameter keys
+        containing:
+
+        - ``IBxx`` : x moment of inertia of the frame/rider [kg*m**2]
+        - ``IBxz`` : xz product of inertia of the frame/rider [kg*m**2]
+        - ``IBzz`` : z moment of inertia of the frame/rider [kg*m**2]
+        - ``IFxx`` : x moment of inertia of the front wheel [kg*m**2]
+        - ``IFyy`` : y moment of inertia of the front wheel [kg*m**2]
+        - ``IHxx`` : x moment of inertia of the handlebar/fork [kg*m**2]
+        - ``IHxz`` : xz product of inertia of the handlebar/fork [kg*m**2]
+        - ``IHzz`` : z moment of inertia of the handlebar/fork [kg*m**2]
+        - ``IRxx`` : x moment of inertia of the rear wheel [kg*m**2]
+        - ``IRyy`` : y moment of inertia of the rear wheel [kg*m**2]
+        - ``c`` : trail [m]
+        - ``g`` : acceleration due to gravity [m/s**2]
+        - ``lam`` : steer axis tilt [rad]
+        - ``mB`` : frame/rider mass [kg]
+        - ``mF`` : front wheel mass [kg]
+        - ``mH`` : handlebar/fork assembly mass [kg]
+        - ``mR`` : rear wheel mass [kg]
+        - ``rF`` : front wheel radius [m]
+        - ``rR`` : rear wheel radius [m]
+        - ``v`` : speed [m/s]
+        - ``w`` : wheelbase [m]
+        - ``xB`` : x distance to the frame/rider center of mass [m]
+        - ``xH`` : x distance to the frame/rider center of mass [m]
+        - ``zB`` : z distance to the frame/rider center of mass [m]
+        - ``zH`` : z distance to the frame/rider center of mass [m]
+
+    Attributes
+    ==========
+    input_vars : list of strings
+        Ordered list of ASCII strings that name the model's input variables.
+    state_vars : list of strings
+        Ordered list of ASCII strings that name the model's state variables.
+    input_vars_latex : list of raw strings
+        Ordered list of LaTeX strings that name the model's input variables.
+    state_vars_latex : list of raw strings
+        Ordered list of LaTeX strings that name the model's state variables.
 
     References
     ==========
@@ -40,42 +84,6 @@ class Meijaard2007Model(Model):
     state_vars_latex = [r'\phi', r'\delta', r'\dot{\phi}', r'\dot{\delta}']
 
     def __init__(self, parameter_set):
-        """Initializes the model with the provided parameter set.
-
-        Parameters
-        ==========
-        parameter_set : Meijaard2007ParameterSet
-            The ``paramter_set.to_parameterization('meijaard2007')`` must
-            return a dictionary that maps floats to the parameter keys
-            containing:
-
-            - ``IBxx`` : x moment of inertia of the frame/rider [kg*m**2]
-            - ``IBxz`` : xz product of inertia of the frame/rider [kg*m**2]
-            - ``IBzz`` : z moment of inertia of the frame/rider [kg*m**2]
-            - ``IFxx`` : x moment of inertia of the front wheel [kg*m**2]
-            - ``IFyy`` : y moment of inertia of the front wheel [kg*m**2]
-            - ``IHxx`` : x moment of inertia of the handlebar/fork [kg*m**2]
-            - ``IHxz`` : xz product of inertia of the handlebar/fork [kg*m**2]
-            - ``IHzz`` : z moment of inertia of the handlebar/fork [kg*m**2]
-            - ``IRxx`` : x moment of inertia of the rear wheel [kg*m**2]
-            - ``IRyy`` : y moment of inertia of the rear wheel [kg*m**2]
-            - ``c`` : trail [m]
-            - ``g`` : acceleration due to gravity [m/s**2]
-            - ``lam`` : steer axis tilt [rad]
-            - ``mB`` : frame/rider mass [kg]
-            - ``mF`` : front wheel mass [kg]
-            - ``mH`` : handlebar/fork assembly mass [kg]
-            - ``mR`` : rear wheel mass [kg]
-            - ``rF`` : front wheel radius [m]
-            - ``rR`` : rear wheel radius [m]
-            - ``v`` : speed [m/s]
-            - ``w`` : wheelbase [m]
-            - ``xB`` : x distance to the frame/rider center of mass [m]
-            - ``xH`` : x distance to the frame/rider center of mass [m]
-            - ``zB`` : z distance to the frame/rider center of mass [m]
-            - ``zH`` : z distance to the frame/rider center of mass [m]
-
-        """
         self.parameter_set = parameter_set.to_parameterization('Meijaard2007')
 
     def _parse_parameter_overrides(self, **parameter_overrides):
@@ -130,6 +138,13 @@ class Meijaard2007Model(Model):
         Whipple-Carvallo bicycle model linearized about the nominal upright
         configuration.
 
+        Parameters
+        ==========
+        **parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
+
         Returns
         =======
         M : ndarray, shape(2,2) or shape(n,2,2)
@@ -143,14 +158,14 @@ class Meijaard2007Model(Model):
 
         Notes
         =====
-        The canonical matrices complete the following equation::
+        The canonical matrices complete the following equation:
 
-            M*q'' + v*C1*q' + [g*K0 + v**2*K2]*q = f
+        ``M*q'' + v*C1*q' + [g*K0 + v**2*K2]*q = f``
 
         where:
 
-        - q = [phi, delta]
-        - f = [Tphi, Tdelta]
+        - ``q = [phi, delta]``
+        - ``f = [Tphi, Tdelta]``
 
         ``phi``
             Bicycle roll angle.
@@ -232,6 +247,13 @@ class Meijaard2007Model(Model):
         """Returns the A and B matrices for the Whipple-Carvallo model
         linearized about the upright constant velocity configuration.
 
+        Parameters
+        ==========
+        **parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
+
         Returns
         =======
         A : ndarray, shape(4,4) or shape(n,4,4)
@@ -241,9 +263,9 @@ class Meijaard2007Model(Model):
 
         Notes
         =====
-        ``A`` and ``B`` describe the Whipple model in state space form::
+        ``A`` and ``B`` describe the Whipple model in state space form:
 
-            x' = A * x + B * u
+        ``x' = A * x + B * u``
 
         where the states are::
 
@@ -325,6 +347,10 @@ class Meijaard2007Model(Model):
         left : boolean, optional
             If true, the left eigenvectors will be returned, i.e.
             ``A.T*v=lam*v``.
+        **parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
 
         Returns
         =======
@@ -383,6 +409,10 @@ class Meijaard2007Model(Model):
            If true only angles from 0 to pi/2 will be returned from the
            arrcos() computation. If false, angles from -pi/2 to pi/2 will be
            returned.
+        **parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
 
         Returns
         =======
@@ -529,6 +559,10 @@ class Meijaard2007Model(Model):
             Matplotlib axes.
         colors : sequence, len(4)
             Matplotlib colors for the 4 modes.
+        **parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
 
         Examples
         ========
@@ -586,6 +620,13 @@ class Meijaard2007Model(Model):
     def plot_eigenvectors(self, **parameter_overrides):
         """Plots the components of the eigenvectors in the real and imaginary
         plane.
+
+        Parameters
+        ==========
+        **parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
 
         Returns
         =======
@@ -683,6 +724,10 @@ class Meijaard2007Model(Model):
             Initial values of the states.
         input_func : function
             Takes form u = f(t, x) where u is array_like, shape(2,).
+        **parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
 
         Returns
         =======
@@ -735,6 +780,10 @@ class Meijaard2007Model(Model):
             Initial values of the states.
         input_func : function
             Takes form u = f(t, x) where u is array_like, shape(2,).
+        **parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
 
         Returns
         =======
@@ -785,6 +834,10 @@ class Meijaard2007Model(Model):
         ==========
         times : array_like, shape(n,)
             Monotonic increasing time values to simulate over.
+        **parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
 
         Returns
         =======
@@ -824,6 +877,10 @@ class Meijaard2007Model(Model):
         ==========
         times : array_like, shape(n,)
             Monotonic increasing time values to simulate over.
+        **parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
 
         Returns
         =======

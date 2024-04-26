@@ -8,7 +8,7 @@ from matplotlib import patches
 
 from .com import total_com
 from .geometry import fundamental_geometry_plot_data
-from .conversions import convert_principal_to_benchmark
+from .conversions import _convert_principal_to_benchmark
 
 
 def _com_symbol(ax, center, radius, color='b', label=None):
@@ -54,7 +54,7 @@ def _plot_geometry_from_benchmark(ax, parameters, show_steer_axis=True):
     if show_steer_axis:
         # plot the steer axis
         dx3 = deex[2] - deez[2] * (deex[2] - deex[1]) / (-deez[1] + deez[2])
-        ax.plot([deex[2], dx3],  [deez[2], 0.], 'k--')
+        ax.plot([deex[2], dx3], [deez[2], 0.], 'k--')
 
     return ax
 
@@ -81,6 +81,11 @@ class ParameterSet(ABC):
     Each parameter set should have a unique set of ASCII strings that represent
     the constants in a model.
 
+    Attributes
+    ==========
+    par_strings : dictionary
+        Maps ASCII strings to their LaTeX string.
+
     """
     par_strings = {
         'aR': r'a_R',
@@ -104,7 +109,10 @@ class ParameterSet(ABC):
         self.parameterization = cls_name.split('ParameterSet')[0]
 
     @classmethod
-    def from_yaml(cls, path_to_file):
+    def _from_yaml(cls, path_to_file):
+        """Instantiates a ParameterSet from a file."""
+        # TODO : Wouldn't this have to dynamically create the class so that the
+        # class name is derived from a specifier in the yaml file?
         with open(os.path.join(path_to_file), 'r') as f:
             yaml_data = yaml.load(f, Loader=yaml.FullLoader)
         return cls(yaml_data['values'])
@@ -155,19 +163,34 @@ class ParameterSet(ABC):
             raise ValueError(msg.format(name))
 
     def to_yaml(self, fname):
-        """Writes parameters to file in the YAML format."""
-        data = {'values': self.parameters,
-                'parameterization': self.parameterization,
-                'parameters': '',
-                'description': '',
-                'rider': None,
-                }
+        """Writes parameters to file in the YAML format.
+
+        Parameters
+        ==========
+        fname : string
+            Path to file.
+
+        """
+        data = {
+            'description': '',
+            'parameterization': self.parameterization,
+            'parameters': '',
+            'rider': None,
+            'values': self.parameters,
+        }
         with open(fname, 'w') as f:
             yaml.dump(data, f)
 
     def to_ini(self, fname):
         """Writes parameters to file in the INI format. Metadata is not
-        included."""
+        included.
+
+        Parameters
+        ==========
+        fname : string
+            Path to file.
+
+        """
         text = ""
         for k, v in self.parameters.items():
             text += "{}={:1.16f}\n".format(k, v)
@@ -179,6 +202,55 @@ class Meijaard2007ParameterSet(ParameterSet):
     """Represents the parameters of the benchmark bicycle presented in
     [Meijaard2007]_.
 
+    The four bodies are:
+
+    - B: rear frame + rigid rider
+    - F: front wheel
+    - H: front frame (fork & handlebars)
+    - R: rear wheel
+
+    Parameters
+    ==========
+    parameters : dictionary
+        A dictionary mapping variable names to values that contains the
+        following keys:
+
+        - ``IBxx`` : x moment of inertia of the frame/rider [kg*m**2]
+        - ``IBxz`` : xz product of inertia of the frame/rider [kg*m**2]
+        - ``IBzz`` : z moment of inertia of the frame/rider [kg*m**2]
+        - ``IFxx`` : x moment of inertia of the front wheel [kg*m**2]
+        - ``IFyy`` : y moment of inertia of the front wheel [kg*m**2]
+        - ``IHxx`` : x moment of inertia of the handlebar/fork [kg*m**2]
+        - ``IHxz`` : xz product of inertia of the handlebar/fork [kg*m**2]
+        - ``IHzz`` : z moment of inertia of the handlebar/fork [kg*m**2]
+        - ``IRxx`` : x moment of inertia of the rear wheel [kg*m**2]
+        - ``IRyy`` : y moment of inertia of the rear wheel [kg*m**2]
+        - ``c`` : trail [m]
+        - ``g`` : acceleration due to gravity [m/s**2]
+        - ``lam`` : steer axis tilt [rad]
+        - ``mB`` : frame/rider mass [kg]
+        - ``mF`` : front wheel mass [kg]
+        - ``mH`` : handlebar/fork assembly mass [kg]
+        - ``mR`` : rear wheel mass [kg]
+        - ``rF`` : front wheel radius [m]
+        - ``rR`` : rear wheel radius [m]
+        - ``w`` : wheelbase [m]
+        - ``xB`` : x distance to the frame/rider center of mass [m]
+        - ``xH`` : x distance to the frame/rider center of mass [m]
+        - ``zB`` : z distance to the frame/rider center of mass [m]
+        - ``zH`` : z distance to the frame/rider center of mass [m]
+
+    includes_rider : boolean
+        True if body B is the combined rear frame and rider in terms of
+        mass and inertia values.
+
+    Attributes
+    ==========
+    par_strings : dictionary
+        Maps ASCII strings to their LaTeX string.
+    body_labels : list of strings
+        Single capital letters that correspond to the four rigid bodies in the
+        model.
 
     References
     ==========
@@ -224,57 +296,13 @@ class Meijaard2007ParameterSet(ParameterSet):
     body_labels = ['B', 'F', 'H', 'R']
 
     def __init__(self, parameters, includes_rider):
-        """Initializes a parameter set based on Meijaard2007.
-
-        The four bodies are:
-
-        - B: rear frame + rigid rider
-        - F: front wheel
-        - H: front frame (fork & handlebars)
-        - R: rear wheel
-
-        Parameters
-        ==========
-        parameters : dictionary
-            A dictionary mapping variable names to values that contains the
-            following keys:
-
-            - ``IBxx`` : x moment of inertia of the frame/rider [kg*m**2]
-            - ``IBxz`` : xz product of inertia of the frame/rider [kg*m**2]
-            - ``IBzz`` : z moment of inertia of the frame/rider [kg*m**2]
-            - ``IFxx`` : x moment of inertia of the front wheel [kg*m**2]
-            - ``IFyy`` : y moment of inertia of the front wheel [kg*m**2]
-            - ``IHxx`` : x moment of inertia of the handlebar/fork [kg*m**2]
-            - ``IHxz`` : xz product of inertia of the handlebar/fork [kg*m**2]
-            - ``IHzz`` : z moment of inertia of the handlebar/fork [kg*m**2]
-            - ``IRxx`` : x moment of inertia of the rear wheel [kg*m**2]
-            - ``IRyy`` : y moment of inertia of the rear wheel [kg*m**2]
-            - ``c`` : trail [m]
-            - ``g`` : acceleration due to gravity [m/s**2]
-            - ``lam`` : steer axis tilt [rad]
-            - ``mB`` : frame/rider mass [kg]
-            - ``mF`` : front wheel mass [kg]
-            - ``mH`` : handlebar/fork assembly mass [kg]
-            - ``mR`` : rear wheel mass [kg]
-            - ``rF`` : front wheel radius [m]
-            - ``rR`` : rear wheel radius [m]
-            - ``w`` : wheelbase [m]
-            - ``xB`` : x distance to the frame/rider center of mass [m]
-            - ``xH`` : x distance to the frame/rider center of mass [m]
-            - ``zB`` : z distance to the frame/rider center of mass [m]
-            - ``zH`` : z distance to the frame/rider center of mass [m]
-
-        includes_rider : boolean
-            True if body B is the combined rear frame and rider.
-
-        """
         super().__init__(parameters)
         self.parameters = parameters
         self.includes_rider = includes_rider
         self._generate_body_colors()
 
     @classmethod
-    def from_yaml(cls, path_to_file):
+    def _from_yaml(cls, path_to_file):
 
         with open(os.path.join(path_to_file), 'r') as f:
             yaml_data = yaml.load(f, Loader=yaml.FullLoader)
@@ -304,8 +332,8 @@ class Meijaard2007ParameterSet(ParameterSet):
         return pext
 
     def form_mass_center_vector(self, body):
-        """Returns a (3, 1) NumPy array representing the vector to the mass
-        center of the body.
+        """Returns an array representing the 3D vector to the mass center of
+        the body from the origin at the rear wheel contact point.
 
         Parameters
         ==========
@@ -345,6 +373,7 @@ class Meijaard2007ParameterSet(ParameterSet):
         Parameters
         ==========
         bodies : iterable of strings
+            One or more of the ``body_labels``.
 
         Returns
         =======
@@ -382,6 +411,17 @@ class Meijaard2007ParameterSet(ParameterSet):
         """Returns the inertia tensor with respect to the global coordinate
         system and the body's mass center.
 
+        Parameters
+        ==========
+        body : string
+            One of the ``body_labels``.
+
+        Returns
+        =======
+        inertia_tensor : ndarray, shape(3, 3)
+            Inertia tensor of the body with respect to the body's mass center
+            and the model's coordinate system.
+
         Examples
         ========
 
@@ -410,7 +450,7 @@ class Meijaard2007ParameterSet(ParameterSet):
         return inertia_tensor
 
     def plot_geometry(self, show_steer_axis=True, ax=None):
-        """Returns a matplotlib axes with the simplest drawing of the bicycle's
+        """Returns a matplotlib axes with a simple drawing of the bicycle's
         geometry.
 
         Parameters
@@ -485,14 +525,14 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         return ax
 
-    def plot_body_mass_center(self, b, ax=None):
+    def plot_body_mass_center(self, body, ax=None):
         """Returns a matplotlib axes with a mass center symbol for the
         specified body to the plot.
 
         Parameters
         ==========
-        b : string
-            The body string: F, H, B, or R
+        body : string
+            The body string: ``F``, ``H``, ``B``, or ``R``.
         ax : SubplotAxes, optional
             Axes to plot on.
 
@@ -517,11 +557,11 @@ class Meijaard2007ParameterSet(ParameterSet):
         p.update(self._calc_derived_params())
 
         # mass center
-        x = p['x{}'.format(b)]
-        z = p['z{}'.format(b)]
+        x = p['x{}'.format(body)]
+        z = p['z{}'.format(body)]
         radius = p['w'] / 10
-        ax = _com_symbol(ax, (x, z), radius, color=self.body_colors[b],
-                         label=b)
+        ax = _com_symbol(ax, (x, z), radius, color=self.body_colors[body],
+                         label=body)
         self._finalize_plot(ax)
 
         return ax
@@ -554,9 +594,16 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         return kmax, kmin, kyy, angle_to_max
 
-    def plot_body_principal_radii_of_gyration(self, b, ax=None):
+    def plot_body_principal_radii_of_gyration(self, body, ax=None):
         """Returns a matplotlib axes with lines and a circle that indicate the
         principal radii of gyration of the specified body.
+
+        Parameters
+        ==========
+        body : string
+            One of the ``body_labels``.
+        ax : SubplotAxes, optional
+            Axes to plot on.
 
         Examples
         ========
@@ -577,12 +624,12 @@ class Meijaard2007ParameterSet(ParameterSet):
         p = self.parameters.copy()
         p.update(self._calc_derived_params())
 
-        x = p['x{}'.format(b)]
-        z = p['z{}'.format(b)]
-        kaa, kbb, kyy, alpha = self._planar_principal_radii_of_gyration(b)
+        x = p['x{}'.format(body)]
+        z = p['z{}'.format(body)]
+        kaa, kbb, kyy, alpha = self._planar_principal_radii_of_gyration(body)
 
         c = patches.Circle((x, z), radius=kyy, fill=False,
-                           color=self.body_colors[b], linestyle='--')
+                           color=self.body_colors[body], linestyle='--')
         ax.add_patch(c)
 
         # NOTE : -alpha is required because we are mapping the xz axes to a new
@@ -590,13 +637,13 @@ class Meijaard2007ParameterSet(ParameterSet):
         # screen
         ax.plot([x - kbb*np.cos(-alpha), x + kbb*np.cos(-alpha)],
                 [z - kbb*np.sin(-alpha), z + kbb*np.sin(-alpha)],
-                color=self.body_colors[b], linestyle="--")
+                color=self.body_colors[body], linestyle="--")
 
         ax.plot([x - kaa*np.cos(-alpha - np.pi/2),
                  x + kaa*np.cos(-alpha - np.pi/2)],
                 [z - kaa*np.sin(-alpha - np.pi/2),
                  z + kaa*np.sin(-alpha - np.pi/2)],
-                color=self.body_colors[b], linestyle="--")
+                color=self.body_colors[body], linestyle="--")
 
         self._finalize_plot(ax)
 
@@ -605,6 +652,14 @@ class Meijaard2007ParameterSet(ParameterSet):
     def plot_principal_radii_of_gyration(self, bodies=None, ax=None):
         """Returns a matplotlib axis with principal radii of all bodies
         shown.
+
+        Parameters
+        ==========
+        bodies: list of strings, optional
+            A subset of the strings present in the class attribute
+            ``body_labels``.
+        ax: matplotlib Axes, optional
+            An axes to plot on.
 
         Examples
         ========
@@ -632,10 +687,18 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         return ax
 
-    def plot_body_principal_inertia_ellipsoid(self, b, ax=None):
+    def plot_body_principal_inertia_ellipsoid(self, body, ax=None):
         """Returns a matplotlib axes with an ellipse that respresnts the XZ
         plane view of a constant density ellipsoid which has the same principal
         moments and axes of inertia as the body.
+
+        Parameters
+        ==========
+        body : string
+            One of the ``body_labels``.
+        ax : SubplotAxes, optional
+            Axes to plot on.
+
 
         Examples
         ========
@@ -657,15 +720,15 @@ class Meijaard2007ParameterSet(ParameterSet):
         p = self.parameters.copy()
         p.update(self._calc_derived_params())
 
-        kaa, kbb, kyy, alpha = self._planar_principal_radii_of_gyration(b)
+        kaa, kbb, kyy, alpha = self._planar_principal_radii_of_gyration(body)
 
         width = np.sqrt(5/2*(-kaa**2 + kyy**2 + kbb**2))
         height = np.sqrt(5/2*(kaa**2 + kyy**2 - kbb**2))
 
-        ellipse = patches.Ellipse((p['x{}'.format(b)], p['z{}'.format(b)]),
+        ellipse = patches.Ellipse((p['x{}'.format(body)], p['z{}'.format(body)]),
                                   width, height,
                                   angle=-np.rad2deg(alpha), fill=False,
-                                  color=self.body_colors[b])
+                                  color=self.body_colors[body])
         ax.add_patch(ellipse)
 
         self._finalize_plot(ax)
@@ -678,6 +741,9 @@ class Meijaard2007ParameterSet(ParameterSet):
 
         Parameters
         ==========
+        bodies: list of strings, optional
+            A subset of the strings present in the class attribute
+            ``body_labels``.
         ax : AxesSubplot, optional
             An axes to draw on, otherwise one is created.
 
@@ -711,6 +777,11 @@ class Meijaard2007ParameterSet(ParameterSet):
         """Returns matplotlib axes with the geometry and inertial
         representations of all bodies of the bicycle parameter set.
 
+        Parameters
+        ==========
+        ax : AxesSubplot, optional
+            An axes to draw on, otherwise one is created.
+
         Examples
         ========
 
@@ -738,6 +809,27 @@ class Meijaard2007ParameterSet(ParameterSet):
 class Moore2019ParameterSet(ParameterSet):
     """Represents the parameters of the bicycle parameterization presented in
     [1]_.
+
+    The four bodies are:
+
+    - D: rear frame
+    - F: front wheel
+    - H: front frame (fork & handlebars)
+    - P: rigid rider
+    - R: rear wheel
+
+    Parameters
+    ==========
+    parameters : dictionary
+        A dictionary mapping variable names to values.
+
+    Attributes
+    ==========
+    par_strings : dictionary
+        Maps ASCII strings to their LaTeX string.
+    body_labels : list of strings
+        Single capital letters that correspond to the five rigid bodies in the
+        model.
 
     References
     ==========
@@ -807,14 +899,6 @@ class Moore2019ParameterSet(ParameterSet):
     body_labels = ['D', 'F', 'H', 'P', 'R']
 
     def __init__(self, parameters):
-        """Initializes a parameter set based on Moore2019.
-
-        Parameters
-        ==========
-        parameters : dictionary
-            A dictionary mapping variable names to values.
-
-        """
         super().__init__(parameters)
         self.parameters = parameters
         self._generate_body_colors()
@@ -843,9 +927,20 @@ class Moore2019ParameterSet(ParameterSet):
         """Returns a specific parameter set based on the provided
         parameterization name.
 
+        Parameters
+        ==========
+        name : string
+            The name of the parameterization. These should correspond to a
+            subclass of a ``ParameterSet`` and the name will be the string that
+            precedes "ParameterSet". For example, the parameterization name of
+            ``Meijaard2007ParameterSet`` is ``Meijaard2007``.
+
         Returns
         =======
         ParmeterSet
+            If a different parameterization is requested and this class can
+            convert itself, it will return a new parameter set of the correct
+            parameterization.
 
         Examples
         ========
@@ -863,7 +958,7 @@ class Moore2019ParameterSet(ParameterSet):
         if name == self.parameterization:
             return self
         elif name == 'Meijaard2007':
-            b = convert_principal_to_benchmark(self.parameters)
+            b = _convert_principal_to_benchmark(self.parameters)
             # Moore2019 always includes the rider
             return Meijaard2007ParameterSet(b, True)
         else:
@@ -911,6 +1006,13 @@ class Moore2019ParameterSet(ParameterSet):
     def plot_person_diamond(self, show_cross=False, ax=None):
         """Plots a diamond that represents the approximate person's physical
         extents.
+
+        Parameters
+        ==========
+        show_cross : boolean, optional
+            Plots a cross in the diamond that spans opposite vertices.
+        ax : AxesSubplot, optional
+            An axes to draw on, otherwise one is created.
 
         Examples
         ========
@@ -970,6 +1072,14 @@ class Moore2019ParameterSet(ParameterSet):
         """Returns a matplotlib axes with a mass center symbols for the
         specified bodies to the plot.
 
+        Parameters
+        ==========
+        bodies: list of strings, optional
+            A subset of the strings present in the class attribute
+            ``body_labels``.
+        ax: matplotlib Axes, optional
+            An axes to plot on.
+
         Examples
         ========
 
@@ -997,13 +1107,13 @@ class Moore2019ParameterSet(ParameterSet):
 
         return ax
 
-    def plot_body_mass_center(self, b, ax=None):
+    def plot_body_mass_center(self, body, ax=None):
         """Returns a matplotlib axes with a mass center symbol for the
         specified body to the plot.
 
         Parameters
         ==========
-        b : string
+        body : string
             The body string: D, F, H, P, or R
         ax : SubplotAxes, optional
             Axes to plot on.
@@ -1029,11 +1139,11 @@ class Moore2019ParameterSet(ParameterSet):
         p.update(self._calc_derived_params())
 
         # mass center
-        x = p['x{}'.format(b)]
-        z = p['z{}'.format(b)]
+        x = p['x{}'.format(body)]
+        z = p['z{}'.format(body)]
         radius = max(p['w'], p['lP']) / 30
         ax = _com_symbol(ax, (x, z), radius,
-                         color=self.body_colors[b], label=b)
+                         color=self.body_colors[body], label=body)
 
         self._finalize_plot(ax)
 
@@ -1045,8 +1155,10 @@ class Moore2019ParameterSet(ParameterSet):
 
         Parameters
         ==========
-        bodies : list of strings
+        bodies : list of strings, optional
             Either ['D', 'F', 'H', 'P', 'R'] or a subset thereof.
+        ax : AxesSubplot, optional
+            An axes to draw on, otherwise one is created.
 
         Examples
         ========
@@ -1075,9 +1187,16 @@ class Moore2019ParameterSet(ParameterSet):
 
         return ax
 
-    def plot_body_principal_radii_of_gyration(self, b, ax=None):
+    def plot_body_principal_radii_of_gyration(self, body, ax=None):
         """Returns a matplotlib axes with lines and a circle that indicate the
         principal radii of gyration of the specified body.
+
+        Parameters
+        ==========
+        body : string
+            The body string: D, F, H, P, or R
+        ax : SubplotAxes, optional
+            Axes to plot on.
 
         Examples
         ========
@@ -1099,17 +1218,17 @@ class Moore2019ParameterSet(ParameterSet):
         p = self.parameters.copy()
         p.update(self._calc_derived_params())
 
-        x = p['x{}'.format(b)]
-        z = p['z{}'.format(b)]
-        kyy = p['k{}yy'.format(b)]
-        kaa = p['k{}aa'.format(b)]
-        kbb = p['k{}bb'.format(b)]
-        alpha = p['alpha{}'.format(b)]  # angle between x and aa about y
+        x = p['x{}'.format(body)]
+        z = p['z{}'.format(body)]
+        kyy = p['k{}yy'.format(body)]
+        kaa = p['k{}aa'.format(body)]
+        kbb = p['k{}bb'.format(body)]
+        alpha = p['alpha{}'.format(body)]  # angle between x and aa about y
 
         linestyle = '--'
 
         c = patches.Circle((x, z), radius=kyy, fill=False,
-                           color=self.body_colors[b], linestyle=linestyle)
+                           color=self.body_colors[body], linestyle=linestyle)
         ax.add_patch(c)
 
         # NOTE : -alpha is required because we are mapping the xz axes to a new
@@ -1117,22 +1236,29 @@ class Moore2019ParameterSet(ParameterSet):
         # screen
         ax.plot([x - kbb*np.cos(-alpha), x + kbb*np.cos(-alpha)],
                 [z - kbb*np.sin(-alpha), z + kbb*np.sin(-alpha)],
-                color=self.body_colors[b], linestyle=linestyle)
+                color=self.body_colors[body], linestyle=linestyle)
 
         ax.plot([x - kaa*np.cos(-alpha - np.pi/2),
                  x + kaa*np.cos(-alpha - np.pi/2)],
                 [z - kaa*np.sin(-alpha - np.pi/2),
                  z + kaa*np.sin(-alpha - np.pi/2)],
-                color=self.body_colors[b], linestyle=linestyle)
+                color=self.body_colors[body], linestyle=linestyle)
 
         self._finalize_plot(ax)
 
         return ax
 
-    def plot_body_principal_inertia_ellipsoid(self, b, ax=None):
+    def plot_body_principal_inertia_ellipsoid(self, body, ax=None):
         """Returns a matplotlib axes with an ellipse that respresnts the XZ
         plane view of a constant density ellipsoid which has the same principal
         moments and axes of inertia as the body.
+
+        Parameters
+        ==========
+        body : string
+            The body string: D, F, H, P, or R
+        ax : SubplotAxes, optional
+            Axes to plot on.
 
         Examples
         ========
@@ -1154,18 +1280,18 @@ class Moore2019ParameterSet(ParameterSet):
         p = self.parameters.copy()
         p.update(self._calc_derived_params())
 
-        kaa = p['k{}aa'.format(b)]
-        kbb = p['k{}bb'.format(b)]
-        kyy = p['k{}yy'.format(b)]
-        alpha = p['alpha{}'.format(b)]
+        kaa = p['k{}aa'.format(body)]
+        kbb = p['k{}bb'.format(body)]
+        kyy = p['k{}yy'.format(body)]
+        alpha = p['alpha{}'.format(body)]
 
         width = np.sqrt(5/2*(-kaa**2 + kyy**2 + kbb**2))
         height = np.sqrt(5/2*(kaa**2 + kyy**2 - kbb**2))
 
-        ellipse = patches.Ellipse((p['x{}'.format(b)],
-                                   p['z{}'.format(b)]), width, height,
+        ellipse = patches.Ellipse((p['x{}'.format(body)],
+                                   p['z{}'.format(body)]), width, height,
                                   angle=-np.rad2deg(alpha), fill=False,
-                                  color=self.body_colors[b])
+                                  color=self.body_colors[body])
         ax.add_patch(ellipse)
 
         self._finalize_plot(ax)
@@ -1178,8 +1304,11 @@ class Moore2019ParameterSet(ParameterSet):
 
         Parameters
         ==========
-        ax : AxesSubplot, optional
-            An axes to draw on, otherwise one is created.
+        bodies: list of strings, optional
+            A subset of the strings present in the class attribute
+            ``body_labels``.
+        ax: matplotlib Axes, optional
+            An axes to plot on.
 
         Examples
         ========
@@ -1210,6 +1339,11 @@ class Moore2019ParameterSet(ParameterSet):
     def plot_all(self, ax=None):
         """Returns matplotlib axes with the geometry and inertial
         representations of all bodies of the bicycle parameter set.
+
+        Parameters
+        ==========
+        ax: matplotlib Axes, optional
+            An axes to plot on.
 
         Examples
         ========
@@ -1245,11 +1379,12 @@ class Moore2019ParameterSet(ParameterSet):
         Parameters
         ==========
         bodies : iterable of strings
+            Subset from ``body_labels``.
 
         Returns
         =======
         com : ndarray, shape(3,)
-            Vector locating the center of mass of the bodies givien in
+            Vector locating the center of mass of the bodies given in
             ``bodies``.
 
         """
@@ -1270,8 +1405,8 @@ class Moore2019ParameterSet(ParameterSet):
             return com
 
     def form_mass_center_vector(self, body):
-        """Returns a (3, 1) NumPy array representing the vector to the mass
-        center of the body.
+        """Returns an array representing the vector to the mass center of the
+        body.
 
         Parameters
         ==========
@@ -1283,7 +1418,6 @@ class Moore2019ParameterSet(ParameterSet):
         ndarray, shape(3,)
             A vector containing the X, Y, and X coordinates of the mass center
             of the body.
-
 
         """
 

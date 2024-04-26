@@ -1028,7 +1028,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
             end = rider.yeadon_vec_to_bicycle_vec(human.K1.pos, mpar, bpar)
 
         fig1.update_layout(title=dict(text='Bicycle geometry',
-                           font=dict(family="Segoe UI light", size=25)),
+                           font=dict(family="Segoe UI", size=25)),
                            yaxis_title='z-axis [m]',
                            font_family="Source Sans Pro",
                            hoverlabel=dict(font_family="Source Sans Pro"))
@@ -1440,7 +1440,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
                               line_width=0, row=1, col=1)
 
         fig.update_layout(title=dict(text='Eigenvalues vs velocity',
-                          font=dict(family="Segoe UI light", size=25)),
+                          font=dict(family="Segoe UI", size=25)),
                           font_family="Source Sans Pro",
                           plot_bgcolor='rgba(39,128,227,0.15)',
                           xaxis_title='Velocity [m/s]',

@@ -18,7 +18,7 @@ def test_Meijaard2007ParameterSet(plot=False):
 
     pset = Meijaard2007ParameterSet(benchmark_par, True)
 
-    pset2 = Meijaard2007ParameterSet.from_yaml(filepath)
+    pset2 = Meijaard2007ParameterSet._from_yaml(filepath)
 
     assert pset.parameters == pset2.parameters
     assert pset2.includes_rider

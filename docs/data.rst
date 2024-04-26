@@ -284,8 +284,8 @@ the bicycle. The hunch angle is the angle between the horizontal and the
 rider's torso mid line. It is essentially the angle at which the rider is
 leaned forward.
 
-<rider name><bicycle name>YeadonCFG.txt
----------------------------------------
+<rider name><bicycle name>YeadonMeas.txt
+----------------------------------------
 This is the yeadon measurement input file for the `yeadon package`_. It contains
 all of the geometric measurements of the rider. See the `yeadon documentation`_
 for more details.
