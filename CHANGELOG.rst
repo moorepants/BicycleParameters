@@ -9,10 +9,15 @@ Release Notes
   - https://github.com/moorepants/BicycleParameters/pull/34
   - https://github.com/moorepants/BicycleParameters/pull/88
 
-- Dropped support for Python 2.7, 3.4, 3.5, and 3.6.
+- Dropped support for Python 2.7, 3.4, 3.5, 3.6, and 3.7. Added support for
+  Python 3.8, 3.9, 3.10, 3.11, 3.12.
+- Bumped dependency minimum verions to match Ubuntu 22.04.
 - Moved to mamba and Github action based continuous integration testing.
-- Introduced new modules for future class hierarchies and better design.
+- Introduced new parameter_sets and models modules for future class hierarchies
+  and better design.
 - ``bicycleparameters/test/`` moved to ``bicycleparameters/tests/``.
+- Removed remaining NumPy ``matrix()`` calls.
+- Improved some of the matplotlib plots.
 
 1.0.0
 -----
