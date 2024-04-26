@@ -6,13 +6,15 @@ from .tables import Table
 from .version import __version_info__, __version__
 
 # the modules that are imported when 'from bicycleparameters import *'
-__all__ = ['main',
-           'geometry',
-           'io',
-           'period',
-           'rider',
-           'bicycle',
-           'com',
-           'inertia',
-           'plot',
-           'tables']
+__all__ = [
+    'bicycle',
+    'com',
+    'geometry',
+    'inertia',
+    'io',
+    'main',
+    'period',
+    'plot',
+    'rider',
+    'tables',
+]
