@@ -203,6 +203,10 @@ def sort_eigenmodes(evals, evecs):
 
     Returns
     =======
+    evalsorg : ndarray, shape (n, 4)
+        A sequence of n sets of eigenvalues.
+    evecsorg : ndarray, shape (n, 4, 4)
+        A sequence of n sets of eigenvectors.
 
     """
     evalsorg = np.zeros_like(evals)
