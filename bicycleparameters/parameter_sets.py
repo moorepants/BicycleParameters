@@ -8,7 +8,7 @@ from matplotlib import patches
 
 from .com import total_com
 from .geometry import fundamental_geometry_plot_data
-from .conversions import convert_principal_to_benchmark
+from .conversions import _convert_principal_to_benchmark
 
 
 def _com_symbol(ax, center, radius, color='b', label=None):
@@ -958,7 +958,7 @@ class Moore2019ParameterSet(ParameterSet):
         if name == self.parameterization:
             return self
         elif name == 'Meijaard2007':
-            b = convert_principal_to_benchmark(self.parameters)
+            b = _convert_principal_to_benchmark(self.parameters)
             # Moore2019 always includes the rider
             return Meijaard2007ParameterSet(b, True)
         else:

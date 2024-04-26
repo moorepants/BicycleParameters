@@ -49,7 +49,7 @@ def _sum_central_inertias(m1, com1, I1, m2, com2, I2):
     return parallel_axis(I1, m1, com-com1) + parallel_axis(I2, m2, com-com2)
 
 
-def convert_principal_to_benchmark(principal_par):
+def _convert_principal_to_benchmark(principal_par):
     # CONVERT_PRINCIPAL_TO_BENCHMARK - Returns a structure containing the
     # benchmark bicycle parameters as defined in Meijaard2007 which are
     # converted from the principal parameters as defined in MooreHubbard2019.
