@@ -1,5 +1,6 @@
 include *.rst
 include *.txt
 include bicycleparameters/assets/*
+recursive-include bicycleparameters/app-data/ *.txt
 recursive-include docs *.rst
 include AUTHORS
