@@ -521,7 +521,7 @@ paper with some realistic initial values.
 
 .. plot::
    :include-source: True
-   :context:
+   :context: close-figs
 
    par = {
        'IBxx': 11.3557360401,
