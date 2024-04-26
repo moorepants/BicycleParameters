@@ -180,7 +180,7 @@ instance.
 
 To modify a parameter type::
 
-  >>> bicycle.parameters['Benchmark']['mB] = 50.
+  >>> bicycle.parameters['Benchmark']['mB'] = 50.
 
 You can regenerate the parameter sets from the raw data stored in the bicycle's
 directory by calling::
