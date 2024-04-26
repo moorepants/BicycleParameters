@@ -7,13 +7,20 @@ exec(open('bicycleparameters/version.py').read())
 setup(
     name='BicycleParameters',
     version=__version__,
-    author='Jason Keith Moore',
+    author='Jason K. Moore',
     author_email='moorepants@gmail.com',
     packages=find_packages(),
     url='http://pypi.python.org/pypi/BicycleParameters',
     license='LICENSE.txt',
     description='Generates and manipulates the physical parameters of a bicycle.',
     long_description=open('README.rst').read(),
+    project_urls={
+        'Web Application': 'https://bicycle-dynamics.onrender.com',
+        'Documentation': 'http://bicycleparameters.readthedocs.io',
+        'Source Code': 'https://github.com/moorepants/BicycleParameters',
+        'Issue Tracker': 'https://github.com/moorepants/BicycleParameters/issues',
+    },
+    include_package_data=True,  # includes things in MANIFEST.in
     install_requires=[
         'DynamicistToolKit>=0.5.3',
         'matplotlib>=3.5.1',
