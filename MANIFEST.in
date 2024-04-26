@@ -3,4 +3,5 @@ include *.txt
 include bicycleparameters/assets/*
 recursive-include bicycleparameters/app-data/ *.txt
 recursive-include docs *.rst
+recursive-include bicycleparameters/ *.yml
 include AUTHORS
