@@ -549,7 +549,7 @@ class Meijaard2007Model(_Model):
         return axes
 
     def plot_eigenvalue_parts(self, ax=None, colors=None,
-                              **parameter_overrides):
+                              show_stable_regions=True, **parameter_overrides):
         """Returns a matplotlib axis of the real and imaginary parts of the
         eigenvalues plotted against the provided parameter.
 
@@ -559,6 +559,8 @@ class Meijaard2007Model(_Model):
             Matplotlib axes.
         colors : sequence, len(4)
             Matplotlib colors for the 4 modes.
+        show_stable_regions : boolean, optional
+            If true, a grey shaded background will indicate stable regions.
         **parameter_overrides : dictionary
             Parameter keys that map to floats or array_like of floats
             shape(n,). All keys that map to array_like must be of the same
@@ -588,7 +590,7 @@ class Meijaard2007Model(_Model):
         if len(evals.shape) > 1:
             evals, evecs = sort_eigenmodes(evals, evecs)
         else:
-            evals, evecs = [evals], [evecs]
+            evals, evecs = np.array([evals]), np.array([evecs])
 
         par, array_keys, _ = self._parse_parameter_overrides(
             **parameter_overrides)
@@ -597,6 +599,16 @@ class Meijaard2007Model(_Model):
             colors = ['C0', 'C1', 'C2', 'C3']
         legend = ['Mode 1', 'Mode 2', 'Mode 3', 'Mode 4',
                   'Mode 1', 'Mode 2', 'Mode 3', 'Mode 4']
+
+        if show_stable_regions:
+            ax.fill_between(par[array_keys[0]],
+                            np.min([np.min(evals.real), np.min(evals.imag)]),
+                            np.max([np.max(evals.real), np.max(evals.imag)]),
+                            where=np.all(evals.real < 0.0, axis=1),
+                            color='grey',
+                            alpha=0.25,
+                            transform=ax.get_xaxis_transform())
+
         # imaginary components
         for eval_sequence, color, label in zip(evals.T, colors, legend):
             ax.plot(par[array_keys[0]], np.abs(np.imag(eval_sequence)),
@@ -606,6 +618,7 @@ class Meijaard2007Model(_Model):
         for eval_sequence, color, label in zip(evals.T, colors, legend):
             ax.plot(par[array_keys[0]], np.real(eval_sequence), color=color,
                     label=label)
+
 
         # set labels and limits
         ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
