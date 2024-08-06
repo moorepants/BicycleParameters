@@ -86,8 +86,9 @@ def load_pendulum_mat_file(pathToFile):
     del pendDat['__version__']
     # If notes is empty is loads like `array([], dtype='<U1')`, so make it an
     # empty string.
-    if pendDat['notes'].shape == (0,):
-        pendDat['notes'] = ''
+    if not isinstance(pendDat['notes'], str):
+        if pendDat['notes'].shape == (0,):
+            pendDat['notes'] = ''
     return pendDat
 
 
