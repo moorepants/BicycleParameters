@@ -87,22 +87,9 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
 
     periods = {}
 
-    def pathParts(path):
-        '''Splits a path into a list of its parts.'''
-        components = []
-        while True:
-            (path, tail) = os.path.split(path)
-            if tail == "":
-                components.reverse()
-                return components
-            components.append(tail)
-
-    pathToRawDataParts = pathParts(directory)
-    pathToRawDataParts.pop()
-    pathToBicycleDir = os.path.join(pathToRawDataParts[0],
-                                    pathToRawDataParts[1],
-                                    pathToRawDataParts[2])
-    pathToPlotDir = os.path.join(pathToBicycleDir, 'Plots', 'PendulumFit')
+    # directory is /path/to/data/bicycles/BikeName/RawData
+    path_to_bicycle_dir = os.sep.join(directory.split(os.sep)[:-1])
+    pathToPlotDir = os.path.join(path_to_bicycle_dir, 'Plots', 'PendulumFit')
 
     # make sure there is a place to save the plots
     if not os.path.exists(pathToPlotDir):
@@ -473,16 +460,14 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
     figwidth = 4.  # in inches
     goldenMean = (np.sqrt(5) - 1.0) / 2.0
     figsize = [figwidth, figwidth * goldenMean]
-    params = {#'backend': 'ps',
+    params = {
         'axes.labelsize': 8,
         'axes.titlesize': 8,
-        'text.fontsize': 8,
         'legend.fontsize': 8,
         'xtick.labelsize': 6,
         'ytick.labelsize': 6,
         'text.usetex': True,
-        #'figure.figsize': figsize
-        }
+    }
     if fig:
         fig = fig
     else:
