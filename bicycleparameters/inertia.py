@@ -114,7 +114,7 @@ def inertia_components(jay, beta):
     '''
     sb = unumpy.sin(beta)
     cb = unumpy.cos(beta)
-    betaMat = unumpy.array(np.vstack((cb**2, -2 * sb * cb, sb**2)).T)
+    betaMat = unumpy.matrix(np.vstack((cb**2, -2 * sb * cb, sb**2)).T)
     eye = np.squeeze(np.asarray(np.dot(betaMat.I, jay)))
     return eye
 
