@@ -79,23 +79,15 @@ def load_pendulum_mat_file(pathToFile):
 
     '''
     pendDat = {}
-    loadmat(pathToFile, mdict=pendDat)
+    loadmat(pathToFile, mdict=pendDat, squeeze_me=True, chars_as_strings=True)
     # clean up the matlab imports
-    del(pendDat['__globals__'], pendDat['__header__'], pendDat['__version__'])
-    for k, v in pendDat.items():
-        try:
-            # change to an ascii string
-            pendDat[k] = v[0].encode('ascii')
-        except:
-            # if an array of a single number
-            if np.shape(v)[0] == 1:
-                pendDat[k] = v[0][0]
-            # else if the notes are empty
-            elif np.shape(v)[0] == 0:
-                pendDat[k] = ''
-            # else it is the data which needs to be a one dimensional array
-            else:
-                pendDat[k] = v.reshape((len(v),))
+    del pendDat['__globals__']
+    del pendDat['__header__']
+    del pendDat['__version__']
+    # If notes is empty is loads like `array([], dtype='<U1')`, so make it an
+    # empty string.
+    if pendDat['notes'].shape == (0,):
+        pendDat['notes'] = ''
     return pendDat
 
 
