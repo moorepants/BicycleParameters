@@ -103,12 +103,17 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
         # generate a variable name for this period
         periodKey = get_period_key(matData, forkIsSplit)
         # calculate the period
-        sampleRate = get_sample_rate(matData)
         pathToPlotFile = os.path.join(pathToPlotDir,
                                       os.path.splitext(f)[0] + '.png')
-        period = get_period_from_truncated(matData['data'],
-                                           sampleRate,
-                                           pathToPlotFile)
+        if 'time' in matData:
+            period = get_period_from_truncated(matData['data'],
+                                               matData['time'],
+                                               pathToPlotFile)
+        else:
+            sampleRate = get_sample_rate(matData)
+            period = get_period_from_truncated(matData['data'],
+                                               sampleRate,
+                                               pathToPlotFile)
         print("The period is:", period, "\n")
         # either append the the period or if it isn't there yet, then
         # make a new list
@@ -199,16 +204,17 @@ def fit_goodness(ym, yp):
     return rsq, SSE, SST, SSR
 
 
-def get_period(data, sampleRate, pathToPlotFile):
+def get_period(data, sample_rate_or_time, pathToPlotFile):
     '''Returns the period and uncertainty for data resembling a decaying
     oscillation.
 
     Parameters
     ----------
-    data : ndarray, shape(n,)
+    data : array_like, shape(n,)
         A time series that resembles a decaying oscillation.
-    sampleRate : int
-        The frequency that data was sampled at.
+    sample_rate_or_time : int or array_like, shape(n,)
+        Either the frequency in Hertz that data was sampled at or a time array
+        that corresponds to ``data``.
     pathToPlotFile : string
         A path to the file to print the plots.
 
@@ -220,7 +226,12 @@ def get_period(data, sampleRate, pathToPlotFile):
     '''
 
     y = data
-    x = np.linspace(0., (len(y) - 1) / float(sampleRate), num=len(y))
+    if isinstance(sample_rate_or_time, int):
+        sample_rate = sample_rate_or_time
+        x = np.linspace(0.0, (len(y) - 1)/float(sample_rate), num=len(y))
+    else:
+        x = sample_rate_or_time
+        sample_rate = int(1.0/np.mean(np.diff(x)))  # approximate
 
     def fitfunc(p, t):
         '''Decaying oscillation function.'''
@@ -233,7 +244,7 @@ def get_period(data, sampleRate, pathToPlotFile):
     # initial guesses
     # p0 = np.array([1.35, -.5, -.75, 0.01, 3.93]) # guess from delft
     # p0 = np.array([2.5, -.75, -.75, 0.001, 4.3]) # guess from ucd
-    p0 = make_guess(data, sampleRate)  # tries to make a good guess
+    p0 = make_guess(data, sample_rate)  # tries to make a good guess
 
     # create the error function
     errfunc = lambda p, t, y: fitfunc(p, t) - y
@@ -283,7 +294,10 @@ def get_period(data, sampleRate, pathToPlotFile):
 def get_period_from_truncated(data, sampleRate, pathToPlotFile):
     # dataRec = average_rectified_sections(data)
     dataRec = data
-    dataGood = select_good_data(dataRec, 0.1)
+    if isinstance(sampleRate, int):
+        dataGood = select_good_data(dataRec, 0.1)
+    else:  # don't truncate if a time array is given in the file
+        dataGood = dataRec
     return get_period(dataGood, sampleRate, pathToPlotFile)
 
 
@@ -443,7 +457,7 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
         The measured voltage
     yf : ndarray (n,)
     p : ndarray (5,)
-        The fit parameters for the decaying osicallation fucntion
+        The fit parameters for the decaying oscillation function.
     rsq : float
         The r squared value of y (the fit)
     T : float

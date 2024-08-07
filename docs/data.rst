@@ -224,13 +224,18 @@ the only supported file is a Matlab mat file with these variables:
 - ``angle`` or ``angleOrder``, char : the ``'First'``, ``'Second'``, ...,
   ``'Sixth'`` orientation
 - ``trial``, char : the integer number of the repetition ``'1'``, ``'2'``, etc.
-- ``notes``, char : any notes recorded for that measurement
-- ``duration``, double size 1 x 1 : time in seconds for the measurement
-- ``sampleRate`` or ``ActualRate``, double size 1 x 1 (integer) : sample rate of data in Hertz
-- ``data``, double size n x 1 : signal vector of a decaying oscillation (from
-  rate gyro)
 - ``filename``, char : filename constructed from above variables (see below for
   explanation)
+- ``notes``, char : any notes recorded for that measurement
+- ``data``, double size n x 1 : signal vector of a decaying oscillation (from
+  rate gyro)
+- Time information, either ``time`` OR both ``duration`` and ``sampleRate``:
+
+   - ``duration``, double size 1 x 1 : time in seconds for the measurement
+   - ``sampleRate`` or ``ActualRate``, double size 1 x 1 (integer) : sample
+     rate of data in Hertz
+   - ``time``, double size n x 1 : time values in seconds that correspond to
+     ``data``
 
 The files should be named in this manner ``<short
 name><part><pendulum><orientation><trial>.mat`` where:

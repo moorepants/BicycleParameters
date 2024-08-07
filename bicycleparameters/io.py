@@ -89,6 +89,13 @@ def load_pendulum_mat_file(pathToFile):
     if not isinstance(pendDat['notes'], str):
         if pendDat['notes'].shape == (0,):
             pendDat['notes'] = ''
+    # If a time array is present, it may be variable sample rate so delete the
+    # sampleRate and duration entries if they are there.
+    if 'time' in pendDat:
+        if 'sampleRate' in pendDat:
+            del pendDat['sampleRate']
+        if 'duration' in pendDat:
+            del pendDat['duration']
     return pendDat
 
 
