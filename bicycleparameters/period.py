@@ -271,9 +271,9 @@ def get_period(data, sampleRate, pathToPlotFile):
     T = 1. / fd
 
     # plot the data and save it to file
-    fig = plt.figure()
+    fig, ax = plt.subplots(layout='constrained')
     plot_osfit(x, y, lscurve, p1, rsq, T, m=np.max(x), fig=fig)
-    plt.savefig(pathToPlotFile)
+    fig.savefig(pathToPlotFile)
     plt.close()
 
     # return the period
@@ -456,36 +456,20 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
     fig : the figure
 
     '''
-    # figure properties
-    figwidth = 4.  # in inches
-    goldenMean = (np.sqrt(5) - 1.0) / 2.0
-    figsize = [figwidth, figwidth * goldenMean]
-    params = {
-        'axes.labelsize': 8,
-        'axes.titlesize': 8,
-        'legend.fontsize': 8,
-        'xtick.labelsize': 6,
-        'ytick.labelsize': 6,
-        'text.usetex': True,
-    }
     if fig:
-        fig = fig
+        ax1 = fig.axes[0]
     else:
-        fig = plt.figure(2)
-    fig.set_size_inches(figsize)
-    plt.rcParams.update(params)
-    ax1 = plt.axes([0.125, 0.125, 0.9-0.125, 0.65])
-    #if m == None:
-        #end = len(t)
-    #else:
-        #end = t[round(m/t[-1]*len(t))]
-    ax1.plot(t, ym, '.', markersize=2)
+        fig, ax1 = plt.subplots(layout='constrained')
+    ax1.plot(t, ym, '.', markersize=4)
     plt.plot(t, yf, 'k-')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
-    equation = r'$f(t)={0:1.2f}+e^{{-({3:1.3f})({4:1.1f})t}}\left[{1:1.2f}\sin{{\sqrt{{1-{3:1.3f}^2}}{4:1.1f}t}}+{2:1.2f}\cos{{\sqrt{{1-{3:1.3f}^2}}{4:1.1f}t}}\right]$'.format(p[0], p[1], p[2], p[3], p[4])
-    rsquare = '$r^2={0:1.3f}$'.format(rsq)
-    period = '$T={0} s$'.format(T)
+    equation = (r'$f(t)={0:1.2f}+e^{{-({3:1.3f})({4:1.1f})t}}\left[{1:1.2f}'
+                r'\sin{{\sqrt{{1-{3:1.3f}^2}}{4:1.1f}t}}+{2:1.2f}'
+                r'\cos{{\sqrt{{1-{3:1.3f}^2}}{4:1.1f}t}}\right]$')
+    equation = equation.format(p[0], p[1], p[2], p[3], p[4])
+    rsquare = r'$r^2={0:1.3f}$'.format(rsq)
+    period = r'$T={0} s$'.format(T)
     plt.title(equation + '\n' + rsquare + ', ' + period)
     plt.legend(['Measured', 'Fit'])
     if m is not None:
