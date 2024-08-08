@@ -40,7 +40,7 @@ class Bicycle(object):
 
     """
 
-    def __init__(self, bicycleName, pathToData='.', forceRawCalc=False,
+    def __init__(self, bicycleName, pathToData=os.curdir, forceRawCalc=False,
                  forcePeriodCalc=False):
         """
         Creates a bicycle object and sets the parameters based on the available
@@ -51,8 +51,8 @@ class Bicycle(object):
         bicycleName : string
             The short name of your bicicleta. It should be one word with the
             first letter capitalized and all other letters lower case. You
-            should have a matching directory under `<pathToData>/bicycles/`.
-            For example: `<pathToData>/bicycles/Shortname`.
+            should have a matching directory under ``<pathToData>/bicycles/``.
+            For example: ``<pathToData>/bicycles/Shortname``.
         pathToData : string
             This is the path to the folder where the bicycle/rider parameters
             and raw data are stored. The default is the current working
@@ -124,7 +124,7 @@ class Bicycle(object):
         if conOne or conTwo:
             print("Recalcuting the parameters.")
             par, extras = self.calculate_from_measured(
-                    forcePeriodCalc=forcePeriodCalc)
+                forcePeriodCalc=forcePeriodCalc)
             self.parameters['Benchmark'] = par
             self.extras = extras
             print("The glory of the %s parameters are upon you!"
@@ -139,7 +139,7 @@ class Bicycle(object):
                                          'Measured.txt')
             try:
                 self.parameters['Measured'] = \
-                        io.load_parameter_text_file(pathToRawFile)
+                    io.load_parameter_text_file(pathToRawFile)
             except IOError:
                 pass
         else:
@@ -1197,7 +1197,6 @@ class Bicycle(object):
             evecs[i] = v
 
         return evals, evecs
-
 
     def plot_eigenvalues_vs_speed(self, speeds, fig=None, generic=False,
                                   color='black', show=False, largest=False,
