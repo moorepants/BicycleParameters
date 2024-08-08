@@ -295,7 +295,7 @@ files.
 riders/<rider name>/RawData/
 ============================
 
-**These files must follow the YAML format used in the `yeadon package`_.**
+**These files must follow the YAML format used in the yeadon package.**
 
 <rider name><bicycle name>YeadonCFG.txt
 ---------------------------------------
@@ -313,4 +313,4 @@ all of the geometric measurements of the rider. See the `yeadon documentation`_
 for more details.
 
 .. _yeadon package: http://pypi.python.org/pypi/yeadon
-.. _yeadon documentation : http://packages.python.org/yeadon/
+.. _yeadon documentation : https://yeadon.readthedocs.io
