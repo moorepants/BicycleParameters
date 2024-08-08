@@ -294,9 +294,15 @@ def get_period(data, sample_rate_or_time, pathToPlotFile):
 def get_period_from_truncated(data, sampleRate, pathToPlotFile):
     # dataRec = average_rectified_sections(data)
     dataRec = data
-    dataGood = select_good_data(dataRec, 0.1)
+    # Don't truncate if the time array is provided in the measurements. This is
+    # present because truncating causes bad inertia values for the
+    # Balanceassistv1 fork. This is a bit of a hack. It would be better to have
+    # optional data processing steps per trials to maximize good period
+    # estimates. This is trying to be a catch all as designed.
     if isinstance(sampleRate, np.ndarray):  # time array
-        sampleRate = sampleRate[:len(dataGood)]
+        dataGood = dataRec
+    else:
+        dataGood = select_good_data(dataRec, 0.1)
     return get_period(dataGood, sampleRate, pathToPlotFile)
 
 
