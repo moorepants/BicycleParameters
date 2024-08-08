@@ -1171,7 +1171,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
 
         Parameters
         ----------
-        speeds : ndarray, shape (n,) or float
+        speeds : array_like, shape (n,) or float
             The speed at which to calculate the eigenvalues.
 
         Returns
@@ -1188,11 +1188,10 @@ the pathToData argument.""".format(bicycleName, pathToData)
         model.
 
         '''
-        # this allows you to enter a float
-        try:
-            speeds.shape
-        except AttributeError:
+        if isinstance(speeds, float):
             speeds = np.array([speeds])
+        else:
+            speeds = np.asarray(speeds)
 
         par = io.remove_uncertainties(self.parameters['Benchmark'])
 
@@ -1208,6 +1207,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
             evecs[i] = v
 
         return evals, evecs
+
 
     def plot_eigenvalues_vs_speed(self, speeds, fig=None, generic=False,
                                   color='black', show=False, largest=False,
