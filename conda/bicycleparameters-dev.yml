@@ -17,6 +17,7 @@ dependencies:
   - pandas >=1.3.5
   - plotly
   # dev
+  - ipython
   - nose
   - numpydoc >=1.2
   - pytest

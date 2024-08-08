@@ -87,22 +87,9 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
 
     periods = {}
 
-    def pathParts(path):
-        '''Splits a path into a list of its parts.'''
-        components = []
-        while True:
-            (path, tail) = os.path.split(path)
-            if tail == "":
-                components.reverse()
-                return components
-            components.append(tail)
-
-    pathToRawDataParts = pathParts(directory)
-    pathToRawDataParts.pop()
-    pathToBicycleDir = os.path.join(pathToRawDataParts[0],
-                                    pathToRawDataParts[1],
-                                    pathToRawDataParts[2])
-    pathToPlotDir = os.path.join(pathToBicycleDir, 'Plots', 'PendulumFit')
+    # directory is /path/to/data/bicycles/BikeName/RawData
+    path_to_bicycle_dir = os.sep.join(directory.split(os.sep)[:-1])
+    pathToPlotDir = os.path.join(path_to_bicycle_dir, 'Plots', 'PendulumFit')
 
     # make sure there is a place to save the plots
     if not os.path.exists(pathToPlotDir):
@@ -116,12 +103,17 @@ def calc_periods_for_files(directory, filenames, forkIsSplit):
         # generate a variable name for this period
         periodKey = get_period_key(matData, forkIsSplit)
         # calculate the period
-        sampleRate = get_sample_rate(matData)
         pathToPlotFile = os.path.join(pathToPlotDir,
                                       os.path.splitext(f)[0] + '.png')
-        period = get_period_from_truncated(matData['data'],
-                                           sampleRate,
-                                           pathToPlotFile)
+        if 'time' in matData:
+            period = get_period_from_truncated(matData['data'],
+                                               matData['time'],
+                                               pathToPlotFile)
+        else:
+            sampleRate = get_sample_rate(matData)
+            period = get_period_from_truncated(matData['data'],
+                                               sampleRate,
+                                               pathToPlotFile)
         print("The period is:", period, "\n")
         # either append the the period or if it isn't there yet, then
         # make a new list
@@ -212,16 +204,17 @@ def fit_goodness(ym, yp):
     return rsq, SSE, SST, SSR
 
 
-def get_period(data, sampleRate, pathToPlotFile):
+def get_period(data, sample_rate_or_time, pathToPlotFile):
     '''Returns the period and uncertainty for data resembling a decaying
     oscillation.
 
     Parameters
     ----------
-    data : ndarray, shape(n,)
+    data : array_like, shape(n,)
         A time series that resembles a decaying oscillation.
-    sampleRate : int
-        The frequency that data was sampled at.
+    sample_rate_or_time : int or array_like, shape(n,)
+        Either the frequency in Hertz that data was sampled at or a time array
+        that corresponds to ``data``.
     pathToPlotFile : string
         A path to the file to print the plots.
 
@@ -233,7 +226,12 @@ def get_period(data, sampleRate, pathToPlotFile):
     '''
 
     y = data
-    x = np.linspace(0., (len(y) - 1) / float(sampleRate), num=len(y))
+    if isinstance(sample_rate_or_time, int):
+        sample_rate = sample_rate_or_time
+        x = np.linspace(0.0, (len(y) - 1)/float(sample_rate), num=len(y))
+    else:
+        x = sample_rate_or_time
+        sample_rate = int(1.0/np.mean(np.diff(x)))  # approximate
 
     def fitfunc(p, t):
         '''Decaying oscillation function.'''
@@ -246,7 +244,7 @@ def get_period(data, sampleRate, pathToPlotFile):
     # initial guesses
     # p0 = np.array([1.35, -.5, -.75, 0.01, 3.93]) # guess from delft
     # p0 = np.array([2.5, -.75, -.75, 0.001, 4.3]) # guess from ucd
-    p0 = make_guess(data, sampleRate)  # tries to make a good guess
+    p0 = make_guess(data, sample_rate)  # tries to make a good guess
 
     # create the error function
     errfunc = lambda p, t, y: fitfunc(p, t) - y
@@ -284,9 +282,9 @@ def get_period(data, sampleRate, pathToPlotFile):
     T = 1. / fd
 
     # plot the data and save it to file
-    fig = plt.figure()
+    fig, ax = plt.subplots(layout='constrained')
     plot_osfit(x, y, lscurve, p1, rsq, T, m=np.max(x), fig=fig)
-    plt.savefig(pathToPlotFile)
+    fig.savefig(pathToPlotFile)
     plt.close()
 
     # return the period
@@ -296,7 +294,10 @@ def get_period(data, sampleRate, pathToPlotFile):
 def get_period_from_truncated(data, sampleRate, pathToPlotFile):
     # dataRec = average_rectified_sections(data)
     dataRec = data
-    dataGood = select_good_data(dataRec, 0.1)
+    if isinstance(sampleRate, int):
+        dataGood = select_good_data(dataRec, 0.1)
+    else:  # don't truncate if a time array is given in the file
+        dataGood = dataRec
     return get_period(dataGood, sampleRate, pathToPlotFile)
 
 
@@ -456,7 +457,7 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
         The measured voltage
     yf : ndarray (n,)
     p : ndarray (5,)
-        The fit parameters for the decaying osicallation fucntion
+        The fit parameters for the decaying oscillation function.
     rsq : float
         The r squared value of y (the fit)
     T : float
@@ -469,38 +470,20 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
     fig : the figure
 
     '''
-    # figure properties
-    figwidth = 4.  # in inches
-    goldenMean = (np.sqrt(5) - 1.0) / 2.0
-    figsize = [figwidth, figwidth * goldenMean]
-    params = {#'backend': 'ps',
-        'axes.labelsize': 8,
-        'axes.titlesize': 8,
-        'text.fontsize': 8,
-        'legend.fontsize': 8,
-        'xtick.labelsize': 6,
-        'ytick.labelsize': 6,
-        'text.usetex': True,
-        #'figure.figsize': figsize
-        }
     if fig:
-        fig = fig
+        ax1 = fig.axes[0]
     else:
-        fig = plt.figure(2)
-    fig.set_size_inches(figsize)
-    plt.rcParams.update(params)
-    ax1 = plt.axes([0.125, 0.125, 0.9-0.125, 0.65])
-    #if m == None:
-        #end = len(t)
-    #else:
-        #end = t[round(m/t[-1]*len(t))]
-    ax1.plot(t, ym, '.', markersize=2)
+        fig, ax1 = plt.subplots(layout='constrained')
+    ax1.plot(t, ym, '.', markersize=4)
     plt.plot(t, yf, 'k-')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
-    equation = r'$f(t)={0:1.2f}+e^{{-({3:1.3f})({4:1.1f})t}}\left[{1:1.2f}\sin{{\sqrt{{1-{3:1.3f}^2}}{4:1.1f}t}}+{2:1.2f}\cos{{\sqrt{{1-{3:1.3f}^2}}{4:1.1f}t}}\right]$'.format(p[0], p[1], p[2], p[3], p[4])
-    rsquare = '$r^2={0:1.3f}$'.format(rsq)
-    period = '$T={0} s$'.format(T)
+    equation = (r'$f(t)={0:1.2f}+e^{{-({3:1.3f})({4:1.1f})t}}\left[{1:1.2f}'
+                r'\sin{{\sqrt{{1-{3:1.3f}^2}}{4:1.1f}t}}+{2:1.2f}'
+                r'\cos{{\sqrt{{1-{3:1.3f}^2}}{4:1.1f}t}}\right]$')
+    equation = equation.format(p[0], p[1], p[2], p[3], p[4])
+    rsquare = r'$r^2={0:1.3f}$'.format(rsq)
+    period = r'$T={0} s$'.format(T)
     plt.title(equation + '\n' + rsquare + ', ' + period)
     plt.legend(['Measured', 'Fit'])
     if m is not None:

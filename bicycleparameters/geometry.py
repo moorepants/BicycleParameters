@@ -82,11 +82,11 @@ def calculate_abc_geometry(h, d):
     '''
     # extract the values
     h1, h2, h3, h4, h5 = h
-    d1, d2, d3, d4, d = d
+    d1, d2, d3, d4, d_ = d
     # get the perpendicular distances
     a = h1 + h2 - h3 + .5 * d1 - .5 * d2
     b = h4 - .5 * d3 - h5 + .5 * d4
-    c = umath.sqrt(-(a - b)**2 + (d + .5 * (d2 + d3))**2)
+    c = umath.sqrt(-(a - b)**2 + (d_ + .5 * (d2 + d3))**2)
     return a, b, c
 
 

@@ -211,14 +211,31 @@ Notes
 
 Pendulum Data Files
 ===================
+
 If you have raw signal data that the periods can be estimated from, then these
 should be included in the ``RawData`` directory. There should be at least one
 file for every period typically found in ``<bicycle name>Measured.txt`` file. The
 signals collected should exhibit very typical decayed oscillations. Currently
 the only supported file is a Matlab mat file with these variables:
 
-- ``data`` : signal vector of a decaying oscillation
-- ``sampleRate`` : sample rate of data in hertz
+- ``bicycle``, char : short name of the bicycle, e.g. ``'Browser'``
+- ``part``, char : examples are ``'Fork'``, ``'Frame'``, ``'Rwheel'``
+- ``pendulum``, char : either ``'Compound'`` or ``'Torsional'``
+- ``angle`` or ``angleOrder``, char : the ``'First'``, ``'Second'``, ...,
+  ``'Sixth'`` orientation
+- ``trial``, char : the integer number of the repetition ``'1'``, ``'2'``, etc.
+- ``filename``, char : filename constructed from above variables (see below for
+  explanation)
+- ``notes``, char : any notes recorded for that measurement
+- ``data``, double size n x 1 : signal vector of a decaying oscillation (from
+  rate gyro)
+- Time information, either ``time`` OR both ``duration`` and ``sampleRate``:
+
+   - ``duration``, double size 1 x 1 : time in seconds for the measurement
+   - ``sampleRate`` or ``ActualRate``, double size 1 x 1 (integer) : sample
+     rate of data in Hertz
+   - ``time``, double size n x 1 : time values in seconds that correspond to
+     ``data``
 
 The files should be named in this manner ``<short
 name><part><pendulum><orientation><trial>.mat`` where:
@@ -229,6 +246,11 @@ name><part><pendulum><orientation><trial>.mat`` where:
 - ``<orientation>`` is either ``First``, ``Second``, ``Third``, ``Fourth``,
   ``Fifth``, or ``Sixth``
 - ``<trial>`` is an integer greater than or equal to 1
+
+These data files were originally collected with Matlab and a National
+Instruments USB-6218 using a Silicon Sensing CRS03-04S single axis angular rate
+gyro and a `data collection script
+<https://github.com/moorepants/PhysicalParameters/blob/master/PhysicalParameters/matlab/acquire_data.m>`_.
 
 Notes
 -----
@@ -273,7 +295,7 @@ files.
 riders/<rider name>/RawData/
 ============================
 
-**These files must follow the YAML format used in the `yeadon package`_.**
+**These files must follow the YAML format used in the yeadon package.**
 
 <rider name><bicycle name>YeadonCFG.txt
 ---------------------------------------
@@ -291,4 +313,4 @@ all of the geometric measurements of the rider. See the `yeadon documentation`_
 for more details.
 
 .. _yeadon package: http://pypi.python.org/pypi/yeadon
-.. _yeadon documentation : http://packages.python.org/yeadon/
+.. _yeadon documentation : https://yeadon.readthedocs.io
