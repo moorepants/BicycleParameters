@@ -40,28 +40,6 @@ class Bicycle(object):
 
     """
 
-    def __new__(cls, bicycleName, pathToData='.', forceRawCalc=False,
-                forcePeriodCalc=False):
-        '''Returns a NoneType object if there is no directory for the
-        bicycle.'''
-        # is there a data directory for this bicycle? if not, tell the user to
-        # put some data in the folder so we have something to work with!
-        try:
-            pathToBicycle = os.path.join(pathToData, 'bicycles', bicycleName)
-            if os.path.isdir(pathToBicycle):
-                print("We have foundeth a directory named: " +
-                      "{0}.".format(pathToBicycle))
-                return super(Bicycle, cls).__new__(cls)
-            else:
-                raise ValueError
-        except:
-            mes = """Are you nuts?! Make a directory called '{0}' with basic
-data for your bicycle in this directory: '{1}'. Then I can actually create a
-bicycle object. You may either need to change to the correct directory or reset
-the pathToData argument.""".format(bicycleName, pathToData)
-            print(mes)
-            return None
-
     def __init__(self, bicycleName, pathToData='.', forceRawCalc=False,
                  forcePeriodCalc=False):
         """
@@ -96,6 +74,7 @@ the pathToData argument.""".format(bicycleName, pathToData)
         pathToBicycles = os.path.join(pathToData, 'bicycles')
         # the directory where the files for this bicycle are stored
         self.directory = os.path.join(pathToBicycles, bicycleName)
+        self._check_for_bicycle_directory()
 
         # bicycles are assumed not to have a rider when initially loaded
         self.hasRider = False
@@ -168,6 +147,17 @@ the pathToData argument.""".format(bicycleName, pathToData)
             bicycles/{sn}/Parameters/{sn}Benchmark.txt and/or fill
             bicycle/{sn}/RawData/ with pendulum data mat files and the
             {sn}Measured.txt file'''.format(sn=bicycleName))
+
+    def _check_for_bicycle_directory(self):
+        # is there a data directory for this bicycle? if not, tell the user to
+        # put some data in the folder so we have something to work with!
+        msg = ("Are you nuts?! Make a directory called '{0}' with basic data "
+               "for your bicycle in this directory: '{1}'. Then I can "
+               "actually create a bicycle object. You may either need to "
+               "change to the correct directory or reset the pathToData "
+               "argument.")
+        if not os.path.isdir(self.directory):
+            raise ValueError(msg.format(self.bicycleName, self.directory))
 
     def __str__(self):
         if self.hasRider:
