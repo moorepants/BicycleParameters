@@ -1,0 +1,24 @@
+# When Jason sat on the bicycle the estimated somersault angle was 0 deg, but
+# this over extends the arms in the model. 9.74 deg is the first somersault
+# angle that results in a valid arm position.
+somersault: 0.17  # 9.74 deg
+tilt: 0.0
+twist: 0.0
+PTsagittalFlexion: 0.0
+PTbending: 0.0
+TCspinalTorsion: 0.0
+TCsagittalSpinalFlexion: 0.0
+CA1extension: 0.0
+CA1adduction: 0.0
+CA1rotation: 0.0
+CB1extension: 0.0
+CB1abduction: 0.0
+CB1rotation: 0.0
+A1A2extension: 0.0
+B1B2extension: 0.0
+PJ1extension: 0.0
+PJ1adduction: 0.0
+PK1extension: 0.0
+PK1abduction: 0.0
+J1J2flexion: 0.0
+K1K2flexion: 0.0
