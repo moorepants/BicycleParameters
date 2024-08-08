@@ -294,10 +294,9 @@ def get_period(data, sample_rate_or_time, pathToPlotFile):
 def get_period_from_truncated(data, sampleRate, pathToPlotFile):
     # dataRec = average_rectified_sections(data)
     dataRec = data
-    if isinstance(sampleRate, int):
-        dataGood = select_good_data(dataRec, 0.1)
-    else:  # don't truncate if a time array is given in the file
-        dataGood = dataRec
+    dataGood = select_good_data(dataRec, 0.1)
+    if isinstance(sampleRate, np.ndarray):  # time array
+        sampleRate = sampleRate[:len(dataGood)]
     return get_period(dataGood, sampleRate, pathToPlotFile)
 
 
@@ -494,13 +493,12 @@ def plot_osfit(t, ym, yf, p, rsq, T, m=None, fig=None):
 
 
 def select_good_data(data, percent):
-
     '''Returns a slice of the data from the index at maximum value to the index
     at a percent of the maximum value.
 
     Parameters
     ----------
-    data : ndarray, shape(1,)
+    data : ndarray, shape(n,)
         This should be a decaying function.
     percent : float
         The percent of the maximum to clip.
