@@ -617,6 +617,20 @@ plotted:
 
    model.plot_eigenvalue_parts(v=speeds)
 
+There are several common customization options available:
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   speeds = np.linspace(0.0, 10.0, num=200)
+
+   ax = model.plot_eigenvalue_parts(v=speeds,
+                                    colors=['C0', 'C0', 'C1', 'C2'],
+                                    show_stable_regions=False,
+                                    hide_zeros=True)
+   ax.set_ylim((-10.0, 10.0))
+
 You can choose any parameter in the dictionary to generate the root locus and
 also override other parameters.
 
