@@ -21,6 +21,7 @@ Table of Contents
    examples.rst
    data.rst
    app.rst
+   bicycles.rst
    bicycleparameters.rst
 
 * :ref:`genindex`
