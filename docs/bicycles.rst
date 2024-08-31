@@ -70,4 +70,14 @@ Balance Assist V1
    :context: close-figs
 
    bicycle.add_rider('Jason', reCalc=True)
-   bicycle.plot_bicycle_geometry()
+   bicycle.plot_bicycle_geometry(inertiaEllipse=False)
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   par = bp.io.remove_uncertainties(bicycle.parameters['Benchmark'])
+   par['v'] = 1.0
+   par_set = Meijaard2007ParameterSet(par, True)
+   model = Meijaard2007Model(par_set)
+   model.plot_eigenvalue_parts(v=v)
