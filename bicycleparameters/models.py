@@ -20,7 +20,7 @@ class _Model(ABC):
 
 
 class Meijaard2007Model(_Model):
-    """Whipple-Carvallo model presented in [Meijaard2007]_. It is both linear
+    """Carvallo-Whipple model presented in [Meijaard2007]_. It is both linear
     and the minimal model in terms of states and coordinates that fully
     describe the vehicle's dynamics: self-stability and non-minimum phase
     behavior.
@@ -549,7 +549,8 @@ class Meijaard2007Model(_Model):
         return axes
 
     def plot_eigenvalue_parts(self, ax=None, colors=None,
-                              show_stable_regions=True, **parameter_overrides):
+                              show_stable_regions=True, hide_zeros=False,
+                              **parameter_overrides):
         """Returns a matplotlib axis of the real and imaginary parts of the
         eigenvalues plotted against the provided parameter.
 
@@ -561,6 +562,9 @@ class Meijaard2007Model(_Model):
             Matplotlib colors for the 4 modes.
         show_stable_regions : boolean, optional
             If true, a grey shaded background will indicate stable regions.
+        hide_zeros : boolean or float, optional
+            If true, real or imaginary parts that are smaller than 1e-12 will
+            not be plotted. Providing a float will set the tolerance.
         **parameter_overrides : dictionary
             Parameter keys that map to floats or array_like of floats
             shape(n,). All keys that map to array_like must be of the same
@@ -592,6 +596,8 @@ class Meijaard2007Model(_Model):
         else:
             evals, evecs = np.array([evals]), np.array([evecs])
 
+        tol = hide_zeros if isinstance(hide_zeros, float) else 1e-12
+
         par, array_keys, _ = self._parse_parameter_overrides(
             **parameter_overrides)
 
@@ -611,14 +617,18 @@ class Meijaard2007Model(_Model):
 
         # imaginary components
         for eval_sequence, color, label in zip(evals.T, colors, legend):
-            ax.plot(par[array_keys[0]], np.abs(np.imag(eval_sequence)),
-                    color=color, label=label, linestyle='--')
+            imag_vals = np.abs(np.imag(eval_sequence))
+            if hide_zeros:
+                imag_vals[np.abs(imag_vals) < tol] = np.nan
+            ax.plot(par[array_keys[0]], imag_vals, color=color, label=label,
+                    linestyle='--')
 
         # plot the real parts of the eigenvalues
         for eval_sequence, color, label in zip(evals.T, colors, legend):
-            ax.plot(par[array_keys[0]], np.real(eval_sequence), color=color,
-                    label=label)
-
+            real_vals = np.real(eval_sequence)
+            if hide_zeros:
+                real_vals[np.abs(real_vals) < tol] = np.nan
+            ax.plot(par[array_keys[0]], real_vals, color=color, label=label)
 
         # set labels and limits
         ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
