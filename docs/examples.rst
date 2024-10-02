@@ -683,3 +683,88 @@ derivative controller on roll:
    model.plot_simulation(times, x0,
        input_func=lambda t, x: np.array([0.0, 50.0*x[2]]),
        v=2.0)
+
+Feedback Control
+----------------
+
+We have a :py:class:`~bicycleparameters.models.Meijaard2007WithFeedbackModel`
+that applies negative full state feedback to the
+:py:class:`~bicycleparameters.models.Meijaard2007Model` using eight feedback
+gains.  These feedback gains can be chosen with a variety of methods. One
+method is to create gain scheduling with respect to speed using LQR optimal
+control. The 4 x 2 gain matrix can be found by solving the continous Ricatti
+equation. If the system is controllable, this guarantees a stable closed loop
+system.
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   from scipy.linalg import solve_continuous_are
+
+   speeds = np.linspace(1.0, 10.0, num=1001)
+
+   As, Bs = model.form_state_space_matrices(v=speeds)
+   Ks = np.empty((len(speeds), 2, 4))
+   Q = np.eye(4)
+   Q = np.diag([10.0, 1.0, 10.0, 1.0])
+   R = np.eye(1)
+
+   for i, (Ai, Bi) in enumerate(zip(As, Bs)):
+       S = solve_continuous_are(Ai, Bi[:, 1:2], Q, R)  # steer torque control
+       Ks[i] = (np.linalg.inv(R) @ Bi[:, 1:2].T @  S).squeeze()
+
+   fig, axes = plt.subplots(2, 4, sharex=True, layout='constrained')
+   for i, row in enumerate(axes):
+       for j, col in enumerate(row):
+           col.plot(speeds, Ks[:, i, j])
+
+Now create the feedback model and use the computed gains to check for closed
+loop stability:
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   from bicycleparameters.models import Meijaard2007WithFeedbackModel
+
+   gain_names = ['kphi_phi', 'kphi_del', 'kphi_phid', 'kphi_deld',
+                 'kdel_phi', 'kdel_del', 'kdel_phid', 'kdel_deld']
+   for name in gain_names:
+      par[name] = 0.0
+
+   model = Meijaard2007WithFeedbackModel(par_set)
+
+   ax = model.plot_eigenvalue_parts(v=speeds,
+                                    kphi_phi=Ks[:, 0, 0],
+                                    kphi_del=Ks[:, 0, 1],
+                                    kphi_phid=Ks[:, 0, 2],
+                                    kphi_deld=Ks[:, 0, 3],
+                                    kdel_phi=Ks[:, 1, 0],
+                                    kdel_del=Ks[:, 1, 1],
+                                    kdel_phid=Ks[:, 1, 2],
+                                    kdel_deld=Ks[:, 1, 3],
+                                    colors=['C0', 'C0', 'C1', 'C2'],
+                                    hide_zeros=True)
+   ax.set_ylim((-10.0, 10.0))
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   x0 = np.deg2rad([5.0, -3.0, 0.0, 0.0])
+
+   ax = model.plot_simulation(times, x0,
+                         v=speeds[90],
+                         kphi_phi=Ks[90, 0, 0],
+                         kphi_del=Ks[90, 0, 1],
+                         kphi_phid=Ks[90, 0, 2],
+                         kphi_deld=Ks[90, 0, 3],
+                         kdel_phi=Ks[90, 1, 0],
+                         kdel_del=Ks[90, 1, 1],
+                         kdel_phid=Ks[90, 1, 2],
+                         kdel_deld=Ks[90, 1, 3],
+                         input_func=lambda t, x: np.array([100.0, 0.0])
+                                                 if (t > 2.5 and t < 2.6)
+                                                 else np.zeros(2))
+   ax[0].set_title('$v$ = {} m/s'.format(speeds[90]))
