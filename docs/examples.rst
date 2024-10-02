@@ -683,3 +683,61 @@ derivative controller on roll:
    model.plot_simulation(times, x0,
        input_func=lambda t, x: np.array([0.0, 50.0*x[2]]),
        v=2.0)
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   from scipy.linalg import solve_continuous_are
+
+   speeds = np.linspace(0.1, 10.1, num=1001)
+
+   As, Bs = model.form_state_space_matrices(v=speeds)
+   Ks = np.empty((len(speeds), 2, 4))
+   Q = np.eye(4)
+   R = np.eye(1)
+
+   for i, (Ai, Bi) in enumerate(zip(As, Bs)):
+       S = solve_continuous_are(Ai, Bi[:, 1:2], Q, R)  # steer torque control
+       Ks[i] = (np.linalg.inv(R) @ Bi[:, 1:2].T @  S).squeeze()
+
+   from bicycleparameters.models import Meijaard2007WithFeedbackModel
+
+   gain_names = ['kphi_phi', 'kphi_del', 'kphi_phid', 'kphi_deld',
+                 'kdel_phi', 'kdel_del', 'kdel_phid', 'kdel_deld']
+   for name in gain_names:
+      par[name] = 0.0
+
+   model = Meijaard2007WithFeedbackModel(par_set)
+
+   ax = model.plot_eigenvalue_parts(v=speeds,
+                                    kphi_phi=Ks[:, 0, 0],
+                                    kphi_del=Ks[:, 0, 1],
+                                    kphi_phid=Ks[:, 0, 2],
+                                    kphi_deld=Ks[:, 0, 3],
+                                    kdel_phi=Ks[:, 1, 0],
+                                    kdel_del=Ks[:, 1, 1],
+                                    kdel_phid=Ks[:, 1, 2],
+                                    kdel_deld=Ks[:, 1, 3],
+                                    colors=['C0', 'C0', 'C1', 'C2'],
+                                    show_stable_regions=False,
+                                    hide_zeros=True)
+   ax.set_ylim((-10.0, 10.0))
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   x0 = np.deg2rad([5.0, -3.0, 0.0, 0.0])
+
+   ax = model.plot_simulation(times, x0,
+                         v=speeds[90],
+                         kphi_phi=Ks[90, 0, 0],
+                         kphi_del=Ks[90, 0, 1],
+                         kphi_phid=Ks[90, 0, 2],
+                         kphi_deld=Ks[90, 0, 3],
+                         kdel_phi=Ks[90, 1, 0],
+                         kdel_del=Ks[90, 1, 1],
+                         kdel_phid=Ks[90, 1, 2],
+                         kdel_deld=Ks[90, 1, 3])
+   ax[0].set_title('$v$ = {} m/s'.format(speeds[90]))

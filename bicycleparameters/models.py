@@ -944,3 +944,112 @@ class Meijaard2007Model(_Model):
         axes[3, 1].set_xlabel('Time [s]')
 
         return axes
+
+
+class Meijaard2007WithFeedbackModel(Meijaard2007Model):
+    """
+
+    The states are::
+
+       x = |roll angle | = |phi |
+           |steer angle|   |del |
+           |roll rate  |   |phid|
+           |steer rate |   |deld|
+
+    The inputs are::
+
+       u = |roll torque | = |Tphi|
+           |steer torque|   |Tdelta|
+
+    Applying full state feedback gives this controller::
+
+       u = -K*x = -|kphi_phi, kphi_del, kphi_phid, kphi_deld|*|phi  |
+                   |kdel_phi, kdel_del, kdel_phid, kdel_deld| |delta|
+                                                              |phid |
+                                                              |deld |
+
+    """
+
+    def form_state_space_matrices(self, **parameter_overrides):
+        """Returns the A and B matrices for the Whipple-Carvallo model
+        linearized about the upright constant velocity configuration with a
+        full state feedback steer controller.
+
+        Returns
+        =======
+        A : ndarray, shape(4,4) or shape(n,4,4)
+            The state matrix.
+        B : ndarray, shape(4,2) or shape(n,4,2)
+            The input matrix.
+
+        Notes
+        =====
+        A, B, and K describe the model in state space form:
+
+            x' = (A - B*K)*x + B*u
+
+        where::
+
+           x = |phi     | = |roll angle |
+               |delta   |   |steer angle|
+               |phidot  |   |roll rate  |
+               |deltadot|   |steer rate |
+
+           K = |0    0      0       0        |
+               |kphi kdelta kphidot kdeltadot|
+
+           u = |Tphi  | = |roll torque |
+               |Tdelta|   |steer torque|
+
+        """
+        gain_names = ['kphi_phi', 'kphi_del', 'kphi_phid', 'kphi_deld',
+                      'kdel_phi', 'kdel_del', 'kdel_phid', 'kdel_deld']
+
+        par, arr_keys, arr_len = self._parse_parameter_overrides(
+            **parameter_overrides)
+
+        # g, v, and the contoller gains are not used in the computation of M,
+        # C1, K0, K2.
+
+        M, C1, K0, K2 = self.form_reduced_canonical_matrices(
+            **parameter_overrides)
+
+        # steer controller gains, 2x4, no roll control
+        if any(k in gain_names for k in arr_keys):
+            # if one of the gains is an array, create a set of gain matrices
+            # where that single gain varies across the set
+            K = np.array([
+                [par[p][0] if p in arr_keys else par[p] for p in gain_names[:4]],
+                [par[p][0] if p in arr_keys else par[p] for p in gain_names[4:]]
+            ])
+            # K is now shape(n, 2, 4)
+            K = np.tile(K, (arr_len, 1, 1))
+            for k in arr_keys:
+                if k in gain_names[:4]:
+                    K[:, 0, gain_names[:4].index(k)] = par[k]
+                if k in gain_names[4:]:
+                    K[:, 1, gain_names[4:].index(k)] = par[k]
+        else:  # gains are not an array
+            K = np.array([[par[p] for p in gain_names[:4]],
+                          [par[p] for p in gain_names[4:]]])
+
+        if arr_keys:
+            A = np.zeros((arr_len, 4, 4))
+            B = np.zeros((arr_len, 4, 2))
+            for i in range(arr_len):
+                Mi = M[i] if M.ndim == 3 else M
+                C1i = C1[i] if C1.ndim == 3 else C1
+                K0i = K0[i] if K0.ndim == 3 else K0
+                K2i = K2[i] if K2.ndim == 3 else K2
+                vi = par['v'] if np.isscalar(par['v']) else par['v'][i]
+                gi = par['g'] if np.isscalar(par['g']) else par['g'][i]
+                Ki = K[i] if K.ndim == 3 else K
+                Ai, Bi = ab_matrix(Mi, C1i, K0i, K2i, vi, gi)
+                A[i] = Ai - Bi@Ki
+                B[i] = Bi
+        else:  # scalar parameters
+            A, B = ab_matrix(M, C1, K0, K2, par['v'], par['g'])
+            A = A - B@K
+            B = B
+
+        return A, B
