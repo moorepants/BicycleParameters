@@ -720,7 +720,6 @@ derivative controller on roll:
                                     kdel_phid=Ks[:, 1, 2],
                                     kdel_deld=Ks[:, 1, 3],
                                     colors=['C0', 'C0', 'C1', 'C2'],
-                                    show_stable_regions=False,
                                     hide_zeros=True)
    ax.set_ylim((-10.0, 10.0))
 
@@ -739,5 +738,8 @@ derivative controller on roll:
                          kdel_phi=Ks[90, 1, 0],
                          kdel_del=Ks[90, 1, 1],
                          kdel_phid=Ks[90, 1, 2],
-                         kdel_deld=Ks[90, 1, 3])
+                         kdel_deld=Ks[90, 1, 3],
+                         input_func=lambda t, x: np.array([100.0, 0.0])
+                                                 if (t > 2.5 and t < 2.6)
+                                                 else np.zeros(2))
    ax[0].set_title('$v$ = {} m/s'.format(speeds[90]))
