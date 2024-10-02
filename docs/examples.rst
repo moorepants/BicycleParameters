@@ -684,22 +684,47 @@ derivative controller on roll:
        input_func=lambda t, x: np.array([0.0, 50.0*x[2]]),
        v=2.0)
 
+Feedback Control
+----------------
+
+We have a :py:class:`~bicycleparameters.models.Meijaard2007WithFeedbackModel`
+that applies negative full state feedback to the
+:py:class:`~bicycleparameters.models.Meijaard2007Model` using eight feedback
+gains.  These feedback gains can be chosen with a variety of methods. One
+method is to create gain scheduling with respect to speed using LQR optimal
+control. The 4 x 2 gain matrix can be found by solving the continous Ricatti
+equation. If the system is controllable, this guarantees a stable closed loop
+system.
+
 .. plot::
    :include-source: True
    :context: close-figs
 
    from scipy.linalg import solve_continuous_are
 
-   speeds = np.linspace(0.1, 10.1, num=1001)
+   speeds = np.linspace(1.0, 10.0, num=1001)
 
    As, Bs = model.form_state_space_matrices(v=speeds)
    Ks = np.empty((len(speeds), 2, 4))
    Q = np.eye(4)
+   Q = np.diag([10.0, 1.0, 10.0, 1.0])
    R = np.eye(1)
 
    for i, (Ai, Bi) in enumerate(zip(As, Bs)):
        S = solve_continuous_are(Ai, Bi[:, 1:2], Q, R)  # steer torque control
        Ks[i] = (np.linalg.inv(R) @ Bi[:, 1:2].T @  S).squeeze()
+
+   fig, axes = plt.subplots(2, 4, sharex=True, layout='constrained')
+   for i, row in enumerate(axes):
+       for j, col in enumerate(row):
+           col.plot(speeds, Ks[:, i, j])
+
+Now create the feedback model and use the computed gains to check for closed
+loop stability:
+
+.. plot::
+   :include-source: True
+   :context: close-figs
 
    from bicycleparameters.models import Meijaard2007WithFeedbackModel
 
