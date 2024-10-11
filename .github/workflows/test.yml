@@ -37,7 +37,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           channels: conda-forge
           environment-file: conda/bicycleparameters-dev${{ matrix.dependency-set }}.yml
-          environment-name: bicycleparameters-dev${{ matrix.dependency-set }}
       - name: run tests
         shell: bash -l {0}
         run: |
