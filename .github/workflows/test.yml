@@ -7,11 +7,11 @@ on:
     branches: master
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         dependency-set: ["-old", ""]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
         exclude:
           - dependency-set: "-old"
             python-version: "3.9"
@@ -21,6 +21,8 @@ jobs:
             python-version: "3.11"
           - dependency-set: "-old"
             python-version: "3.12"
+          - dependency-set: "-old"
+            python-version: "3.13"
     name: test
     steps:
       - uses: actions/checkout@v4
