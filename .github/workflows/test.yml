@@ -5,6 +5,10 @@ on:
     branches: master
   pull_request:
     branches: master
+# cancels prior builds for this workflow when new commit is pushed
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -26,31 +30,31 @@ jobs:
     name: test
     steps:
       - uses: actions/checkout@v4
-      - name: install mamba
-        uses: mamba-org/provision-with-micromamba@main
+      - name: Setup Conda environment
+        uses: conda-incubator/setup-miniconda@v3
         with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge
           environment-file: conda/bicycleparameters-dev${{ matrix.dependency-set }}.yml
           environment-name: bicycleparameters-dev${{ matrix.dependency-set }}
-          cache-env: true
-          extra-specs: |
-            python=${{ matrix.python-version }}
       - name: run tests
         shell: bash -l {0}
         run: |
-          micromamba info
-          micromamba list
+          conda info
+          conda list
           python -c "import bicycleparameters"
           py.test --doctest-modules bicycleparameters/
       - name: build documentation
         shell: bash -l {0}
         run: |
-          micromamba info
-          micromamba list
+          conda info
+          conda list
           cd docs
           make html
       - name: test installation
         shell: bash -l {0}
         run: |
-          micromamba info
-          micromamba list
+          conda info
           python setup.py install
+          conda list
