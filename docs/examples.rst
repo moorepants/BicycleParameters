@@ -700,24 +700,36 @@ system.
    :include-source: True
    :context: close-figs
 
+   from bicycleparameters.parameter_sets import Meijaard2007WithFeedbackParameterSet
    from scipy.linalg import solve_continuous_are
+
+   gain_names = [['kTphi_phi', 'kTphi_del', 'kTphi_phid', 'kTphi_deld'],
+                 ['kTdel_phi', 'kTdel_del', 'kTdel_phid', 'kTdel_deld']]
+   for row in gain_names:
+       for name in row:
+           par[name] = 0.0
+
+   par_set = Meijaard2007WithFeedbackParameterSet(par, True)
 
    speeds = np.linspace(1.0, 10.0, num=1001)
 
    As, Bs = model.form_state_space_matrices(v=speeds)
-   Ks = np.empty((len(speeds), 2, 4))
+   Ks = np.zeros((len(speeds), 2, 4))
    Q = np.eye(4)
    Q = np.diag([10.0, 1.0, 10.0, 1.0])
    R = np.eye(1)
 
    for i, (Ai, Bi) in enumerate(zip(As, Bs)):
        S = solve_continuous_are(Ai, Bi[:, 1:2], Q, R)  # steer torque control
-       Ks[i] = (np.linalg.inv(R) @ Bi[:, 1:2].T @  S).squeeze()
+       Ks[i, 1, :] = (np.linalg.inv(R) @ Bi[:, 1:2].T @  S).squeeze()
 
    fig, axes = plt.subplots(2, 4, sharex=True, layout='constrained')
-   for i, row in enumerate(axes):
-       for j, col in enumerate(row):
+   for i, (row, name_row) in enumerate(zip(axes, gain_names)):
+       for j, (col, name) in enumerate(zip(row, name_row)):
            col.plot(speeds, Ks[:, i, j])
+           col.set_ylabel(r'${}$'.format(par_set.par_strings[name]))
+   for ax in row:
+       ax.set_label('v [m/s]')
 
 Now create the feedback model and use the computed gains to check for closed
 loop stability:
@@ -728,22 +740,17 @@ loop stability:
 
    from bicycleparameters.models import Meijaard2007WithFeedbackModel
 
-   gain_names = ['kphi_phi', 'kphi_del', 'kphi_phid', 'kphi_deld',
-                 'kdel_phi', 'kdel_del', 'kdel_phid', 'kdel_deld']
-   for name in gain_names:
-      par[name] = 0.0
-
    model = Meijaard2007WithFeedbackModel(par_set)
 
    ax = model.plot_eigenvalue_parts(v=speeds,
-                                    kphi_phi=Ks[:, 0, 0],
-                                    kphi_del=Ks[:, 0, 1],
-                                    kphi_phid=Ks[:, 0, 2],
-                                    kphi_deld=Ks[:, 0, 3],
-                                    kdel_phi=Ks[:, 1, 0],
-                                    kdel_del=Ks[:, 1, 1],
-                                    kdel_phid=Ks[:, 1, 2],
-                                    kdel_deld=Ks[:, 1, 3],
+                                    kTphi_phi=Ks[:, 0, 0],
+                                    kTphi_del=Ks[:, 0, 1],
+                                    kTphi_phid=Ks[:, 0, 2],
+                                    kTphi_deld=Ks[:, 0, 3],
+                                    kTdel_phi=Ks[:, 1, 0],
+                                    kTdel_del=Ks[:, 1, 1],
+                                    kTdel_phid=Ks[:, 1, 2],
+                                    kTdel_deld=Ks[:, 1, 3],
                                     colors=['C0', 'C0', 'C1', 'C2'],
                                     hide_zeros=True)
    ax.set_ylim((-10.0, 10.0))
@@ -756,14 +763,14 @@ loop stability:
 
    ax = model.plot_simulation(times, x0,
                          v=speeds[90],
-                         kphi_phi=Ks[90, 0, 0],
-                         kphi_del=Ks[90, 0, 1],
-                         kphi_phid=Ks[90, 0, 2],
-                         kphi_deld=Ks[90, 0, 3],
-                         kdel_phi=Ks[90, 1, 0],
-                         kdel_del=Ks[90, 1, 1],
-                         kdel_phid=Ks[90, 1, 2],
-                         kdel_deld=Ks[90, 1, 3],
+                         kTphi_phi=Ks[90, 0, 0],
+                         kTphi_del=Ks[90, 0, 1],
+                         kTphi_phid=Ks[90, 0, 2],
+                         kTphi_deld=Ks[90, 0, 3],
+                         kTdel_phi=Ks[90, 1, 0],
+                         kTdel_del=Ks[90, 1, 1],
+                         kTdel_phid=Ks[90, 1, 2],
+                         kTdel_deld=Ks[90, 1, 3],
                          input_func=lambda t, x: np.array([100.0, 0.0])
                                                  if (t > 2.5 and t < 2.6)
                                                  else np.zeros(2))

@@ -969,6 +969,9 @@ class Meijaard2007WithFeedbackModel(Meijaard2007Model):
                                                               |deld |
 
     """
+    def __init__(self, parameter_set):
+        self.parameter_set = parameter_set.to_parameterization(
+            'Meijaard2007WithFeedback')
 
     def form_state_space_matrices(self, **parameter_overrides):
         """Returns the A and B matrices for the Whipple-Carvallo model
@@ -990,20 +993,20 @@ class Meijaard2007WithFeedbackModel(Meijaard2007Model):
 
         where::
 
-           x = |phi     | = |roll angle |
-               |delta   |   |steer angle|
-               |phidot  |   |roll rate  |
-               |deltadot|   |steer rate |
+           x = |phi   | = |roll angle |
+               |delta |   |steer angle|
+               |phid  |   |roll rate  |
+               |deld  |   |steer rate |
 
            K = |0    0      0       0        |
-               |kphi kdelta kphidot kdeltadot|
+               |kTdel_phi kTdel_del kphidot kdeltadot|
 
            u = |Tphi  | = |roll torque |
                |Tdelta|   |steer torque|
 
         """
-        gain_names = ['kphi_phi', 'kphi_del', 'kphi_phid', 'kphi_deld',
-                      'kdel_phi', 'kdel_del', 'kdel_phid', 'kdel_deld']
+        gain_names = ['kTphi_phi', 'kTphi_del', 'kTphi_phid', 'kTphi_deld',
+                      'kTdel_phi', 'kTdel_del', 'kTdel_phid', 'kTdel_deld']
 
         par, arr_keys, arr_len = self._parse_parameter_overrides(
             **parameter_overrides)

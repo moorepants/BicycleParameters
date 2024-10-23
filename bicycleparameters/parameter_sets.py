@@ -806,6 +806,120 @@ class Meijaard2007ParameterSet(ParameterSet):
         return ax
 
 
+class Meijaard2007WithFeedbackParameterSet(Meijaard2007ParameterSet):
+    """Represents the parameters of the benchmark bicycle presented in
+    [Meijaard2007]_ and with full state feedback control gains.
+
+    The four bodies are:
+
+    - B: rear frame + rigid rider
+    - F: front wheel
+    - H: front frame (fork & handlebars)
+    - R: rear wheel
+
+    Parameters
+    ==========
+    parameters : dictionary
+        A dictionary mapping variable names to values that contains the
+        following keys:
+
+        - ``IBxx`` : x moment of inertia of the frame/rider [kg*m**2]
+        - ``IBxz`` : xz product of inertia of the frame/rider [kg*m**2]
+        - ``IBzz`` : z moment of inertia of the frame/rider [kg*m**2]
+        - ``IFxx`` : x moment of inertia of the front wheel [kg*m**2]
+        - ``IFyy`` : y moment of inertia of the front wheel [kg*m**2]
+        - ``IHxx`` : x moment of inertia of the handlebar/fork [kg*m**2]
+        - ``IHxz`` : xz product of inertia of the handlebar/fork [kg*m**2]
+        - ``IHzz`` : z moment of inertia of the handlebar/fork [kg*m**2]
+        - ``IRxx`` : x moment of inertia of the rear wheel [kg*m**2]
+        - ``IRyy`` : y moment of inertia of the rear wheel [kg*m**2]
+        - ``c`` : trail [m]
+        - ``g`` : acceleration due to gravity [m/s**2]
+        - ``kTdel_del`` : steer torque feedback gain from steer angle [N*m/rad]
+        - ``kTdel_deld`` : steer torque feedback gain from steer rate [N*m*s/rad]
+        - ``kTdel_phi`` : steer torque feedback gain from roll angle [N*m/rad]
+        - ``kTdel_phid`` : steer torque feedback gain from roll rate [N*m*s/rad]
+        - ``kTphi_del`` : roll torque feedback gain from steer angle [N*m/rad]
+        - ``kTphi_deld`` : roll torque feedback gain from steer rate [N*m*s/rad]
+        - ``kTphi_phi`` : roll torque feedback gain from roll angle [N*m/rad]
+        - ``kTphi_phid`` : roll torque feedback gain from roll rate [N*m*s/rad]
+        - ``lam`` : steer axis tilt [rad]
+        - ``mB`` : frame/rider mass [kg]
+        - ``mF`` : front wheel mass [kg]
+        - ``mH`` : handlebar/fork assembly mass [kg]
+        - ``mR`` : rear wheel mass [kg]
+        - ``rF`` : front wheel radius [m]
+        - ``rR`` : rear wheel radius [m]
+        - ``w`` : wheelbase [m]
+        - ``xB`` : x distance to the frame/rider center of mass [m]
+        - ``xH`` : x distance to the frame/rider center of mass [m]
+        - ``zB`` : z distance to the frame/rider center of mass [m]
+        - ``zH`` : z distance to the frame/rider center of mass [m]
+
+    includes_rider : boolean
+        True if body B is the combined rear frame and rider in terms of
+        mass and inertia values.
+
+    Attributes
+    ==========
+    par_strings : dictionary
+        Maps ASCII strings to their LaTeX string.
+    body_labels : list of strings
+        Single capital letters that correspond to the four rigid bodies in the
+        model.
+
+    References
+    ==========
+
+    .. [Meijaard2007] Meijaard J.P, Papadopoulos Jim M, Ruina Andy and Schwab
+       A.L, 2007, Linearized dynamics equations for the balance and steer of a
+       bicycle: a benchmark and review, Proc. R. Soc. A., 463:1955–1982
+       http://doi.org/10.1098/rspa.2007.1857
+
+    """
+
+    # maps "Python" string to LaTeX version
+    par_strings = {
+        'IBxx': r'I_{Bxx}',
+        'IBxz': r'I_{Bxz}',
+        'IByy': r'I_{Byy}',
+        'IBzz': r'I_{Bzz}',
+        'IFxx': r'I_{Fxx}',
+        'IFyy': r'I_{Fyy}',
+        'IHxx': r'I_{Hxx}',
+        'IHxz': r'I_{Hxz}',
+        'IHyy': r'I_{Hyy}',
+        'IHzz': r'I_{Hzz}',
+        'IRxx': r'I_{Rxx}',
+        'IRyy': r'I_{Ryy}',
+        'c': r'c',
+        'g': r'g',
+        'kTdel_del': r'k_{T_{\delta}\delta}',
+        'kTdel_deld': r'k_{T_{\delta}\dot{\delta}}',
+        'kTdel_phi': r'k_{T_{\delta}\phi}',
+        'kTdel_phid': r'k_{T_{\delta}\dot{\phi}}',
+        'kTphi_del': r'k_{T_{\phi}\delta}',
+        'kTphi_deld': r'k_{T_{\phi}\dot{\delta}}',
+        'kTphi_phi': r'k_{T_{\phi}\phi}',
+        'kTphi_phid': r'k_{T_{\phi}\dot{\phi}}',
+        'lam': r'\lambda',
+        'mB': r'm_B',
+        'mF': r'm_F',
+        'mH': r'm_H',
+        'mR': r'm_R',
+        'rF': r'r_F',
+        'rR': r'r_R',
+        'v': r'v',
+        'w': r'w',
+        'xB': r'x_B',
+        'xH': r'x_H',
+        'zB': r'z_B',
+        'zH': r'z_H',
+    }
+
+    body_labels = ['B', 'F', 'H', 'R']
+
+
 class Moore2019ParameterSet(ParameterSet):
     """Represents the parameters of the bicycle parameterization presented in
     [1]_.
