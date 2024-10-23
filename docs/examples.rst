@@ -688,20 +688,19 @@ Feedback Control
 ----------------
 
 We have a :py:class:`~bicycleparameters.models.Meijaard2007WithFeedbackModel`
-that applies negative full state feedback to the
+that applies full state feedback to the
 :py:class:`~bicycleparameters.models.Meijaard2007Model` using eight feedback
-gains.  These feedback gains can be chosen with a variety of methods. One
-method is to create gain scheduling with respect to speed using LQR optimal
-control. The 4 x 2 gain matrix can be found by solving the continous Ricatti
-equation. If the system is controllable, this guarantees a stable closed loop
-system.
+gains. These feedback gains can be chosen with a variety of methods to
+stabilize the system.
+
+Start by creating a new parameter set to use with the model that includes the
+eight gain parameters. Initialize the gains to zero.
 
 .. plot::
    :include-source: True
    :context: close-figs
 
    from bicycleparameters.parameter_sets import Meijaard2007WithFeedbackParameterSet
-   from scipy.linalg import solve_continuous_are
 
    gain_names = [['kTphi_phi', 'kTphi_del', 'kTphi_phid', 'kTphi_deld'],
                  ['kTdel_phi', 'kTdel_del', 'kTdel_phid', 'kTdel_deld']]
@@ -711,8 +710,9 @@ system.
 
    par_set = Meijaard2007WithFeedbackParameterSet(par, True)
 
-It is well known that a simple proportional positive feedback of roll angular
-rate can stablize a bicycle at lower speeds.
+Now create the model and plote the eigenvalues versus speed. This should be
+identical to the model without feedback given that the gains are all set to
+zero.
 
 .. plot::
    :include-source: True
@@ -722,10 +722,16 @@ rate can stablize a bicycle at lower speeds.
 
    model = Meijaard2007WithFeedbackModel(par_set)
 
+   speeds = np.linspace(0.0, 10.0, num=1001)
+
    ax = model.plot_eigenvalue_parts(v=speeds,
                                     colors=['C0', 'C0', 'C1', 'C2'],
                                     hide_zeros=True)
    ax.set_ylim((-10.0, 10.0))
+
+It is well known that a simple proportional positive feedback of roll angular
+rate to control steer torque can stablize a bicycle at lower speeds. So set the
+:math:`k_{T_{\delta}\dot{\phi}}` to a larger negative value.
 
 .. plot::
    :include-source: True
@@ -737,21 +743,52 @@ rate can stablize a bicycle at lower speeds.
                                     hide_zeros=True)
    ax.set_ylim((-10.0, 10.0))
 
+The stable speed range is significantly increased, but the weave mode
+eigenfrequency is increased as a consequence.
+
+This can also be used to model adding springy training wheels by including a
+negative feedback of roll angle to roll torque.
+
 .. plot::
    :include-source: True
    :context: close-figs
 
-   speeds = np.linspace(0.0, 10.0, num=1001)
+   ax = model.plot_eigenvalue_parts(v=speeds,
+                                    kTphi_phi=3000.0,
+                                    kTphi_phid=30.0,
+                                    colors=['C0', 'C0', 'C1', 'C2'],
+                                    hide_zeros=True)
+   ax.set_ylim((-10.0, 10.0))
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   times = np.linspace(0.0, 1.0, num=1001)
+
+   model.plot_mode_simulations(times, v=0.1)
+
+A more general method to control the bicycle is to create gain scheduling with
+respect to speed using LQR optimal control. Assuming we only control steer
+torque via feedback of all four states, the 4 gains can be found by solving the
+continous Ricatti equation. If the system is controllable, this guarantees a
+stable closed loop system. There is an uncontrollable speed just below 0.8 m/s,
+so we will only apply control at speeds greater than 0.8 m/s.
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   from scipy.linalg import solve_continuous_are
 
    As, Bs = model.form_state_space_matrices(v=speeds)
    Ks = np.zeros((len(speeds), 2, 4))
    Q = np.eye(4)
-   Q = np.diag([10.0, 1.0, 10.0, 1.0])
    R = np.eye(1)
 
-   for i, (Ai, Bi) in enumerate(zip(As, Bs)):
-       if i > 100:
-          S = solve_continuous_are(Ai, Bi[:, 1:2], Q, R)  # steer torque control
+   for i, (vi, Ai, Bi) in enumerate(zip(speeds, As, Bs)):
+       if vi >= 0.8:
+          S = solve_continuous_are(Ai, Bi[:, 1:2], Q, R)
           Ks[i, 1, :] = (np.linalg.inv(R) @ Bi[:, 1:2].T @  S).squeeze()
 
    fig, axes = plt.subplots(2, 4, sharex=True, layout='constrained')
@@ -760,18 +797,13 @@ rate can stablize a bicycle at lower speeds.
            col.plot(speeds, Ks[:, i, j])
            col.set_ylabel(r'${}$'.format(par_set.par_strings[name]))
    for ax in row:
-       ax.set_label('v [m/s]')
+       ax.set_xlabel('v [m/s]')
 
-Now create the feedback model and use the computed gains to check for closed
-loop stability:
+Now use the computed gains to check for closed loop stability:
 
 .. plot::
    :include-source: True
    :context: close-figs
-
-   from bicycleparameters.models import Meijaard2007WithFeedbackModel
-
-   model = Meijaard2007WithFeedbackModel(par_set)
 
    ax = model.plot_eigenvalue_parts(v=speeds,
                                     kTphi_phi=Ks[:, 0, 0],
@@ -786,23 +818,35 @@ loop stability:
                                     hide_zeros=True)
    ax.set_ylim((-10.0, 10.0))
 
+This is stable over a wide speed range and retains the weave eigenfrequency of
+the uncontrolled system.
+
 .. plot::
    :include-source: True
    :context: close-figs
 
    x0 = np.deg2rad([5.0, -3.0, 0.0, 0.0])
 
+   def input_func(t, x):
+       print('in here')
+       if (t > 2.5 and t < 2.6):
+           return np.array([200.0, 0.0])
+       else:
+           return np.zeros(2)
+
+   times = np.linspace(0.0, 5.0, num=1001)
+
+   idx = 90
    ax = model.plot_simulation(times, x0,
-                         v=speeds[90],
-                         kTphi_phi=Ks[90, 0, 0],
-                         kTphi_del=Ks[90, 0, 1],
-                         kTphi_phid=Ks[90, 0, 2],
-                         kTphi_deld=Ks[90, 0, 3],
-                         kTdel_phi=Ks[90, 1, 0],
-                         kTdel_del=Ks[90, 1, 1],
-                         kTdel_phid=Ks[90, 1, 2],
-                         kTdel_deld=Ks[90, 1, 3],
-                         input_func=lambda t, x: np.array([100.0, 0.0])
-                                                 if (t > 2.5 and t < 2.6)
-                                                 else np.zeros(2))
+       input_func=input_func,
+       v=speeds[idx],
+       kTphi_phi=Ks[idx, 0, 0],
+       kTphi_del=Ks[idx, 0, 1],
+       kTphi_phid=Ks[idx, 0, 2],
+       kTphi_deld=Ks[idx, 0, 3],
+       kTdel_phi=Ks[idx, 1, 0],
+       kTdel_del=Ks[idx, 1, 1],
+       kTdel_phid=Ks[idx, 1, 2],
+       kTdel_deld=Ks[idx, 1, 3],
+   )
    ax[0].set_title('$v$ = {} m/s'.format(speeds[90]))
