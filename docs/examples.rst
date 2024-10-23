@@ -796,7 +796,7 @@ so we will only apply control at speeds greater than 0.8 m/s.
    for i, (row, name_row) in enumerate(zip(axes, gain_names)):
        for j, (col, name) in enumerate(zip(row, name_row)):
            col.plot(speeds, Ks[:, i, j])
-           col.set_ylabel(r'${}$'.format(par_set.par_strings[name]))
+           col.set_title(r'${}$'.format(par_set.par_strings[name]))
    for ax in row:
        ax.set_xlabel('v [m/s]')
 
@@ -814,9 +814,7 @@ Now use the computed gains to check for closed loop stability:
                                     kTdel_phi=Ks[:, 1, 0],
                                     kTdel_del=Ks[:, 1, 1],
                                     kTdel_phid=Ks[:, 1, 2],
-                                    kTdel_deld=Ks[:, 1, 3],
-                                    colors=['C0', 'C0', 'C1', 'C2'],
-                                    hide_zeros=True)
+                                    kTdel_deld=Ks[:, 1, 3])
    ax.set_ylim((-10.0, 10.0))
 
 This is stable over a wide speed range and retains the weave eigenfrequency of
@@ -829,7 +827,6 @@ the uncontrolled system.
    x0 = np.deg2rad([5.0, -3.0, 0.0, 0.0])
 
    def input_func(t, x):
-       print('in here')
        if (t > 2.5 and t < 2.6):
            return np.array([200.0, 0.0])
        else:
@@ -850,4 +847,4 @@ the uncontrolled system.
        kTdel_phid=Ks[idx, 1, 2],
        kTdel_deld=Ks[idx, 1, 3],
    )
-   ax[0].set_title('$v$ = {} m/s'.format(speeds[90]))
+   ax[0].set_title('$v$ = {} m/s'.format(speeds[idx]))
