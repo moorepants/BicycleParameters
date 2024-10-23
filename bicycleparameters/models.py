@@ -771,15 +771,19 @@ class Meijaard2007Model(_Model):
 
         if input_func is None:
             def eval_rhs(t, x):
-                return A@x
+                x = x.reshape((4, 1))
+                return (A@x).squeeze()
         else:
             def eval_rhs(t, x):
-                return A@x + B@input_func(t, x)
+                u = input_func(t, x).reshape((2, 1))
+                x = x.reshape((4, 1))
+                return (A@x + B@u).squeeze()
 
         res = spi.solve_ivp(eval_rhs,
                             (times[0], times[-1]),
                             initial_conditions,
-                            t_eval=times)
+                            t_eval=times,
+                            method="LSODA")
 
         if input_func is None:
             inputs = np.zeros((len(times), 2))
@@ -947,26 +951,37 @@ class Meijaard2007Model(_Model):
 
 
 class Meijaard2007WithFeedbackModel(Meijaard2007Model):
-    """
+    """Linear Carvallo-Whipple bicycle model that includes full state feedback
+    to drive all states to zero. With two inputs (roll torque and steer torque)
+    and four states (roll angle, steer angle, roll rate, steer rate) there are
+    eight control gain parameters in addition to the parameters defined in
+    [Meijaard2007]_.
 
     The states are::
 
-       x = |roll angle | = |phi |
-           |steer angle|   |del |
-           |roll rate  |   |phid|
-           |steer rate |   |deld|
+       x = |roll angle         | = |phi     |
+           |steer angle        |   |delta   |
+           |roll angular rate  |   |phidot  |
+           |steer angular rate |   |deltadot|
 
     The inputs are::
 
-       u = |roll torque | = |Tphi|
+       u = |roll torque | = |Tphi  |
            |steer torque|   |Tdelta|
 
     Applying full state feedback gives this controller::
 
-       u = -K*x = -|kphi_phi, kphi_del, kphi_phid, kphi_deld|*|phi  |
-                   |kdel_phi, kdel_del, kdel_phid, kdel_deld| |delta|
-                                                              |phid |
-                                                              |deld |
+       u = -K*x = -|kTphi_phi, kTphi_del, kTphi_phid, kTphi_deld|*|phi     |
+                   |kTdel_phi, kTdel_del, kTdel_phid, kTdel_deld| |delta   |
+                                                                  |phidot  |
+                                                                  |deltadot|
+
+    This represents the new model::
+
+       x' = (A - B*K)*x + B*u
+
+    so steer and roll torque can be applied in parallel to the feedback
+    control.
 
     """
     def __init__(self, parameter_set):
@@ -974,9 +989,9 @@ class Meijaard2007WithFeedbackModel(Meijaard2007Model):
             'Meijaard2007WithFeedback')
 
     def form_state_space_matrices(self, **parameter_overrides):
-        """Returns the A and B matrices for the Whipple-Carvallo model
+        """Returns the A and B matrices for the Carvallo-Whipple model
         linearized about the upright constant velocity configuration with a
-        full state feedback steer controller.
+        full state feedback steer controller to drive the states to zero.
 
         Returns
         =======
@@ -987,19 +1002,20 @@ class Meijaard2007WithFeedbackModel(Meijaard2007Model):
 
         Notes
         =====
-        A, B, and K describe the model in state space form:
 
-            x' = (A - B*K)*x + B*u
+        A, B, and K describe the model in state space form::
+
+           x' = (A - B*K)*x + B*u
 
         where::
 
-           x = |phi   | = |roll angle |
-               |delta |   |steer angle|
-               |phid  |   |roll rate  |
-               |deld  |   |steer rate |
+           x = |phi     | = |roll angle         |
+               |delta   |   |steer angle        |
+               |phidot  |   |roll angular rate  |
+               |deldot  |   |steer angular rate |
 
-           K = |0    0      0       0        |
-               |kTdel_phi kTdel_del kphidot kdeltadot|
+           K = | kTphi_phi kTphi_del kTphi_phid kTphi_deld |
+               | kTdel_phi kTdel_del kTdel_phid kTdel_deld |
 
            u = |Tphi  | = |roll torque |
                |Tdelta|   |steer torque|
@@ -1053,6 +1069,5 @@ class Meijaard2007WithFeedbackModel(Meijaard2007Model):
         else:  # scalar parameters
             A, B = ab_matrix(M, C1, K0, K2, par['v'], par['g'])
             A = A - B@K
-            B = B
 
         return A, B
