@@ -771,13 +771,10 @@ class Meijaard2007Model(_Model):
 
         if input_func is None:
             def eval_rhs(t, x):
-                x = x.reshape((4, 1))
-                return (A@x).squeeze()
+                return A@x
         else:
             def eval_rhs(t, x):
-                u = input_func(t, x).reshape((2, 1))
-                x = x.reshape((4, 1))
-                return (A@x + B@u).squeeze()
+                return A@x + B@input_func(t, x)
 
         res = spi.solve_ivp(eval_rhs,
                             (times[0], times[-1]),
@@ -840,14 +837,17 @@ class Meijaard2007Model(_Model):
                                     input_func=input_func,
                                     **parameter_overrides)
 
-        fig, axes = plt.subplots(3, sharex=True)
+        fig, axes = plt.subplots(3, sharex=True, layout='constrained')
 
         axes[0].plot(times, inputs)
         axes[0].legend([r'$T_\phi$', r'$T_\delta$'])
+        axes[0].set_ylabel('Torque\n[Nm]')
         axes[1].plot(times, np.rad2deg(res[:, :2]))
         axes[1].legend(['$' + lab + '$' for lab in self.state_vars_latex[:2]])
+        axes[1].set_ylabel('Angle\n[deg]')
         axes[2].plot(times, np.rad2deg(res[:, 2:]))
         axes[2].legend(['$' + lab + '$' for lab in self.state_vars_latex[2:]])
+        axes[2].set_ylabel('Angluar Rate\n[deg/s]')
 
         axes[2].set_xlabel('Time [s]')
 
