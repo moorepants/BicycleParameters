@@ -764,7 +764,7 @@ negative feedback of roll angle to roll torque with damping.
    :include-source: True
    :context: close-figs
 
-   times = np.linspace(0.0, 10.0, num=1001)
+   times = np.linspace(0.0, 5.0, num=1001)
 
    model.plot_mode_simulations(times, v=2.0, kTphi_phi=3000.0,
                                kTphi_phid=600.0)
