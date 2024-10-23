@@ -747,7 +747,7 @@ The stable speed range is significantly increased, but the weave mode
 eigenfrequency is increased as a consequence.
 
 This can also be used to model adding springy training wheels by including a
-negative feedback of roll angle to roll torque.
+negative feedback of roll angle to roll torque with damping.
 
 .. plot::
    :include-source: True
@@ -755,7 +755,7 @@ negative feedback of roll angle to roll torque.
 
    ax = model.plot_eigenvalue_parts(v=speeds,
                                     kTphi_phi=3000.0,
-                                    kTphi_phid=30.0,
+                                    kTphi_phid=600.0,
                                     colors=['C0', 'C0', 'C1', 'C2'],
                                     hide_zeros=True)
    ax.set_ylim((-10.0, 10.0))
@@ -764,9 +764,10 @@ negative feedback of roll angle to roll torque.
    :include-source: True
    :context: close-figs
 
-   times = np.linspace(0.0, 1.0, num=1001)
+   times = np.linspace(0.0, 10.0, num=1001)
 
-   model.plot_mode_simulations(times, v=0.1)
+   model.plot_mode_simulations(times, v=2.0, kTphi_phi=3000.0,
+                               kTphi_phid=600.0)
 
 A more general method to control the bicycle is to create gain scheduling with
 respect to speed using LQR optimal control. Assuming we only control steer
