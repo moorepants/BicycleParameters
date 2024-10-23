@@ -711,7 +711,37 @@ system.
 
    par_set = Meijaard2007WithFeedbackParameterSet(par, True)
 
-   speeds = np.linspace(1.0, 10.0, num=1001)
+It is well known that a simple proportional positive feedback of roll angular
+rate can stablize a bicycle at lower speeds.
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   from bicycleparameters.models import Meijaard2007WithFeedbackModel
+
+   model = Meijaard2007WithFeedbackModel(par_set)
+
+   ax = model.plot_eigenvalue_parts(v=speeds,
+                                    colors=['C0', 'C0', 'C1', 'C2'],
+                                    hide_zeros=True)
+   ax.set_ylim((-10.0, 10.0))
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   ax = model.plot_eigenvalue_parts(v=speeds,
+                                    kTdel_phid=-50.0,
+                                    colors=['C0', 'C0', 'C1', 'C2'],
+                                    hide_zeros=True)
+   ax.set_ylim((-10.0, 10.0))
+
+.. plot::
+   :include-source: True
+   :context: close-figs
+
+   speeds = np.linspace(0.0, 10.0, num=1001)
 
    As, Bs = model.form_state_space_matrices(v=speeds)
    Ks = np.zeros((len(speeds), 2, 4))
@@ -720,8 +750,9 @@ system.
    R = np.eye(1)
 
    for i, (Ai, Bi) in enumerate(zip(As, Bs)):
-       S = solve_continuous_are(Ai, Bi[:, 1:2], Q, R)  # steer torque control
-       Ks[i, 1, :] = (np.linalg.inv(R) @ Bi[:, 1:2].T @  S).squeeze()
+       if i > 100:
+          S = solve_continuous_are(Ai, Bi[:, 1:2], Q, R)  # steer torque control
+          Ks[i, 1, :] = (np.linalg.inv(R) @ Bi[:, 1:2].T @  S).squeeze()
 
    fig, axes = plt.subplots(2, 4, sharex=True, layout='constrained')
    for i, (row, name_row) in enumerate(zip(axes, gain_names)):
