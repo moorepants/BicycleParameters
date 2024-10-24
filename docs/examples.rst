@@ -122,7 +122,7 @@ looks to see if there are any parameter sets in
 ``./bicycles/Stratos/Parameters/``. If so, it loads the data, if not it looks
 for ``./bicycles/Stratos/RawData/StratosMeasurments.txt`` so that it can
 generate the parameter set. The raw measurement file may or may not contain the
-oscillation period data for the bicycle moment of inertia caluclations. If it
+oscillation period data for the bicycle moment of inertia calculations. If it
 doesn't then the program will look for the series of ``.mat`` files need to
 calculate the periods. If no data is there, then you get an error.
 
@@ -133,9 +133,9 @@ There are other loading options::
 The ``pathToData`` option allows you specify a directory other than the current
 directory as your data directory. The ``forceRawCalc`` forces the program to
 load ``./bicycles/Stratos/RawData/StratosMeasurments.txt`` and recalculate the
-parameters regarless if there are any parameter files available in
+parameters regardless if there are any parameter files available in
 ``./bicycles/Stratos/Parameters/``. The ``forcePeriodCalc`` option forces the period
-calcluation from the ``.mat`` files regardless if they already exist in the raw
+calculation from the ``.mat`` files regardless if they already exist in the raw
 measurement file.
 
 Exploring bicycle parameter data
@@ -490,7 +490,7 @@ displays a simplified depiction::
 
 .. image:: bicycleRiderGeometry.png
 
-The eigenvalue plot also relfects the changes::
+The eigenvalue plot also reflects the changes::
 
   >>> bicycle.plot_eigenvalues_vs_speed(speeds, show=True)
 
