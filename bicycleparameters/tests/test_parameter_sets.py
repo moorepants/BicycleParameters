@@ -4,7 +4,8 @@ import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..parameter_sets import Meijaard2007ParameterSet, Moore2019ParameterSet
+from ..parameter_sets import (Meijaard2007ParameterSet, Moore2019ParameterSet,
+                              Meijaard2007WithFeedbackParameterSet)
 
 PARDIR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                            'parameter_sets')
@@ -99,3 +100,36 @@ def test_conversion(plot=False):
     bench_pset.plot_all()
     if plot:
         plt.show()
+
+
+def test_Meijaard2007WithFeedbackParameterSet():
+
+    filepath = os.path.join(PARDIR_PATH, 'benchmark-benchmark.yml')
+    with open(filepath, 'r') as f:
+        benchmark_par = yaml.load(f, Loader=yaml.FullLoader)['values']
+
+    pset = Meijaard2007ParameterSet(
+        benchmark_par, True).to_parameterization('Meijaard2007WithFeedback')
+
+    pset2 = Meijaard2007WithFeedbackParameterSet(pset.parameters, True)
+
+    assert type(pset) == Meijaard2007WithFeedbackParameterSet
+    assert type(pset2) == Meijaard2007WithFeedbackParameterSet
+
+    gain_names = ['kTphi_phi', 'kTphi_del', 'kTphi_phid', 'kTphi_deld',
+                  'kTdel_phi', 'kTdel_del', 'kTdel_phid', 'kTdel_deld']
+
+    for name in gain_names:
+        assert pset.parameters[name] == 0.0
+        assert pset2.parameters[name] == 0.0
+
+    assert pset.par_strings['kTphi_phi'] == r'k_{T_{\phi}\phi}'
+    assert pset2.par_strings['kTphi_phi'] == r'k_{T_{\phi}\phi}'
+
+    expected_IH = np.array([[0.05892, 0.0, -0.00756],
+                            [0.0, 0.06, 0.0],
+                            [-0.00756, 0.0, 0.00708]])
+    np.testing.assert_allclose(pset.form_inertia_tensor('H'),
+                               expected_IH)
+    np.testing.assert_allclose(pset2.form_inertia_tensor('H'),
+                               expected_IH)
