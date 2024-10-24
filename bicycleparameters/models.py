@@ -1092,6 +1092,22 @@ class Meijaard2007WithFeedbackModel(Meijaard2007Model):
         axes : ndarray, shape(2, 4)
             Array of matplotlib axes.
 
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: reset
+
+           import numpy as np
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           from bicycleparameters.models import Meijaard2007WithFeedbackModel
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           m = Meijaard2007WithFeedbackModel(p)
+           m.plot_gains(v=np.linspace(0.0, 10.0, num=101),
+                        kTdel_phid=-10.0*np.linspace(0.0, 5.0, num=101))
+
         """
         gain_names = ['kTphi_phi', 'kTphi_del', 'kTphi_phid', 'kTphi_deld',
                       'kTdel_phi', 'kTdel_del', 'kTdel_phid', 'kTdel_deld']
