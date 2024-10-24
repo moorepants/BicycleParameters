@@ -693,24 +693,7 @@ that applies full state feedback to the
 gains. These feedback gains can be chosen with a variety of methods to
 stabilize the system.
 
-Start by creating a new parameter set to use with the model that includes the
-eight gain parameters. Initialize the gains to zero.
-
-.. plot::
-   :include-source: True
-   :context: close-figs
-
-   from bicycleparameters.parameter_sets import Meijaard2007WithFeedbackParameterSet
-
-   gain_names = [['kTphi_phi', 'kTphi_del', 'kTphi_phid', 'kTphi_deld'],
-                 ['kTdel_phi', 'kTdel_del', 'kTdel_phid', 'kTdel_deld']]
-   for row in gain_names:
-       for name in row:
-           par[name] = 0.0
-
-   par_set = Meijaard2007WithFeedbackParameterSet(par, True)
-
-Now create the model and plote the eigenvalues versus speed. This should be
+Create the model and plot the eigenvalues versus speed. This should be
 identical to the model without feedback given that the gains are all set to
 zero.
 
@@ -730,8 +713,8 @@ zero.
    ax.set_ylim((-10.0, 10.0))
 
 It is well known that a simple proportional positive feedback of roll angular
-rate to control steer torque can stablize a bicycle at lower speeds. So set the
-:math:`k_{T_{\delta}\dot{\phi}}` to a larger negative value.
+rate to control steer torque can stabilize a bicycle at lower speeds. So set
+the :math:`k_{T_{\delta}\dot{\phi}}` to a larger negative value.
 
 .. plot::
    :include-source: True
@@ -739,7 +722,7 @@ rate to control steer torque can stablize a bicycle at lower speeds. So set the
 
    ax = model.plot_eigenvalue_parts(v=speeds,
                                     kTdel_phid=-50.0,
-                                    colors=['C0', 'C0', 'C1', 'C2'],
+                                    colors=['C0', 'C0', 'C1', 'C1'],
                                     hide_zeros=True)
    ax.set_ylim((-10.0, 10.0))
 
@@ -756,7 +739,6 @@ negative feedback of roll angle to roll torque with damping.
    ax = model.plot_eigenvalue_parts(v=speeds,
                                     kTphi_phi=3000.0,
                                     kTphi_phid=600.0,
-                                    colors=['C0', 'C0', 'C1', 'C2'],
                                     hide_zeros=True)
    ax.set_ylim((-10.0, 10.0))
 
@@ -772,7 +754,7 @@ negative feedback of roll angle to roll torque with damping.
 A more general method to control the bicycle is to create gain scheduling with
 respect to speed using LQR optimal control. Assuming we only control steer
 torque via feedback of all four states, the 4 gains can be found by solving the
-continous Ricatti equation. If the system is controllable, this guarantees a
+continuous Ricatti equation. If the system is controllable, this guarantees a
 stable closed loop system. There is an uncontrollable speed just below 0.8 m/s,
 so we will only apply control at speeds greater than 0.8 m/s.
 
@@ -792,13 +774,15 @@ so we will only apply control at speeds greater than 0.8 m/s.
           S = solve_continuous_are(Ai, Bi[:, 1:2], Q, R)
           Ks[i, 1, :] = (np.linalg.inv(R) @ Bi[:, 1:2].T @  S).squeeze()
 
-   fig, axes = plt.subplots(2, 4, sharex=True, layout='constrained')
-   for i, (row, name_row) in enumerate(zip(axes, gain_names)):
-       for j, (col, name) in enumerate(zip(row, name_row)):
-           col.plot(speeds, Ks[:, i, j])
-           col.set_title(r'${}$'.format(par_set.par_strings[name]))
-   for ax in row:
-       ax.set_xlabel('v [m/s]')
+   ax = model.plot_gains(v=speeds,
+                         kTphi_phi=Ks[:, 0, 0],
+                         kTphi_del=Ks[:, 0, 1],
+                         kTphi_phid=Ks[:, 0, 2],
+                         kTphi_deld=Ks[:, 0, 3],
+                         kTdel_phi=Ks[:, 1, 0],
+                         kTdel_del=Ks[:, 1, 1],
+                         kTdel_phid=Ks[:, 1, 2],
+                         kTdel_deld=Ks[:, 1, 3])
 
 Now use the computed gains to check for closed loop stability:
 
@@ -827,8 +811,8 @@ the uncontrolled system.
    x0 = np.deg2rad([5.0, -3.0, 0.0, 0.0])
 
    def input_func(t, x):
-       if (t > 2.5 and t < 2.6):
-           return np.array([200.0, 0.0])
+       if (t > 2.5 and t < 2.8):
+           return np.array([50.0, 0.0])
        else:
            return np.zeros(2)
 

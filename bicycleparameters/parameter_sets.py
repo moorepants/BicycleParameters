@@ -301,6 +301,40 @@ class Meijaard2007ParameterSet(ParameterSet):
         self.includes_rider = includes_rider
         self._generate_body_colors()
 
+    def to_parameterization(self, name):
+        """Returns a specific parameter set based on the provided
+        parameterization name.
+
+        Parameters
+        ==========
+        name : string
+            The name of the parameterization. These should correspond to a
+            subclass of a ``ParameterSet`` and the name will be the string that
+            precedes "ParameterSet". For example, the parameterization name of
+            ``Meijaard2007ParameterSet`` is ``Meijaard2007``.
+
+        Returns
+        =======
+        ParmeterSet
+            If a different parameterization is requested and this class can
+            convert itself, it will return a new parameter set of the correct
+            parameterization.
+
+        """
+        if name == self.parameterization:
+            return self
+        elif name == 'Meijaard2007WithFeedback':
+            par = self.parameters.copy()
+            gain_names = ['kTphi_phi', 'kTphi_del', 'kTphi_phid', 'kTphi_deld',
+                          'kTdel_phi', 'kTdel_del', 'kTdel_phid', 'kTdel_deld']
+            for gain in gain_names:
+                par[gain] = 0.0
+            return Meijaard2007WithFeedbackParameterSet(par,
+                                                        self.includes_rider)
+        else:
+            msg = '{} is not an avaialble parameter set'
+            raise ValueError(msg.format(name))
+
     @classmethod
     def _from_yaml(cls, path_to_file):
 
@@ -919,6 +953,9 @@ class Meijaard2007WithFeedbackParameterSet(Meijaard2007ParameterSet):
 
     body_labels = ['B', 'F', 'H', 'R']
 
+    def __init__(self, parameters, includes_rider):
+        super().__init__(parameters, includes_rider)
+
 
 class Moore2019ParameterSet(ParameterSet):
     """Represents the parameters of the bicycle parameterization presented in
@@ -1075,8 +1112,13 @@ class Moore2019ParameterSet(ParameterSet):
             b = _convert_principal_to_benchmark(self.parameters)
             # Moore2019 always includes the rider
             return Meijaard2007ParameterSet(b, True)
+        elif name == 'Meijaard2007WithFeedback':
+            b = _convert_principal_to_benchmark(self.parameters)
+            # Moore2019 always includes the rider
+            par_set = Meijaard2007ParameterSet(b, True)
+            return par_set.to_parameterization(name)
         else:
-            msg = '{} is not an avaialble parameter set'
+            msg = '{} is not an available parameter set'
             raise ValueError(msg.format(name))
 
     def plot_geometry(self, show_steer_axis=True, ax=None):

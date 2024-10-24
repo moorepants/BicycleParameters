@@ -1071,3 +1071,58 @@ class Meijaard2007WithFeedbackModel(Meijaard2007Model):
             A = A - B@K
 
         return A, B
+
+    def plot_gains(self, axes=None, **parameter_overrides):
+        """Plots the gains versus a single varying parameter. The
+        ``parameter_overrides`` should contain one parameter that is an array,
+        other than the eight gains. That parameter will be used for the x axis.
+        The gains can be either arrays of the same length or scalars.
+
+        Parameters
+        ==========
+        axes : array_like, shape(2, 4)
+            Matplotlib axes set to plot to.
+        parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
+
+        Returns
+        =======
+        axes : ndarray, shape(2, 4)
+            Array of matplotlib axes.
+
+        """
+        gain_names = ['kTphi_phi', 'kTphi_del', 'kTphi_phid', 'kTphi_deld',
+                      'kTdel_phi', 'kTdel_del', 'kTdel_phid', 'kTdel_deld']
+
+        if axes is None:
+            fig, axes = plt.subplots(2, 4, sharex=True, layout='constrained')
+
+        par, array_keys, array_len = self._parse_parameter_overrides(
+            **parameter_overrides)
+
+        non_gain_array_keys = [k for k in array_keys if k not in gain_names]
+        if len(non_gain_array_keys) == 0:
+            raise ValueError('No x axis key. Set one parameter other than the '
+                             'gains as an array.')
+        else:
+            x_axis_key = non_gain_array_keys[0]
+
+        if len(non_gain_array_keys) > 1:
+            msg = 'More than one array for x axis, choosing {}.'
+            print(msg.format(x_axis_key))
+
+        for ax, name in zip(axes.flatten(), gain_names):
+            if name in array_keys:
+                ax.plot(par[x_axis_key], par[name])
+            else:
+                ax.plot(par[x_axis_key],
+                        par[name]*np.ones_like(par[x_axis_key]))
+            msg = r'${}$'.format(self.parameter_set.par_strings[name])
+            ax.set_title(msg)
+
+        for ax in axes[1, :]:
+            ax.set_xlabel(x_axis_key)
+
+        return axes
