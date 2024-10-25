@@ -197,6 +197,16 @@ class ParameterSet(ABC):
         with open(fname, 'w') as f:
             f.write(text)
 
+    def _repr_html_(self):
+        opening = r'<table><caption>{}</caption><tr><th>Variable</th><th>Value</th></tr>'
+        lines = opening.format(self.parameterization)
+        for k, v in self.parameters.items():
+            latex_var = r'\({}\)'.format(self.par_strings[k])
+            row_str = r'<tr><td>{}</td><td>{:1.3f}</td></tr>'
+            lines += row_str.format(latex_var, v)
+        lines += r'</table>'
+        return lines
+
 
 class Meijaard2007ParameterSet(ParameterSet):
     """Represents the parameters of the benchmark bicycle presented in
