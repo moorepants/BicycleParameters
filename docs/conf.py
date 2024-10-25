@@ -21,6 +21,10 @@ sys.path.insert(0, os.path.abspath('..'))
 
 import bicycleparameters
 
+DOCS_CONF_PATH = os.path.realpath(__file__)
+DOCS_DIR = os.path.dirname(DOCS_CONF_PATH)
+REPO_DIR = os.path.realpath(os.path.join(DOCS_DIR, '..'))
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -30,9 +34,11 @@ import bicycleparameters
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     'matplotlib.sphinxext.plot_directive',
+    'sphinx.ext.mathjax',
     'numpydoc',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    'sphinx_gallery.gen_gallery',
 ]
 
 numpydoc_show_class_members = False
@@ -96,6 +102,14 @@ add_module_names = False
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
+# sphinx-gallery settings
+sphinx_gallery_conf = {
+    'examples_dirs': os.path.join(REPO_DIR, 'gallery'),
+    'gallery_dirs': 'examples',
+    'matplotlib_animations': True,
+    'copyfile_regex': r'.*\.svg',
+    'remove_config_comments': True,
+}
 
 # -- Options for HTML output ---------------------------------------------------
 

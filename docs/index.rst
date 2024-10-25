@@ -23,6 +23,7 @@ Table of Contents
    app.rst
    bicycles.rst
    bicycleparameters.rst
+   examples/index.rst
 
 * :ref:`genindex`
 * :ref:`modindex`
