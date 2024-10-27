@@ -1,8 +1,9 @@
 import numpy as np
 from pytest import raises
 
-from ..parameter_sets import Meijaard2007ParameterSet
-from ..models import Meijaard2007Model
+from ..parameter_sets import (Meijaard2007ParameterSet,
+                              Meijaard2007WithFeedbackParameterSet)
+from ..models import Meijaard2007Model, Meijaard2007WithFeedbackModel
 
 meijaard2007_parameters = {  # dictionary of the parameters in Meijaard 2007
     'IBxx': 9.2,
@@ -141,6 +142,52 @@ def test_Meijaard2007Model(show=False):
     assert evecs.shape == (10, 4, 4)
     model.plot_eigenvalue_parts(v=np.linspace(0, 10, num=10))
     model.plot_eigenvectors(v=np.linspace(0, 10, num=4))
+    if show:
+        import matplotlib.pyplot as plt
+        plt.show()
+
+
+def test_Meijaard2007WithFeedbackModel(show=False):
+
+    parameter_set = Meijaard2007ParameterSet(meijaard2007_parameters, True)
+
+    model = Meijaard2007WithFeedbackModel(parameter_set)
+    assert type(model.parameter_set) == Meijaard2007WithFeedbackParameterSet
+
+    M, C1, K0, K2 = model.form_reduced_canonical_matrices()
+    assert M.shape == (2, 2)
+    assert C1.shape == (2, 2)
+    assert K0.shape == (2, 2)
+    assert K2.shape == (2, 2)
+
+    A, B = model.form_state_space_matrices()
+    assert A.shape == (4, 4)
+    assert B.shape == (4, 2)
+    A, B = model.form_state_space_matrices(w=np.linspace(0.5, 1.5, num=5))
+    assert A.shape == (5, 4, 4)
+    assert B.shape == (5, 4, 2)
+    A, B = model.form_state_space_matrices(v=np.linspace(0, 10, num=10))
+    assert A.shape == (10, 4, 4)
+    assert B.shape == (10, 4, 2)
+
+    A, B = model.form_state_space_matrices(v=np.linspace(0, 10, num=10),
+                                           g=np.linspace(0, 10, num=10))
+    assert A.shape == (10, 4, 4)
+    assert B.shape == (10, 4, 2)
+
+    with raises(ValueError):
+        # one parameter must be an array
+        model.plot_gains()
+
+    model.plot_gains(g=np.linspace(0, 10, num=10))
+
+    model.plot_gains(g=np.linspace(0, 10, num=10),
+                     kTdel_phi=np.linspace(0, 10, num=10))
+
+    model.plot_gains(g=np.linspace(0, 10, num=10),
+                     v=np.linspace(0, 10, num=10),
+                     kTdel_phi=np.linspace(0, 10, num=10))
+
     if show:
         import matplotlib.pyplot as plt
         plt.show()

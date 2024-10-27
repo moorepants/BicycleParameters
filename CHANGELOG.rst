@@ -1,6 +1,25 @@
 Release Notes
 =============
 
+1.2.0
+-----
+
+- Support Python 3.13.
+- Revert to ``unumpy.matrix`` in mass center and inertia calculations.
+- Updated the raw data mat file loading to work with current Python versions.
+- Support raw data pendulum measurement files with time as an array as well as
+  a fixed sample rate (as before).
+- Remove the unnecessary ``__new__`` method from ``Bicycle``.
+- Added options to show stable ranges and to hide zero eigenvalues in the
+  ``Model`` eigenvalues parts plot.
+- Skip data truncation on raw pendulum time series that have the explicit time
+  array (this is a hack for the Balanceassistv1 data to have valid handlebar
+  inertia).
+- Modernized some internal plotting code.
+- Added measured and calculated parameter data for the Balanceassistv1 bike we
+  measured in the summer of 2024. This is a Gazelle Grenoble C8 HMB electric
+  bicycle with a custom headtube with a steering motor.
+
 1.1.1
 -----
 

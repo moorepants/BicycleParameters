@@ -785,7 +785,8 @@ class Meijaard2007Model(_Model):
         res = spi.solve_ivp(eval_rhs,
                             (times[0], times[-1]),
                             initial_conditions,
-                            t_eval=times)
+                            t_eval=times,
+                            method="LSODA")
 
         if input_func is None:
             inputs = np.zeros((len(times), 2))
@@ -842,14 +843,17 @@ class Meijaard2007Model(_Model):
                                     input_func=input_func,
                                     **parameter_overrides)
 
-        fig, axes = plt.subplots(3, sharex=True)
+        fig, axes = plt.subplots(3, sharex=True, layout='constrained')
 
         axes[0].plot(times, inputs)
         axes[0].legend([r'$T_\phi$', r'$T_\delta$'])
+        axes[0].set_ylabel('Torque\n[Nm]')
         axes[1].plot(times, np.rad2deg(res[:, :2]))
         axes[1].legend(['$' + lab + '$' for lab in self.state_vars_latex[:2]])
+        axes[1].set_ylabel('Angle\n[deg]')
         axes[2].plot(times, np.rad2deg(res[:, 2:]))
         axes[2].legend(['$' + lab + '$' for lab in self.state_vars_latex[2:]])
+        axes[2].set_ylabel('Angluar Rate\n[deg/s]')
 
         axes[2].set_xlabel('Time [s]')
 
@@ -958,5 +962,199 @@ class Meijaard2007Model(_Model):
 
         axes[3, 0].set_xlabel('Time [s]')
         axes[3, 1].set_xlabel('Time [s]')
+
+        return axes
+
+
+class Meijaard2007WithFeedbackModel(Meijaard2007Model):
+    """Linear Carvallo-Whipple bicycle model that includes full state feedback
+    to drive all states to zero. With two inputs (roll torque and steer torque)
+    and four states (roll angle, steer angle, roll rate, steer rate) there are
+    eight control gain parameters in addition to the parameters defined in
+    [Meijaard2007]_.
+
+    The states are::
+
+       x = |roll angle         | = |phi     |
+           |steer angle        |   |delta   |
+           |roll angular rate  |   |phidot  |
+           |steer angular rate |   |deltadot|
+
+    The inputs are::
+
+       u = |roll torque | = |Tphi  |
+           |steer torque|   |Tdelta|
+
+    Applying full state feedback gives this controller::
+
+       u = -K*x = -|kTphi_phi, kTphi_del, kTphi_phid, kTphi_deld|*|phi     |
+                   |kTdel_phi, kTdel_del, kTdel_phid, kTdel_deld| |delta   |
+                                                                  |phidot  |
+                                                                  |deltadot|
+
+    This represents the new model::
+
+       x' = (A - B*K)*x + B*u
+
+    so steer and roll torque can be applied in parallel to the feedback
+    control.
+
+    """
+    def __init__(self, parameter_set):
+        self.parameter_set = parameter_set.to_parameterization(
+            'Meijaard2007WithFeedback')
+
+    def form_state_space_matrices(self, **parameter_overrides):
+        """Returns the A and B matrices for the Carvallo-Whipple model
+        linearized about the upright constant velocity configuration with a
+        full state feedback steer controller to drive the states to zero.
+
+        Returns
+        =======
+        A : ndarray, shape(4,4) or shape(n,4,4)
+            The state matrix.
+        B : ndarray, shape(4,2) or shape(n,4,2)
+            The input matrix.
+
+        Notes
+        =====
+
+        A, B, and K describe the model in state space form::
+
+           x' = (A - B*K)*x + B*u
+
+        where::
+
+           x = |phi     | = |roll angle         |
+               |delta   |   |steer angle        |
+               |phidot  |   |roll angular rate  |
+               |deldot  |   |steer angular rate |
+
+           K = | kTphi_phi kTphi_del kTphi_phid kTphi_deld |
+               | kTdel_phi kTdel_del kTdel_phid kTdel_deld |
+
+           u = |Tphi  | = |roll torque |
+               |Tdelta|   |steer torque|
+
+        """
+        gain_names = ['kTphi_phi', 'kTphi_del', 'kTphi_phid', 'kTphi_deld',
+                      'kTdel_phi', 'kTdel_del', 'kTdel_phid', 'kTdel_deld']
+
+        par, arr_keys, arr_len = self._parse_parameter_overrides(
+            **parameter_overrides)
+
+        # g, v, and the contoller gains are not used in the computation of M,
+        # C1, K0, K2.
+
+        M, C1, K0, K2 = self.form_reduced_canonical_matrices(
+            **parameter_overrides)
+
+        # steer controller gains, 2x4, no roll control
+        if any(k in gain_names for k in arr_keys):
+            # if one of the gains is an array, create a set of gain matrices
+            # where that single gain varies across the set
+            K = np.array([
+                [par[p][0] if p in arr_keys else par[p] for p in gain_names[:4]],
+                [par[p][0] if p in arr_keys else par[p] for p in gain_names[4:]]
+            ])
+            # K is now shape(n, 2, 4)
+            K = np.tile(K, (arr_len, 1, 1))
+            for k in arr_keys:
+                if k in gain_names[:4]:
+                    K[:, 0, gain_names[:4].index(k)] = par[k]
+                if k in gain_names[4:]:
+                    K[:, 1, gain_names[4:].index(k)] = par[k]
+        else:  # gains are not an array
+            K = np.array([[par[p] for p in gain_names[:4]],
+                          [par[p] for p in gain_names[4:]]])
+
+        if arr_keys:
+            A = np.zeros((arr_len, 4, 4))
+            B = np.zeros((arr_len, 4, 2))
+            for i in range(arr_len):
+                Mi = M[i] if M.ndim == 3 else M
+                C1i = C1[i] if C1.ndim == 3 else C1
+                K0i = K0[i] if K0.ndim == 3 else K0
+                K2i = K2[i] if K2.ndim == 3 else K2
+                vi = par['v'] if np.isscalar(par['v']) else par['v'][i]
+                gi = par['g'] if np.isscalar(par['g']) else par['g'][i]
+                Ki = K[i] if K.ndim == 3 else K
+                Ai, Bi = ab_matrix(Mi, C1i, K0i, K2i, vi, gi)
+                A[i] = Ai - Bi@Ki
+                B[i] = Bi
+        else:  # scalar parameters
+            A, B = ab_matrix(M, C1, K0, K2, par['v'], par['g'])
+            A = A - B@K
+
+        return A, B
+
+    def plot_gains(self, axes=None, **parameter_overrides):
+        """Plots the gains versus a single varying parameter. The
+        ``parameter_overrides`` should contain one parameter that is an array,
+        other than the eight gains. That parameter will be used for the x axis.
+        The gains can be either arrays of the same length or scalars.
+
+        Parameters
+        ==========
+        axes : array_like, shape(2, 4)
+            Matplotlib axes set to plot to.
+        parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
+
+        Returns
+        =======
+        axes : ndarray, shape(2, 4)
+            Array of matplotlib axes.
+
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: reset
+
+           import numpy as np
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           from bicycleparameters.models import Meijaard2007WithFeedbackModel
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           m = Meijaard2007WithFeedbackModel(p)
+           m.plot_gains(v=np.linspace(0.0, 10.0, num=101),
+                        kTdel_phid=-10.0*np.linspace(0.0, 5.0, num=101))
+
+        """
+        gain_names = ['kTphi_phi', 'kTphi_del', 'kTphi_phid', 'kTphi_deld',
+                      'kTdel_phi', 'kTdel_del', 'kTdel_phid', 'kTdel_deld']
+
+        if axes is None:
+            fig, axes = plt.subplots(2, 4, sharex=True, layout='constrained')
+
+        par, array_keys, array_len = self._parse_parameter_overrides(
+            **parameter_overrides)
+
+        non_gain_array_keys = [k for k in array_keys if k not in gain_names]
+        if len(non_gain_array_keys) == 0:
+            raise ValueError('No x axis key. Set one parameter other than the '
+                             'gains as an array.')
+        else:
+            x_axis_key = non_gain_array_keys[0]
+
+        if len(non_gain_array_keys) > 1:
+            msg = 'More than one array for x axis, choosing {}.'
+            print(msg.format(x_axis_key))
+
+        for ax, name in zip(axes.flatten(), gain_names):
+            if name in array_keys:
+                ax.plot(par[x_axis_key], par[name])
+            else:
+                ax.plot(par[x_axis_key],
+                        par[name]*np.ones_like(par[x_axis_key]))
+            msg = r'${}$'.format(self.parameter_set.par_strings[name])
+            ax.set_title(msg)
+
+        for ax in axes[1, :]:
+            ax.set_xlabel(x_axis_key)
 
         return axes
