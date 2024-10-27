@@ -696,19 +696,27 @@ class Meijaard2007Model(_Model):
             # eval_seq, evec_seq = sort_eigenmodes(eval_seq, evec_seq)
 
         fig, axes = plt.subplots(*eval_seq.shape,
-                                 subplot_kw={'projection': 'polar'})
+                                 subplot_kw={'projection': 'polar'},
+                                 layout='constrained')
         axes = np.atleast_2d(axes)
         fig.set_size_inches(axes.shape[1]*3, axes.shape[0]*3)
         lw = list(range(1, len(states) + 1))
         lw.reverse()
 
-        for k, (evals, evecs, par_val) in enumerate(zip(eval_seq, evec_seq,
-                                                        par[arr_keys[0]])):
+        if arr_keys:
+            par_vals = par[arr_keys[0]]
+        else:
+            par_vals = [0.0]
 
-            axes[k, 0].set_ylabel('{} = {:1.2f}'.format(arr_keys[0], par_val),
-                                  labelpad=30)
+        for k, (evals, evecs, par_val) in enumerate(zip(eval_seq, evec_seq.T,
+                                                        par_vals)):
 
-            for i, (eigenval, eigenvec) in enumerate(zip(evals, evecs.T)):
+            if arr_keys:
+                axes[k, 0].set_ylabel('{} = {:1.2f}'.format(arr_keys[0],
+                                                            par_val),
+                                      labelpad=30)
+
+            for i, (eigenval, eigenvec) in enumerate(zip(evals, evecs)):
 
                 max_com = np.abs(eigenvec[:2]).max()
 
@@ -730,8 +738,6 @@ class Meijaard2007Model(_Model):
         axes[0, 0].legend(['$' + s + '$' for s in states],
                           loc='upper center', bbox_to_anchor=(0.5, 1.05),
                           fancybox=True, shadow=True, ncol=4)
-
-        fig.tight_layout()
 
         return axes
 
@@ -929,16 +935,26 @@ class Meijaard2007Model(_Model):
 
         """
         results = self.simulate_modes(times, **parameter_overrides)
+        evals, evecs = self.calc_eigen(**parameter_overrides)
 
-        fig, axes = plt.subplots(4, 2, sharex=True)
+        fig, axes = plt.subplots(4, 2, sharex=True, layout='constrained')
 
-        for i, res in enumerate(results):
+        for i, (res, e_val) in enumerate(zip(results, evals)):
             axes[i, 0].plot(times, np.rad2deg(results[i, :, :2]))
             axes[i, 0].legend(['$' + lab + '$'
                                for lab in self.state_vars_latex[:2]])
             axes[i, 1].plot(times, np.rad2deg(results[i, :, 2:]))
             axes[i, 1].legend(['$' + lab + '$'
                                for lab in self.state_vars_latex[2:]])
+            msg = r'Eigenvalue: {:1.3f}'
+            if e_val.real >= 0.0:
+                fontcolor = 'red'  # red indicates unstable
+            else:
+                fontcolor = 'black'
+            axes[i, 0].set_title(msg.format(e_val),
+                                 fontdict={'color': fontcolor})
+            axes[i, 1].set_title(msg.format(e_val),
+                                 fontdict={'color': fontcolor})
 
         axes[3, 0].set_xlabel('Time [s]')
         axes[3, 1].set_xlabel('Time [s]')
