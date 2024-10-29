@@ -1,7 +1,7 @@
 """
-=========
-Benchmark
-=========
+================================
+Benchmark Carvallo-Whipple Model
+================================
 
 Constructed parameter set from [Meijaard2007]_ that includes the mass and
 inertia of a rider.
@@ -21,9 +21,7 @@ data_dir = "../data"
 # %%
 bicycle = Bicycle("Benchmark", pathToData=data_dir)
 
-
 # %%
-# :math:`v`  seems you have to have some rst math to trigger mathjax inclusion
 par = remove_uncertainties(bicycle.parameters['Benchmark'])
 par['v'] = 4.6
 par_set = Meijaard2007ParameterSet(par, True)
@@ -45,7 +43,7 @@ model = Meijaard2007Model(par_set)
 #
 # .. math::
 #
-#    \mathbf{M}\ddot{\bar{q}} + v\mathbf{C}_1\dot{\bar{q}} + \left[ g \mathbf{K}_0 + v^2 \mathbf{K}_2 \right] \bar{q} = 0
+#    \mathbf{M}\ddot{\vec{q}} + v\mathbf{C}_1\dot{\vec{q}} + \left[ g \mathbf{K}_0 + v^2 \mathbf{K}_2 \right] \vec{q} = 0
 #
 # where the essential coordinates are the roll angle and steer angle,
 # respectively:
@@ -70,7 +68,7 @@ K2
 
 # %%
 # The root locus can be plotted as a function of any model parameter. The root
-# locus plot showing the real and imaginary parts of each eigenval as a
+# locus plot showing the real and imaginary parts of each eigenvalues as a
 # function of the parameter speed reproduces the plot in [Meijaard2007]_. This
 # plot is most often used to show how stability is depedendent on speed.
 v = np.linspace(0.0, 10.0, num=401)
@@ -120,9 +118,6 @@ ax = model.plot_eigenvectors(v=8.0)
 # %%
 times = np.linspace(0.0, 5.0)
 ax = model.plot_mode_simulations(times, v=8.0)
-
-# %%
-ax = model.plot_eigenvectors(v=[5.0, 8.0])
 
 # %%
 x0 = [0.0, 0.0, 0.5, 0.0]
