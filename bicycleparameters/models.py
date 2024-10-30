@@ -947,9 +947,11 @@ class Meijaard2007Model(_Model):
             axes[i, 0].plot(times, np.rad2deg(results[i, :, :2]))
             axes[i, 0].legend(['$' + lab + '$'
                                for lab in self.state_vars_latex[:2]])
+            axes[i, 0].set_ylabel('Angle\n[deg]')
             axes[i, 1].plot(times, np.rad2deg(results[i, :, 2:]))
             axes[i, 1].legend(['$' + lab + '$'
                                for lab in self.state_vars_latex[2:]])
+            axes[i, 1].set_ylabel('Angular Rate\n[deg/s]')
             msg = r'Eigenvalue: {:1.3f}'
             if e_val.real >= 0.0:
                 fontcolor = 'red'  # red indicates unstable
