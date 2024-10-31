@@ -47,7 +47,7 @@ par_set.plot_all()
 # %%
 # Create a :class:`~bicycleparameters.models.Meijaard2007WithFeedbackModel`.
 # The parameter set does not include the feedback gain parameters, but
-# :meth:`~bicycleparameters.models.Meijaard2007WithFeedbackParameterSet.to_parameterization`
+# :meth:`~bicycleparameters.parameter_sets.Meijaard2007WithFeedbackParameterSet.to_parameterization`
 # will be used to convert the parameter set into one with the gains.
 model = Meijaard2007WithFeedbackModel(par_set)
 model.parameter_set
