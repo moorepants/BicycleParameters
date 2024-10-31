@@ -799,7 +799,7 @@ class Meijaard2007Model(_Model):
         return res.y.T, inputs
 
     def plot_simulation(self, times, initial_conditions, input_func=None,
-                        axes=None, **parameter_overrides):
+                        **parameter_overrides):
         """Returns the state and input trajectories at each time value.
 
         Parameters
@@ -843,8 +843,7 @@ class Meijaard2007Model(_Model):
                                     input_func=input_func,
                                     **parameter_overrides)
 
-        if axes is None:
-            fig, axes = plt.subplots(3, sharex=True, layout='constrained')
+        fig, axes = plt.subplots(3, sharex=True, layout='constrained')
 
         axes[0].plot(times, inputs)
         axes[0].legend([r'$T_\phi$', r'$T_\delta$'])
