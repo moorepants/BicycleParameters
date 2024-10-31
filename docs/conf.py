@@ -105,7 +105,7 @@ add_module_names = False
 # sphinx-gallery settings
 sphinx_gallery_conf = {
     'examples_dirs': os.path.join(REPO_DIR, 'gallery'),
-    'gallery_dirs': 'examples',
+    'gallery_dirs': 'gallery',
     'matplotlib_animations': True,
     'copyfile_regex': r'.*\.svg',
     'remove_config_comments': True,
