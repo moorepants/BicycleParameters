@@ -72,6 +72,12 @@ References
 The methods associated with this software were built upon these previous works,
 among others.
 
+.. [Carvallo1899] Carvallo, E. (1899). Théorie du mouvement du monocycle et de
+   la bicyclette. Gauthier- Villars.
+
+.. [Whipple1899] Whipple, F. J. W. (1899). The stability of the motion of a
+   bicycle. Quarterly Journal of Pure and Applied Mathematics, 30, 312–348.
+
 .. [Roland1971] Roland J R ., R. D., and Massing , D. E. A digital computer simulation of
    bicycle dynamics. Calspan Report YA-3063-K-1, Cornell Aeronautical
    Laboratory, Inc., Buffalo, NY, 14221, Jun 1971. Prepared for Schwinn Bicycle

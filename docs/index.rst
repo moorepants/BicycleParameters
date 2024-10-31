@@ -19,6 +19,7 @@ Table of Contents
    description.rst
    installation.rst
    examples.rst
+   gallery/index.rst
    data.rst
    app.rst
    bicycleparameters.rst
