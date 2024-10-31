@@ -1,13 +1,14 @@
 """
-================
-Feedback Control
-================
+===========================================================
+Balance Assist E-Bike with Roll Rate Feedback Steer Control
+===========================================================
 
-This example shows how to work with a model that includes full state feedback.
-The TU Delft Bicycle Lab developed a bicycle with a steer motor that can be
-controlled based on sensor measurements from an inertial measurement unit
-mounted on the rear frame, steer angle sensor, and speed sensor. The bicycle is
-based on an e-bike model from Royal Dutch Gazelle.
+This example shows how to work with a model that includes a feedback controller
+and how to use a simple derivative control with it. The TU Delft Bicycle Lab
+developed a bicycle with a steer motor that can be controlled based on sensor
+measurements from an inertial measurement unit mounted on the rear frame, a
+steer angle sensor, and a speed sensor. The bicycle is based on an e-bike model
+from Royal Dutch Gazelle:
 
 .. figure:: https://objects-us-east-1.dream.io/mechmotum/balance-assist-bicycle-400x400.jpg
    :align: center
