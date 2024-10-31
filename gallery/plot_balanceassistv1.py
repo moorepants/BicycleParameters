@@ -97,7 +97,8 @@ ax.set_ylim((-10.0, 10.0))
 # %%
 # The eigenvectors at low speed show that the weave mode has a steer dominated
 # high frequency natural motion. This may not be so favorable.
-ax = model.plot_eigenvectors(v=2.0, kTdel_phid=-50.0)
+speed = 2.0
+ax = model.plot_eigenvectors(v=speed, kTdel_phid=-50.0)
 
 # %%
 # You can also gain schedule with respect to speed. A linear variation in the
@@ -117,15 +118,17 @@ ax = model.plot_eigenvalue_parts(v=speeds, kTdel_phid=kphidots)
 ax.set_ylim((-10.0, 10.0))
 
 # %%
+kphidot = kphidots[np.argmin(np.abs(speeds - speed))]
+ax = model.plot_eigenvectors(v=speed, kTdel_phid=kphidot)
+
+# %%
 # We can then simulate the system at a specific low speed and see the effect
 # control has. First, without control:
 times = np.linspace(0.0, 2.0, num=201)
 x0 = np.array([0.0, 0.0, 0.5, 0.0])
-speed = 3.0
 ax = model.plot_simulation(times, x0, v=speed)
 
 # %%
 # And with control:
 times = np.linspace(0.0, 5.0, num=501)
-kphidot = kphidots[np.argmin(np.abs(speeds - speed))]
 ax = model.plot_simulation(times, x0, v=speed, kTdel_phid=kphidot)
