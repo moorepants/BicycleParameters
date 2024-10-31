@@ -19,11 +19,10 @@ Table of Contents
    description.rst
    installation.rst
    examples.rst
+   examples/index.rst
    data.rst
    app.rst
-   bicycles.rst
    bicycleparameters.rst
-   examples/index.rst
 
 * :ref:`genindex`
 * :ref:`modindex`
