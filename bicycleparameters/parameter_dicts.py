@@ -80,7 +80,7 @@ moore2019_browser_jason = {
 # BrowserLegs data is taken from https://doi.org/10.6084/m9.figshare.1198429.v2
 # and originally used in
 # https://github.com/moorepants/dissertation/tree/master/src/extensions/lean.
-moore2012riderlean_browser_jason = {
+mooreriderlean2012_browser_jason = {
     'c9': 0.0,
     'd1': 0.9631492634872098,
     'd2': 0.4338396131640938,

@@ -1678,7 +1678,7 @@ class Moore2012ParameterSet(ParameterSet):
         self._generate_body_colors()
 
 
-class Moore2012RiderLeanParameterSet(ParameterSet):
+class MooreRiderLean2012ParameterSet(ParameterSet):
     par_strings = {
         'c9': r'c_9',
         'd1': r'd_1',

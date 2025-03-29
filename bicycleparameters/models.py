@@ -643,7 +643,7 @@ class Meijaard2007Model(_Model):
 
         return ax
 
-    def plot_eigenvectors(self, **parameter_overrides):
+    def plot_eigenvectors(self, hide_zeros=False, **parameter_overrides):
         """Plots the components of the eigenvectors in the real and imaginary
         plane.
 
@@ -907,7 +907,8 @@ class Meijaard2007Model(_Model):
 
         return results
 
-    def plot_mode_simulations(self, times, **parameter_overrides):
+    def plot_mode_simulations(self, times, hide_zeros=False,
+                              **parameter_overrides):
         """Returns matplotlib subplot axes with a simulation of each mode.
 
         Parameters
@@ -945,31 +946,41 @@ class Meijaard2007Model(_Model):
         results = self.simulate_modes(times, **parameter_overrides)
         evals, evecs = self.calc_eigen(**parameter_overrides)
 
-        fig, axes = plt.subplots(len(evals), 2, sharex=True,
-                                 figsize=(8, len(evals)*1),
+        plot = np.ones_like(evals)
+        if hide_zeros:
+            tol = hide_zeros if isinstance(hide_zeros, float) else 1e-14
+            for i, ev in enumerate(evals):
+                if np.abs(ev) < tol:
+                    plot[i] = 0
+
+        fig, axes = plt.subplots(np.count_nonzero(plot), 2, sharex=True,
+                                 figsize=(8, np.count_nonzero(plot)*2.0),
                                  layout='constrained')
 
-        for i, (res, e_val) in enumerate(zip(results, evals)):
-            axes[i, 0].plot(times, np.rad2deg(results[i, :, :2]))
-            axes[i, 0].legend(['$' + lab + '$'
-                               for lab in self.state_vars_latex[:2]])
-            axes[i, 0].set_ylabel('Angle\n[deg]')
-            axes[i, 1].plot(times, np.rad2deg(results[i, :, 2:]))
-            axes[i, 1].legend(['$' + lab + '$'
-                               for lab in self.state_vars_latex[2:]])
-            axes[i, 1].set_ylabel('Angular Rate\n[deg/s]')
-            msg = r'Eigenvalue: {:1.3f}'
-            if e_val.real >= 0.0:
-                fontcolor = 'red'  # red indicates unstable
-            else:
-                fontcolor = 'black'
-            axes[i, 0].set_title(msg.format(e_val),
-                                 fontdict={'color': fontcolor})
-            axes[i, 1].set_title(msg.format(e_val),
-                                 fontdict={'color': fontcolor})
+        i = 0
+        for res, e_val, pl in zip(results, evals, plot):
+            if pl:
+                axes[i, 0].plot(times, np.rad2deg(res[:, :9]))
+                #axes[i, 0].legend(['$' + lab + '$'
+                                   #for lab in self.state_vars_latex[:9]])
+                axes[i, 0].set_ylabel('Angle\n[deg]')
+                axes[i, 1].plot(times, np.rad2deg(res[:, 9:]))
+                #axes[i, 1].legend(['$' + lab + '$'
+                                   #for lab in self.state_vars_latex[9:]])
+                axes[i, 1].set_ylabel('Angular Rate\n[deg/s]')
+                msg = r'Eigenvalue: {:1.3f}'
+                if e_val.real >= 0.0:
+                    fontcolor = 'red'  # red indicates unstable
+                else:
+                    fontcolor = 'black'
+                axes[i, 0].set_title(msg.format(e_val),
+                                     fontdict={'color': fontcolor})
+                axes[i, 1].set_title(msg.format(e_val),
+                                     fontdict={'color': fontcolor})
+                i += 1
 
-        axes[3, 0].set_xlabel('Time [s]')
-        axes[3, 1].set_xlabel('Time [s]')
+        axes[-1, 0].set_xlabel('Time [s]')
+        axes[-1, 1].set_xlabel('Time [s]')
 
         return axes
 
@@ -1168,7 +1179,41 @@ class Meijaard2007WithFeedbackModel(Meijaard2007Model):
         return axes
 
 
-class Moore2012RiderLeanModel(Meijaard2007Model):
+class MooreRiderLean2012Model(Meijaard2007Model):
+    """Carvallo-Whipple model with an extra rigid body that represents the
+    rider's upper body which can lean relative to the bicycle's rear frame.
+
+    This specific model is described in [Moore2012]_ and the equations of
+    motion linearized about the nominal upright configuration where extracted
+    from the source code from the dissertation and integrated here.
+
+    States (13):
+
+    - :math:`q_1`: First Cartesian coordinate in the ground plane to rear wheel
+      contact [m]
+    - :math:`q_2`: Second Cartesian coordinate in the ground plane to rear
+      wheel contact [m]
+    - :math:`q_3`: rear frame yaw angle [rad]
+    - :math:`q_4`: rear frame roll angle [rad]
+    - :math:`q_5`: rear frame pitch angle [rad]
+    - :math:`q_6`: rear wheel angle relative to rear frame [rad]
+    - :math:`q_7`: steer angle (front frame relative to rear frame) [rad]
+    - :math:`q_8`: front wheel angle relative to front frame [rad]
+    - :math:`q_9`: rider lean angle relative to rear frame [rad]
+    - :math:`u_4`: rear frame roll rate [rad/s]
+    - :math:`u_6`: rear wheel angular rate relative to rear frame [rad/s]
+    - :math:`u_7`: steer angular rate relative to the rear frame [rad/s]
+    - :math:`u_9`: rider lean angular rate relative to the rear frame [rad/s]
+
+    Inputs (4):
+
+    - :math:`T_4`: roll torque (between rear frame and ground) [Nm]
+    - :math:`T_6`: propulsions torque (between rear wheel and rear frame) [Nm]
+    - :math:`T_7`: steer torque (between rear and front frames [Nm]
+    - :math:`T_9`: rider lean torque (between rider upper body and rear frame)
+      [Nm]
+
+    """
 
     input_vars = ['T4', 'T6', 'T7', 'T9']
     state_vars = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9',
@@ -1179,15 +1224,17 @@ class Moore2012RiderLeanModel(Meijaard2007Model):
 
     def __init__(self, parameter_set):
 
-        from bicycleparameters.moore2012riderlean import eval_linear
+        # NOTE : this import is here because it is a bit slow loading into
+        # memory, so it only loads if someone uses this class.
+        from bicycleparameters.mooreriderlean2012 import eval_linear
         self._eval_linear = eval_linear
 
         self.parameter_set = parameter_set.to_parameterization(
-            'Moore2012RiderLean')
+            'MooreRiderLean2012')
 
     def form_state_space_matrices(self, **parameter_overrides):
-        """Returns the A and B matrices for the Whipple-Carvallo model
-        linearized about the upright constant velocity configuration.
+        """Returns the A and B matrices for the model linearized about the
+        upright constant velocity configuration.
 
         Parameters
         ==========
@@ -1205,34 +1252,20 @@ class Moore2012RiderLeanModel(Meijaard2007Model):
 
         Notes
         =====
-        ``A`` and ``B`` describe the Whipple model in state space form:
+
+        ``A`` and ``B`` describe the model in state space form:
 
         ``x' = A * x + B * u``
 
-        where the states are::
-
-            x = |roll angle | = |phi     |
-                |steer angle|   |delta   |
-                |roll rate  |   |phidot  |
-                |steer rate |   |deltadot|
-
-        and the inputs are::
-
-            u = |roll torque | = |Tphi  |
-                |steer torque|   |Tdelta|
-
         Examples
         ========
-        M, C1, K0, K2 = self.form_reduced_canonical_matrices(
-            **parameter_overrides)
 
-
-        >>> from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
-        >>> from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
-        >>> from bicycleparameters.models import Meijaard2007Model
-        >>> p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
-        >>> m = Meijaard2007Model(p)
-        >>> A, B = m.form_state_space_matrices()
+        >>> from bicycleparameters.parameter_dicts import mooreriderlean2012_browser_jason
+        >>> from bicycleparameters.parameter_sets import MooreRiderLean2012ParameterSet
+        >>> from bicycleparameters.models import MooreRiderLean2012Model
+        >>> p = MooreRiderLean2012ParameterSet(mooreriderlean2012_browser_jason)
+        >>> m = MooreRiderLean2012Model(p)
+        >>> A, B = m.form_state_space_matrices(v=4.0)
         >>> A
         array([[ 0.        ,  0.        ,  1.        ,  0.        ],
                [ 0.        ,  0.        ,  0.        ,  1.        ],

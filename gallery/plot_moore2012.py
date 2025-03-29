@@ -4,7 +4,7 @@ Carvallo-Whipple Model with Leaning Rider
 =========================================
 
 The Carvallo-Whipple bicycle model assumes that the rider is rigidly fixed to
-the rear frame of the bicycle. Here the model is extended by including a rigid
+the rear frame of the bicycle. Here the model is extended to include a rigid
 body representing the rider's upper body (torso, arms, head) which can lean
 relative to the rear frame through a single additional degree of freedom.
 
@@ -12,10 +12,10 @@ relative to the rear frame through a single additional degree of freedom.
 import numpy as np
 
 from bicycleparameters.parameter_dicts import (
-    meijaard2007_browser_jasonlegs, moore2012riderlean_browser_jason)
+    meijaard2007_browser_jasonlegs, mooreriderlean2012_browser_jason)
 from bicycleparameters.parameter_sets import (
-    Meijaard2007ParameterSet, Moore2012RiderLeanParameterSet)
-from bicycleparameters.models import Moore2012RiderLeanModel
+    Meijaard2007ParameterSet, MooreRiderLean2012ParameterSet)
+from bicycleparameters.models import MooreRiderLean2012Model
 
 # %%
 par_set = Meijaard2007ParameterSet(meijaard2007_browser_jasonlegs, True)
@@ -26,23 +26,23 @@ par_set.to_parameterization('Moore2012').parameters
 # ===============
 # Linearize about a constant speed, so include the parameter :math:`v` for
 # speed.
-moore2012riderlean_browser_jason['v'] = 1.0
-par_set = Moore2012RiderLeanParameterSet(moore2012riderlean_browser_jason)
+mooreriderlean2012_browser_jason['v'] = 1.0
+par_set = MooreRiderLean2012ParameterSet(mooreriderlean2012_browser_jason)
 par_set
 
 # %%
-# Linear Carvallo-Whipple with Rider Lean Model
-# =============================================
-#
-model = Moore2012RiderLeanModel(par_set)
+model = MooreRiderLean2012Model(par_set)
 
 # %%
-A, B = model.form_state_space_matrices(v=6.0)
+A, B = model.form_state_space_matrices(v=5.5)
 A
-
 
 # %%
 B
+
+# %%
+evals, evecs = model.calc_eigen(v=5.5)
+evals
 
 # %%
 # The root locus can be plotted as a function of any model parameter. This plot
@@ -50,11 +50,11 @@ B
 # parameter.The blue lines indicate the weave eigenmode, the green the capsize
 # eigenmode, and the orange the caster eigenmode. Vertical dashed lines
 # indicate speeds that are examined further below.
-v = np.linspace(0.0, 10.0, num=401)
-ax = model.plot_eigenvalue_parts(v=v, hide_zeros=True)
+vs = np.linspace(0.0, 10.0, num=401)
+ax = model.plot_eigenvalue_parts(v=vs)
 
 # %%
-ax = model.plot_eigenvalue_parts(v=v, k9=1280.0, c9=50.0, hide_zeros=True)
+ax = model.plot_eigenvalue_parts(v=vs, k9=128.0, c9=50.0, hide_zeros=True)
 
 # %%
 # Modes of Motion
@@ -75,7 +75,9 @@ ax = model.plot_eigenvectors(v=0.0, k9=128.0, c9=50.0)
 # The unstable eigenmodes dominate the motion and this results in the steer
 # angle growing rapidly and the roll angle following suite, but slower.
 times = np.linspace(0.0, 1.0)
-ax = model.plot_mode_simulations(times, v=0.0, k9=128.0, c9=50.0)
+ax = model.plot_mode_simulations(times, hide_zeros=True, v=0.0, k9=128.0,
+                                 c9=50.0)
+
 
 # %%
 # The total motion shows that the bicycle falls over, as expected.
@@ -96,7 +98,8 @@ ax = model.plot_simulation(times, x0, v=0.0, k9=128.0, c9=50.0)
 ax = model.plot_eigenvectors(v=2.0, k9=128.0, c9=50.0)
 # %%
 times = np.linspace(0.0, 1.0)
-ax = model.plot_mode_simulations(times, v=2.0, k9=128.0, c9=50.0)
+ax = model.plot_mode_simulations(times, hide_zeros=True, v=2.0, k9=128.0,
+                                 c9=50.0)
 
 # %%
 # Stable Eigenmodes
@@ -110,7 +113,8 @@ ax = model.plot_mode_simulations(times, v=2.0, k9=128.0, c9=50.0)
 ax = model.plot_eigenvectors(v=5.0, k9=128.0, c9=50.0)
 # %%
 times = np.linspace(0.0, 5.0, num=501)
-ax = model.plot_mode_simulations(times, v=5.0, k9=128.0, c9=50.0)
+ax = model.plot_mode_simulations(times, hide_zeros=True, v=5.0, k9=128.0,
+                                 c9=50.0)
 
 # %%
 # High Speed, Unstable Capsize
@@ -122,7 +126,8 @@ ax = model.plot_mode_simulations(times, v=5.0, k9=128.0, c9=50.0)
 ax = model.plot_eigenvectors(v=8.0, k9=128.0, c9=50.0)
 
 # %%
-ax = model.plot_mode_simulations(times, v=8.0, k9=128.0, c9=50.0)
+ax = model.plot_mode_simulations(times, hide_zeros=True, v=8.0, k9=128.0,
+                                 c9=50.0)
 
 # %%
 # Total Motion Simulation
