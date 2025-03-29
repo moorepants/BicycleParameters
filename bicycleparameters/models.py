@@ -1343,7 +1343,7 @@ class Moore2012RiderLeanModel(Meijaard2007Model):
         try:
             axes[1].legend(labs, ncols=len(labs))
         except:
-            axes[0].legend(labs)
+            axes[1].legend(labs)
         axes[1].set_ylabel('Distance\n[m]')
 
         axes[2].plot(times, np.rad2deg(res[:, 2:9]))
@@ -1351,15 +1351,15 @@ class Moore2012RiderLeanModel(Meijaard2007Model):
         try:
             axes[2].legend(labs, ncols=len(labs))
         except:
-            axes[0].legend(labs)
+            axes[2].legend(labs)
         axes[2].set_ylabel('Angle\n[deg]')
 
         axes[3].plot(times, np.rad2deg(res[:, 9:]))
         labs = ['$' + lab + '$' for lab in self.state_vars_latex[9:]]
         try:
-            axes[2].legend(labs, ncols=len(labs))
+            axes[3].legend(labs, ncols=len(labs))
         except:
-            axes[0].legend(labs)
+            axes[3].legend(labs)
         axes[3].set_ylabel('Angluar Rate\n[deg/s]')
         axes[3].set_xlabel('Time [s]')
 

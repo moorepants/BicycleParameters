@@ -40,6 +40,7 @@ model = Moore2012RiderLeanModel(par_set)
 A, B = model.form_state_space_matrices(v=6.0)
 A
 
+
 # %%
 B
 
