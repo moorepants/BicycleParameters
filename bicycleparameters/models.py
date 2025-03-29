@@ -6,6 +6,7 @@ import matplotlib.colors as mplcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.integrate as spi
+from dtk.bicycle import pitch_from_roll_and_steer
 
 from .bicycle import benchmark_par_to_canonical, ab_matrix, sort_eigenmodes
 
@@ -1250,6 +1251,12 @@ class Moore2012RiderLeanModel(Meijaard2007Model):
         mutable_par = par.copy()
 
         q, u, r = np.zeros(9), np.zeros(4), np.zeros(4)
+
+        # TODO : make this work if any of these parameters are arrays
+        # Linearize about nominal q5 (pitch) angle.
+        q[4] = pitch_from_roll_and_steer(q[3], q[6], mutable_par['rf'],
+                                         mutable_par['rr'], mutable_par['d1'],
+                                         mutable_par['d2'], mutable_par['d3'])
 
         if array_keys:
 

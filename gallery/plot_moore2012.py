@@ -53,7 +53,7 @@ v = np.linspace(0.0, 10.0, num=401)
 ax = model.plot_eigenvalue_parts(v=v, hide_zeros=True)
 
 # %%
-ax = model.plot_eigenvalue_parts(v=v, k9=128.0, c9=50.0, hide_zeros=True)
+ax = model.plot_eigenvalue_parts(v=v, k9=1280.0, c9=50.0, hide_zeros=True)
 
 # %%
 # Modes of Motion
