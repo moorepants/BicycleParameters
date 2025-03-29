@@ -1275,3 +1275,73 @@ class Moore2012RiderLeanModel(Meijaard2007Model):
             A, B, _, _ = self._eval_linear(q, u, r, par_arr)
 
         return A, B
+
+    def plot_simulation(self, times, initial_conditions, input_func=None,
+                        **parameter_overrides):
+        """Returns the state and input trajectories at each time value.
+
+        Parameters
+        ==========
+        times : array_like, shape(n,)
+            Monotonic increasing time values to simulate over.
+        initial_conditions : array_like, shape(4,)
+            Initial values of the states.
+        input_func : function
+            Takes form u = f(t, x) where u is array_like, shape(2,).
+        **parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
+
+        Returns
+        =======
+        axes : ndarray, shape(3,)
+            Three subplots that plot the input trajectories, state angle
+            trajectories, and state angular rates.
+
+        Examples
+        ========
+
+        .. plot::
+           :include-source: True
+           :context: reset
+
+           import numpy as np
+           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+           from bicycleparameters.models import Meijaard2007Model
+           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+           m = Meijaard2007Model(p)
+           times = np.linspace(0.0, 5.0, num=51)
+           x0 = np.deg2rad([10.0, 5.0, 0.0, 0.0])
+           m.plot_simulation(times, x0, v=6.0)
+
+        """
+        res, inputs = self.simulate(times, initial_conditions,
+                                    input_func=input_func,
+                                    **parameter_overrides)
+
+        fig, axes = plt.subplots(4, sharex=True, layout='constrained')
+
+        axes[0].plot(times, inputs)
+        labs = ['$' + lab + '$' for lab in self.input_vars_latex]
+        axes[0].legend(labs, ncols=len(labs))
+        axes[0].set_ylabel('Torque\n[Nm]')
+
+        axes[1].plot(times, res[:, :2])
+        labs = ['$' + lab + '$' for lab in self.state_vars_latex[:2]]
+        axes[1].legend(labs, ncols=len(labs))
+        axes[1].set_ylabel('Distance\n[m]')
+
+        axes[2].plot(times, np.rad2deg(res[:, 2:9]))
+        labs = ['$' + lab + '$' for lab in self.state_vars_latex[2:9]]
+        axes[2].legend(labs, ncols=len(labs))
+        axes[2].set_ylabel('Angle\n[deg]')
+
+        axes[3].plot(times, np.rad2deg(res[:, 9:]))
+        labs = ['$' + lab + '$' for lab in self.state_vars_latex[9:]]
+        axes[2].legend(labs, ncols=len(labs))
+        axes[3].set_ylabel('Angluar Rate\n[deg/s]')
+        axes[3].set_xlabel('Time [s]')
+
+        return axes
