@@ -601,7 +601,7 @@ class Meijaard2007Model(_Model):
             evals, evecs = np.array([evals]), np.array([evecs])
             legend = None
 
-        tol = hide_zeros if isinstance(hide_zeros, float) else 1e-12
+        tol = hide_zeros if isinstance(hide_zeros, float) else 1e-14
 
         par, array_keys, _ = self._parse_parameter_overrides(
             **parameter_overrides)
@@ -1332,22 +1332,34 @@ class Moore2012RiderLeanModel(Meijaard2007Model):
 
         axes[0].plot(times, inputs)
         labs = ['$' + lab + '$' for lab in self.input_vars_latex]
-        axes[0].legend(labs, ncols=len(labs))
+        try:
+            axes[0].legend(labs, ncols=len(labs))
+        except:
+            axes[0].legend(labs)
         axes[0].set_ylabel('Torque\n[Nm]')
 
         axes[1].plot(times, res[:, :2])
         labs = ['$' + lab + '$' for lab in self.state_vars_latex[:2]]
-        axes[1].legend(labs, ncols=len(labs))
+        try:
+            axes[1].legend(labs, ncols=len(labs))
+        except:
+            axes[0].legend(labs)
         axes[1].set_ylabel('Distance\n[m]')
 
         axes[2].plot(times, np.rad2deg(res[:, 2:9]))
         labs = ['$' + lab + '$' for lab in self.state_vars_latex[2:9]]
-        axes[2].legend(labs, ncols=len(labs))
+        try:
+            axes[2].legend(labs, ncols=len(labs))
+        except:
+            axes[0].legend(labs)
         axes[2].set_ylabel('Angle\n[deg]')
 
         axes[3].plot(times, np.rad2deg(res[:, 9:]))
         labs = ['$' + lab + '$' for lab in self.state_vars_latex[9:]]
-        axes[2].legend(labs, ncols=len(labs))
+        try:
+            axes[2].legend(labs, ncols=len(labs))
+        except:
+            axes[0].legend(labs)
         axes[3].set_ylabel('Angluar Rate\n[deg/s]')
         axes[3].set_xlabel('Time [s]')
 
