@@ -5,6 +5,7 @@ import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import patches
+from dtk.bicycle import benchmark_to_moore
 
 from .com import total_com
 from .geometry import fundamental_geometry_plot_data
@@ -333,6 +334,9 @@ class Meijaard2007ParameterSet(ParameterSet):
         """
         if name == self.parameterization:
             return self
+        elif name == 'Moore2012':
+            moore_par = benchmark_to_moore(self.parameters)
+            return Moore2012ParameterSet(moore_par, self.includes_rider)
         elif name == 'Meijaard2007WithFeedback':
             par = self.parameters.copy()
             gain_names = ['kTphi_phi', 'kTphi_del', 'kTphi_phid', 'kTphi_deld',
@@ -1595,3 +1599,128 @@ class Moore2019ParameterSet(ParameterSet):
         z = p['z{}'.format(body)]
 
         return np.array([x, y, z])
+
+
+class Moore2012ParameterSet(ParameterSet):
+    """Represents the parameters of the Carvallo-Whipple model presented in
+    [Moore2012]_.
+
+    The four bodies are:
+
+    - c: rear frame + rigid rider
+    - d: rear wheel
+    - e: front frame (fork & handlebars)
+    - f: front wheel
+
+    Parameters
+    ==========
+    parameters : dictionary
+        A dictionary mapping variable names to values that contains the
+        following keys:
+    includes_rider : boolean
+        True if body C is the combined rear frame and rider in terms of
+        mass and inertia values.
+
+    Attributes
+    ==========
+    par_strings : dictionary
+        Maps ASCII strings to their LaTeX string.
+    body_labels : list of strings
+        Single capital letters that correspond to the four rigid bodies in the
+        model.
+
+    References
+    ==========
+
+    .. [Meijaard2007] Meijaard J.P, Papadopoulos Jim M, Ruina Andy and Schwab
+       A.L, 2007, Linearized dynamics equations for the balance and steer of a
+       bicycle: a benchmark and review, Proc. R. Soc. A., 463:1955–1982
+       http://doi.org/10.1098/rspa.2007.1857
+
+    """
+
+    # maps "Python" string to LaTeX version
+    par_strings = {
+        'd1': r'd_1',
+        'd2': r'd_2',
+        'd3': r'd_3',
+        'g': r'g',
+        'ic11': r'i_{c11}',
+        'ic22': r'i_{c22}',
+        'ic31': r'i_{c31}',
+        'ic33': r'i_{c33}',
+        'id11': r'i_{d11}',
+        'id22': r'i_{d22}',
+        'ie11': r'i_{e11}',
+        'ie22': r'i_{e22}',
+        'ie31': r'i_{e31}',
+        'ie33': r'i_{e33}',
+        'if11': r'i_{f11}',
+        'if22': r'i_{f22}',
+        'l1': r'l_1',
+        'l2': r'l_2',
+        'l3': r'l_3',
+        'l4': r'l_4',
+        'mc': r'm_c',
+        'md': r'm_d',
+        'me': r'm_e',
+        'mf': r'm_f',
+        'rf': r'r_f',
+        'rr': r'r_r',
+    }
+
+    body_labels = ['c', 'd', 'e', 'f']
+
+    def __init__(self, parameters, includes_rider):
+        super().__init__(parameters)
+        self.parameters = parameters
+        self.includes_rider = includes_rider
+        self._generate_body_colors()
+
+
+class Moore2012RiderLeanParameterSet(ParameterSet):
+    par_strings = {
+        'c9': r'c_9',
+        'd1': r'd_1',
+        'd2': r'd_2',
+        'd3': r'd_3',
+        'd4': r'd_4',
+        'g': r'g',
+        'ic11': r'i_{c11}',
+        'ic22': r'i_{c22}',
+        'ic31': r'i_{c31}',
+        'ic33': r'i_{c33}',
+        'id11': r'i_{d11}',
+        'id22': r'i_{d22}',
+        'ie11': r'i_{e11}',
+        'ie22': r'i_{e22}',
+        'ie31': r'i_{e31}',
+        'ie33': r'i_{e33}',
+        'if11': r'i_{f11}',
+        'if22': r'i_{f22}',
+        'ig11': r'i_{g11}',
+        'ig22': r'i_{g22}',
+        'ig31': r'i_{g31}',
+        'ig33': r'i_{g33}',
+        'k9': r'k_9',
+        'l1': r'l_1',
+        'l2': r'l_2',
+        'l3': r'l_3',
+        'l4': r'l_4',
+        'l5': r'l_5',
+        'l6': r'l_6',
+        'mc': r'm_c',
+        'md': r'm_d',
+        'me': r'm_e',
+        'mf': r'm_f',
+        'mg': r'm_g',
+        'rf': r'r_f',
+        'rr': r'r_r',
+    }
+
+    body_labels = ['c', 'd', 'e', 'f', 'g']
+
+    def __init__(self, parameters):
+        super().__init__(parameters)
+        self.parameters = parameters
+        self._generate_body_colors()

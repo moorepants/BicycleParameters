@@ -1,6 +1,8 @@
 from abc import ABC
+import itertools
 import warnings
 
+import matplotlib.colors as mplcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.integrate as spi
@@ -593,8 +595,10 @@ class Meijaard2007Model(_Model):
         evals, evecs = self.calc_eigen(**parameter_overrides)
         if len(evals.shape) > 1:
             evals, evecs = sort_eigenmodes(evals, evecs)
+            legend = ['Mode {}'.format(i + 1) for i in range(evals.shape[1])]*2
         else:
             evals, evecs = np.array([evals]), np.array([evecs])
+            legend = None
 
         tol = hide_zeros if isinstance(hide_zeros, float) else 1e-12
 
@@ -602,9 +606,7 @@ class Meijaard2007Model(_Model):
             **parameter_overrides)
 
         if colors is None:
-            colors = ['C0', 'C1', 'C2', 'C3']
-        legend = ['Mode 1', 'Mode 2', 'Mode 3', 'Mode 4',
-                  'Mode 1', 'Mode 2', 'Mode 3', 'Mode 4']
+            colors = itertools.cycle(mplcolors.TABLEAU_COLORS)
 
         if show_stable_regions:
             ax.fill_between(par[array_keys[0]],
@@ -696,6 +698,7 @@ class Meijaard2007Model(_Model):
             # eval_seq, evec_seq = sort_eigenmodes(eval_seq, evec_seq)
 
         fig, axes = plt.subplots(*eval_seq.shape,
+                                 figsize=eval_seq.shape,
                                  subplot_kw={'projection': 'polar'},
                                  layout='constrained')
         axes = np.atleast_2d(axes)
@@ -789,9 +792,9 @@ class Meijaard2007Model(_Model):
                             method="LSODA")
 
         if input_func is None:
-            inputs = np.zeros((len(times), 2))
+            inputs = np.zeros((len(times), B.shape[1]))
         else:
-            inputs = np.empty((len(times), 2))
+            inputs = np.empty((len(times), B.shape[1]))
             for i, ti in enumerate(times):
                 ui = input_func(ti, res.y[:, i])
                 inputs[i, :] = ui[:]
@@ -892,7 +895,7 @@ class Meijaard2007Model(_Model):
         def eval_rhs(t, x):
             return A@x
 
-        results = np.empty((4, len(times), 4))
+        results = np.empty((len(evals), len(times), len(evals)))
 
         for i, evec in enumerate(evecs.T):
             initial_condition = evec.real
@@ -941,7 +944,9 @@ class Meijaard2007Model(_Model):
         results = self.simulate_modes(times, **parameter_overrides)
         evals, evecs = self.calc_eigen(**parameter_overrides)
 
-        fig, axes = plt.subplots(4, 2, sharex=True, layout='constrained')
+        fig, axes = plt.subplots(len(evals), 2, sharex=True,
+                                 figsize=(8, len(evals)*1),
+                                 layout='constrained')
 
         for i, (res, e_val) in enumerate(zip(results, evals)):
             axes[i, 0].plot(times, np.rad2deg(results[i, :, :2]))
@@ -1160,3 +1165,113 @@ class Meijaard2007WithFeedbackModel(Meijaard2007Model):
             ax.set_xlabel(x_axis_key)
 
         return axes
+
+
+class Moore2012RiderLeanModel(Meijaard2007Model):
+
+    input_vars = ['T4', 'T6', 'T7', 'T9']
+    state_vars = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9',
+                  'u4', 'u6', 'u7', 'u9']
+    input_vars_latex = ['T_4', 'T_6', 'T_7', 'T_9']
+    state_vars_latex = ['q_1', 'q_2', 'q_3', 'q_4', 'q_5', 'q_6', 'q_7', 'q_8',
+                        'q_9', 'u_4', 'u_6', 'u_7', 'u_9']
+
+    def __init__(self, parameter_set):
+
+        from bicycleparameters.moore2012riderlean import eval_linear
+        self._eval_linear = eval_linear
+
+        self.parameter_set = parameter_set.to_parameterization(
+            'Moore2012RiderLean')
+
+    def form_state_space_matrices(self, **parameter_overrides):
+        """Returns the A and B matrices for the Whipple-Carvallo model
+        linearized about the upright constant velocity configuration.
+
+        Parameters
+        ==========
+        **parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
+
+        Returns
+        =======
+        A : ndarray, shape(13,13) or shape(n,13,13)
+            The state matrix.
+        B : ndarray, shape(13,4) or shape(n,13,4)
+            The input matrix.
+
+        Notes
+        =====
+        ``A`` and ``B`` describe the Whipple model in state space form:
+
+        ``x' = A * x + B * u``
+
+        where the states are::
+
+            x = |roll angle | = |phi     |
+                |steer angle|   |delta   |
+                |roll rate  |   |phidot  |
+                |steer rate |   |deltadot|
+
+        and the inputs are::
+
+            u = |roll torque | = |Tphi  |
+                |steer torque|   |Tdelta|
+
+        Examples
+        ========
+        M, C1, K0, K2 = self.form_reduced_canonical_matrices(
+            **parameter_overrides)
+
+
+        >>> from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+        >>> from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
+        >>> from bicycleparameters.models import Meijaard2007Model
+        >>> p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
+        >>> m = Meijaard2007Model(p)
+        >>> A, B = m.form_state_space_matrices()
+        >>> A
+        array([[ 0.        ,  0.        ,  1.        ,  0.        ],
+               [ 0.        ,  0.        ,  0.        ,  1.        ],
+               [ 8.26150335, -0.9471634 , -0.02977958, -0.21430735],
+               [17.66475151, 26.24590352,  1.99289841, -2.84419587]])
+        >>> B
+        array([[ 0.        ,  0.        ],
+               [ 0.        ,  0.        ],
+               [ 0.01071772, -0.06613267],
+               [-0.06613267,  4.42570676]])
+
+        """
+        par, array_keys, array_len = self._parse_parameter_overrides(
+            **parameter_overrides)
+
+        mutable_par = par.copy()
+
+        q, u, r = np.zeros(9), np.zeros(4), np.zeros(4)
+
+        if array_keys:
+
+            v = mutable_par.pop('v')
+
+            A = np.zeros((array_len, 13, 13))
+            B = np.zeros((array_len, 13, 4))
+
+            for i in range(array_len):
+                for key in array_keys:
+                    if key == 'v' and 'rr' in array_keys:
+                        u[1] = -v[i]/mutable_par['rr'][i]  # u6
+                    elif key == 'v' and 'rr' not in array_keys:
+                        u[1] = -v[i]/mutable_par['rr']  # u6
+                    else:
+                        mutable_par[key] = par[key][i]
+                par_arr = np.array(list(mutable_par.values()))
+                A[i], B[i], _, _ = self._eval_linear(q, u, r, par_arr)
+        else:  # scalar parameters
+            v = mutable_par.pop('v')
+            u[1] = -v/mutable_par['rr']  # u6
+            par_arr = np.array(list(mutable_par.values()))
+            A, B, _, _ = self._eval_linear(q, u, r, par_arr)
+
+        return A, B

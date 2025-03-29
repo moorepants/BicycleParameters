@@ -1,8 +1,9 @@
+from dtk.bicycle import pitch_from_roll_and_steer
 from math import sin, cos
 from numpy import empty
 
 
-def eval_equations(q, u, r, p):
+def eval_linear(q, u, r, p):
 
     #u1,u2,u3,u5,u8,q1p,q2p,q3p,q4p,q5p,q6p,q7p,q8p,q9p,u4p,u6p,u7p,u9p
 
@@ -62,14 +63,15 @@ def eval_equations(q, u, r, p):
     l4 = p[26]
     l5 = p[27]
     l6 = p[28]
-    lam = p[29]
-    mc = p[30]
-    md = p[31]
-    me = p[32]
-    mf = p[33]
-    mg = p[34]
-    rf = p[35]
-    rr = p[36]
+    mc = p[29]
+    md = p[30]
+    me = p[31]
+    mf = p[32]
+    mg = p[33]
+    rf = p[34]
+    rr = p[35]
+
+    lam = pitch_from_roll_and_steer(q4, q7, rf, rr, d1, d2, d3)
 
     z[13] = (cos(lam));
     z[14] = (sin(lam));
