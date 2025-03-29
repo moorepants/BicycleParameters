@@ -196,16 +196,16 @@ def sort_eigenmodes(evals, evecs):
 
     Parameters
     ==========
-    evals : ndarray, shape (n, 4)
+    evals : ndarray, shape (n, m)
         A sequence of n sets of eigenvalues.
-    evecs : ndarray, shape (n, 4, 4)
+    evecs : ndarray, shape (n, m, m)
         A sequence of n sets of eigenvectors.
 
     Returns
     =======
-    evalsorg : ndarray, shape (n, 4)
+    evalsorg : ndarray, shape (n, m)
         A sequence of n sets of eigenvalues.
-    evecsorg : ndarray, shape (n, 4, 4)
+    evecsorg : ndarray, shape (n, m, m)
         A sequence of n sets of eigenvectors.
 
     """
@@ -223,7 +223,7 @@ def sort_eigenmodes(evals, evecs):
         for j, e in enumerate(speed):
             x, y = np.real(evalsorg[i, j]), np.imag(evalsorg[i, j])
             # for each eigenvalue at the next speed
-            dist = np.zeros(4)
+            dist = np.zeros(evals.shape[1])
             for k, eignext in enumerate(evals[i + 1]):
                 xn, yn = np.real(eignext), np.imag(eignext)
                 # distance between points in the real/imag plane
