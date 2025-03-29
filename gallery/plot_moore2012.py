@@ -11,17 +11,23 @@ relative to the rear frame through a single additional degree of freedom.
 """
 import numpy as np
 
-from bicycleparameters.parameter_dicts import moore2012_browser_jason_rider_lean
-from bicycleparameters.parameter_sets import Moore2012RiderLeanParameterSet
+from bicycleparameters.parameter_dicts import (
+    meijaard2007_browser_jasonlegs, moore2012riderlean_browser_jason)
+from bicycleparameters.parameter_sets import (
+    Meijaard2007ParameterSet, Moore2012RiderLeanParameterSet)
 from bicycleparameters.models import Moore2012RiderLeanModel
+
+# %%
+par_set = Meijaard2007ParameterSet(meijaard2007_browser_jasonlegs, True)
+par_set.to_parameterization('Moore2012').parameters
 
 # %%
 # Load Parameters
 # ===============
 # Linearize about a constant speed, so include the parameter :math:`v` for
 # speed.
-moore2012_browser_jason_rider_lean['v'] = 1.0
-par_set = Moore2012RiderLeanParameterSet(moore2012_browser_jason_rider_lean)
+moore2012riderlean_browser_jason['v'] = 1.0
+par_set = Moore2012RiderLeanParameterSet(moore2012riderlean_browser_jason)
 par_set
 
 # %%
@@ -31,7 +37,7 @@ par_set
 model = Moore2012RiderLeanModel(par_set)
 
 # %%
-A, B = model.form_state_space_matrices(v=10.0)
+A, B = model.form_state_space_matrices(v=6.0)
 A
 
 # %%
@@ -125,10 +131,11 @@ ax = model.plot_mode_simulations(times, v=8.0, k9=128.0, c9=50.0)
 # used in [Meijaard2007]_ within the stable speed range at 4.6 m/s.
 x0 = np.zeros(13)
 x0[9] = 0.5  # u4
-ax = model.plot_simulation(times, x0)
+ax = model.plot_simulation(times, x0, v=6.0, k9=128.0, c9=50.0)
 
 # %%
 # A constant steer torque puts the model into a turn.
 times = np.linspace(0.0, 10.0, num=1001)
 ax = model.plot_simulation(times, x0,
-                           input_func=lambda t, x: [0.0, 0.0, 1.0, 0.0])
+                           input_func=lambda t, x: [0.0, 0.0, 1.0, 0.0],
+                           v=6.0, k9=128.0, c9=50.0)
