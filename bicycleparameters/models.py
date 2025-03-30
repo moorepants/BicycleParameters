@@ -19,7 +19,59 @@ class _Model(ABC):
     more models.
 
     """
-    pass
+    input_vars = ['r1', 'r2', 'r3']
+    state_vars = ['q1', 'q2', 'u1', 'u2']
+    input_units = ['N', 'N', 'N-m']
+    state_units = ['m', 'rad', 'm/s', 'rad/s']
+    input_vars_latex = ['r_1', 'r_2', 'r_3']
+    state_vars_latex = ['q_1', 'q_2', 'u_1', 'u_2']
+
+    def _parse_parameter_overrides(self, **parameter_overrides):
+        """Returns the model's parameter dictionary with the overridden
+        parameters replaced.
+
+        Parameters
+        ==========
+        parameter_overrides : dictionary
+            Parameter keys that map to floats or array_like of floats
+            shape(n,). All keys that map to array_like must be of the same
+            length.
+
+        Returns
+        =======
+        par : dictionary
+            Copy of self.parameter_set.parameters with overridden parameter
+            values.
+        array_keys : list
+            All parameter key strings that hold arrays.
+        array_len : None or int
+            If there are arrays, this is the common length.
+
+        """
+
+        par = self.parameter_set.parameters.copy()
+
+        array_len = None
+        array_keys = []
+
+        for key, val in parameter_overrides.items():
+            if key not in par.keys():  # don't add invalid keys
+                msg = '{} is not a valid parameter, ignoring'
+                warnings.warn(msg.format(key))
+            else:
+                if np.isscalar(val):
+                    par[key] = float(val)
+                else:  # is an array
+                    if array_len is None:
+                        array_len = len(val)
+                    if len(val) != array_len:
+                        msg = ('All array valued parameters must have the '
+                               'same length.')
+                        raise ValueError(msg)
+                    array_keys.append(key)
+                    par[key] = val
+
+        return par, array_keys, array_len
 
 
 class Meijaard2007Model(_Model):
@@ -90,53 +142,6 @@ class Meijaard2007Model(_Model):
 
     def __init__(self, parameter_set):
         self.parameter_set = parameter_set.to_parameterization('Meijaard2007')
-
-    def _parse_parameter_overrides(self, **parameter_overrides):
-        """Returns the model's parameter dictionary with the overridden
-        parameters replaced.
-
-        Parameters
-        ==========
-        parameter_overrides : dictionary
-            Parameter keys that map to floats or array_like of floats
-            shape(n,). All keys that map to array_like must be of the same
-            length.
-
-        Returns
-        =======
-        par : dictionary
-            Copy of self.parameter_set.parameters with overridden parameter
-            values.
-        array_keys : list
-            All parameter key strings that hold arrays.
-        array_len : None or int
-            If there are arrays, this is the common length.
-
-        """
-
-        par = self.parameter_set.parameters.copy()
-
-        array_len = None
-        array_keys = []
-
-        for key, val in parameter_overrides.items():
-            if key not in par.keys():  # don't add invalid keys
-                msg = '{} is not a valid parameter, ignoring'
-                warnings.warn(msg.format(key))
-            else:
-                if np.isscalar(val):
-                    par[key] = float(val)
-                else:  # is an array
-                    if array_len is None:
-                        array_len = len(val)
-                    if len(val) != array_len:
-                        msg = ('All array valued parameters must have the '
-                               'same length.')
-                        raise ValueError(msg)
-                    array_keys.append(key)
-                    par[key] = val
-
-        return par, array_keys, array_len
 
     def form_reduced_canonical_matrices(self, **parameter_overrides):
         """Returns the canonical speed and gravity independent matrices for the
@@ -975,11 +980,11 @@ class Meijaard2007Model(_Model):
         results = self.simulate_modes(times, **parameter_overrides)
         evals, evecs = self.calc_eigen(**parameter_overrides)
 
-        unique_units = list(set(self.state_units))
+        unique_units = sorted(list(set(self.state_units)))
 
         plot = np.ones_like(evals)
         if hide_zeros:
-            tol = hide_zeros if isinstance(hide_zeros, float) else 1e-14
+            tol = hide_zeros if isinstance(hide_zeros, float) else 1e-12
             for i, ev in enumerate(evals):
                 if np.abs(ev) < tol:
                     plot[i] = 0

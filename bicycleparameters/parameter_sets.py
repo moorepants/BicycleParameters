@@ -1607,10 +1607,10 @@ class Moore2012ParameterSet(ParameterSet):
 
     The four bodies are:
 
-    - c: rear frame + rigid rider
-    - d: rear wheel
-    - e: front frame (fork & handlebars)
-    - f: front wheel
+    - C: rear frame + rigid rider
+    - D: rear wheel
+    - E: front frame (fork & handlebars)
+    - F: front wheel
 
     Parameters
     ==========
@@ -1667,6 +1667,7 @@ class Moore2012ParameterSet(ParameterSet):
         'mf': r'm_F',
         'rf': r'r_f',
         'rr': r'r_r',
+        'v': 'v',
     }
 
     body_labels = ['c', 'd', 'e', 'f']
