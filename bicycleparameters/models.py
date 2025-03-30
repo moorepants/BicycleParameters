@@ -598,10 +598,10 @@ class Meijaard2007Model(_Model):
         evals, evecs = self.calc_eigen(**parameter_overrides)
         if len(evals.shape) > 1:
             evals, evecs = sort_eigenmodes(evals, evecs)
-            legend = ['Mode {}'.format(i + 1) for i in range(evals.shape[1])]*2
+            legend = ['M{}'.format(i + 1) for i in range(evals.shape[1])]*2
         else:
             evals, evecs = np.array([evals]), np.array([evecs])
-            legend = None
+            # TODO : legend if not versus param
 
         tol = hide_zeros if isinstance(hide_zeros, float) else 1e-14
 
@@ -641,8 +641,10 @@ class Meijaard2007Model(_Model):
 
         ax.grid()
 
-        ax.set_xlabel('$' + self.parameter_set.par_strings[array_keys[0]] +
-                      '$')
+        ax.legend(ncol=5)
+
+        ax.set_xlabel(
+            '$' + self.parameter_set.par_strings[array_keys[0]] + '$')
 
         return ax
 
@@ -1468,34 +1470,22 @@ class MooreRiderLean2012Model(Meijaard2007Model):
 
         axes[0].plot(times, inputs)
         labs = ['$' + lab + '$' for lab in self.input_vars_latex]
-        try:
-            axes[0].legend(labs, ncols=4), #len(labs))
-        except:
-            axes[0].legend(labs)
+        axes[0].legend(labs, ncol=4)
         axes[0].set_ylabel('Torque\n[Nm]')
 
         axes[1].plot(times, res[:, :2])
         labs = ['$' + lab + '$' for lab in self.state_vars_latex[:2]]
-        try:
-            axes[1].legend(labs, ncols=4) #len(labs))
-        except:
-            axes[1].legend(labs)
+        axes[1].legend(labs, ncol=4)
         axes[1].set_ylabel('Distance\n[m]')
 
         axes[2].plot(times, np.rad2deg(res[:, 2:9]))
         labs = ['$' + lab + '$' for lab in self.state_vars_latex[2:9]]
-        try:
-            axes[2].legend(labs, ncols=4) #len(labs))
-        except:
-            axes[2].legend(labs)
+        axes[2].legend(labs, ncol=4)
         axes[2].set_ylabel('Angle\n[deg]')
 
         axes[3].plot(times, np.rad2deg(res[:, 9:]))
         labs = ['$' + lab + '$' for lab in self.state_vars_latex[9:]]
-        try:
-            axes[3].legend(labs, ncols=4) #len(labs))
-        except:
-            axes[3].legend(labs)
+        axes[3].legend(labs, ncol=4)
         axes[3].set_ylabel('Angluar Rate\n[deg/s]')
         axes[3].set_xlabel('Time [s]')
 
