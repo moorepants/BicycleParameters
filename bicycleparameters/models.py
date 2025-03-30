@@ -639,7 +639,8 @@ class Meijaard2007Model(_Model):
             if sort_modes:
                 line = {'linestyle': '--', 'color': color}
             else:
-                line = {'linestyle': 'none', 'marker': '.', 'color': 'gray'}
+                line = {'linestyle': 'none', 'marker': '.', 'markersize': 1,
+                        'color': 'gray'}
             ax.plot(par[array_keys[0]], imag_vals, label=label, **line)
 
         # plot the real parts of the eigenvalues
@@ -650,7 +651,8 @@ class Meijaard2007Model(_Model):
             if sort_modes:
                 line = {'linestyle': '-', 'color': color}
             else:
-                line = {'linestyle': 'none', 'marker': '.', 'color': 'black'}
+                line = {'linestyle': 'none', 'marker': '.', 'markersize': 1,
+                        'color': 'black'}
             ax.plot(par[array_keys[0]], real_vals, label=label, **line)
 
         # set labels and limits
@@ -1422,7 +1424,11 @@ class MooreRiderLean2012Model(Meijaard2007Model):
                                                  mutable_par['d2'],
                                                  mutable_par['d3'])
                 u[1] = -vi/mutable_par['rr']  # u6
-                par_arr = np.array(list(mutable_par.values()))
+                par_arr = np.array([
+                    mutable_par[k]
+                    for k in self.parameter_set.par_strings.keys()
+                    if k in mutable_par.keys()
+                ])
                 A[i], B[i], _, _ = self._eval_linear(q, u, r, par_arr)
         else:  # scalar parameters
             q[4] = pitch_from_roll_and_steer(q[3], q[6],
@@ -1432,7 +1438,11 @@ class MooreRiderLean2012Model(Meijaard2007Model):
                                              mutable_par['d2'],
                                              mutable_par['d3'])
             u[1] = -v/mutable_par['rr']  # u6
-            par_arr = np.array(list(mutable_par.values()))
+            par_arr = np.array([
+                mutable_par[k]
+                for k in self.parameter_set.par_strings.keys()
+                if k in mutable_par.keys()
+            ])
             A, B, _, _ = self._eval_linear(q, u, r, par_arr)
 
         return A, B
