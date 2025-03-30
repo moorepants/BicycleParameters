@@ -83,6 +83,8 @@ class Meijaard2007Model(_Model):
     """
     input_vars = ['Tphi', 'Tdelta']
     state_vars = ['phi', 'delta', 'phidot', 'deltadot']
+    input_units = ['N-m', 'N-m']
+    state_units = ['rad', 'rad', 'rad/s', 'rad/s']
     input_vars_latex = [r'T_\phi', r'T_\delta']
     state_vars_latex = [r'\phi', r'\delta', r'\dot{\phi}', r'\dot{\delta}']
 
@@ -639,7 +641,8 @@ class Meijaard2007Model(_Model):
 
         ax.grid()
 
-        ax.set_xlabel(array_keys[0])
+        ax.set_xlabel('$' + self.parameter_set.par_strings[array_keys[0]] +
+                      '$')
 
         return ax
 
@@ -678,10 +681,17 @@ class Meijaard2007Model(_Model):
         """
         par, arr_keys, _ = self._parse_parameter_overrides(
             **parameter_overrides)
-        states = [r'\phi', r'\delta', r'\dot{\phi}', r'\dot{\delta}']
 
         eval_seq, evec_seq = self.calc_eigen(**parameter_overrides)
         eval_seq, evec_seq = np.atleast_2d(eval_seq), np.atleast_3d(evec_seq)
+
+        # TODO : This assumes that the eigenvalues are in the same order.
+        plot = np.ones(len(eval_seq[-1]), dtype=int)
+        if hide_zeros:
+            tol = hide_zeros if isinstance(hide_zeros, float) else 1e-14
+            for i, ev in enumerate(eval_seq[-1]):
+                if np.abs(ev) < tol:
+                    plot[i] = 0
 
         if eval_seq.shape[0] > 10:
             msg = ('Plots will be too large, use fewer than 11 values in the '
@@ -698,13 +708,13 @@ class Meijaard2007Model(_Model):
         # if arr_keys:
             # eval_seq, evec_seq = sort_eigenmodes(eval_seq, evec_seq)
 
-        fig, axes = plt.subplots(*eval_seq.shape,
-                                 figsize=eval_seq.shape,
+        fig, axes = plt.subplots(eval_seq.shape[0],
+                                 np.count_nonzero(plot),
                                  subplot_kw={'projection': 'polar'},
                                  layout='constrained')
         axes = np.atleast_2d(axes)
         fig.set_size_inches(axes.shape[1]*3, axes.shape[0]*3)
-        lw = list(range(1, len(states) + 1))
+        lw = list(range(1, len(self.state_vars) + 1))
         lw.reverse()
 
         if arr_keys:
@@ -720,26 +730,29 @@ class Meijaard2007Model(_Model):
                                                             par_val),
                                       labelpad=30)
 
-            for i, (eigenval, eigenvec) in enumerate(zip(evals, evecs)):
+            i = 0
+            for eigenval, eigenvec, pl in zip(evals, evecs, plot):
 
-                max_com = np.abs(eigenvec[:2]).max()
+                if pl:
+                    max_com = np.abs(eigenvec).max()
 
-                for j, component in enumerate(eigenvec[:2]):
+                    for j, component in enumerate(eigenvec):
 
-                    radius = np.abs(component)/max_com
-                    theta = np.angle(component)
-                    axes[k, i].plot([0, theta], [0, radius], lw=lw[j])
+                        radius = np.abs(component)/max_com
+                        theta = np.angle(component)
+                        axes[k, i].plot([0, theta], [0, radius], lw=lw[j])
 
-                axes[k, i].set_rmax(1.0)
-                msg = r'Eigenvalue: {:1.3f}'
-                if eigenval.real >= 0.0:
-                    fontcolor = 'red'  # red indicates unstable
-                else:
-                    fontcolor = 'black'
-                axes[k, i].set_title(msg.format(eigenval),
-                                     fontdict={'color': fontcolor})
+                    axes[k, i].set_rmax(1.0)
+                    msg = r'Eigenvalue: {:1.3f}'
+                    if eigenval.real >= 0.0:
+                        fontcolor = 'red'  # red indicates unstable
+                    else:
+                        fontcolor = 'black'
+                    axes[k, i].set_title(msg.format(eigenval),
+                                         fontdict={'color': fontcolor})
+                    i += 1
 
-        axes[0, 0].legend(['$' + s + '$' for s in states],
+        axes[0, 0].legend(['$' + s + '$' for s in self.state_vars_latex],
                           loc='upper center', bbox_to_anchor=(0.5, 1.05),
                           fancybox=True, shadow=True, ncol=4)
 
@@ -1218,6 +1231,9 @@ class MooreRiderLean2012Model(Meijaard2007Model):
     input_vars = ['T4', 'T6', 'T7', 'T9']
     state_vars = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9',
                   'u4', 'u6', 'u7', 'u9']
+    input_units = ['N-m', 'N-m', 'N-m', 'N-m']
+    state_units = ['m', 'm', 'rad', 'rad', 'rad', 'rad', 'rad', 'rad', 'rad',
+                   'rad/s', 'rad/s', 'rad/s', 'rad/s']
     input_vars_latex = ['T_4', 'T_6', 'T_7', 'T_9']
     state_vars_latex = ['q_1', 'q_2', 'q_3', 'q_4', 'q_5', 'q_6', 'q_7', 'q_8',
                         'q_9', 'u_4', 'u_6', 'u_7', 'u_9']
@@ -1267,15 +1283,85 @@ class MooreRiderLean2012Model(Meijaard2007Model):
         >>> m = MooreRiderLean2012Model(p)
         >>> A, B = m.form_state_space_matrices(v=4.0)
         >>> A
-        array([[ 0.        ,  0.        ,  1.        ,  0.        ],
-               [ 0.        ,  0.        ,  0.        ,  1.        ],
-               [ 8.26150335, -0.9471634 , -0.02977958, -0.21430735],
-               [17.66475151, 26.24590352,  1.99289841, -2.84419587]])
+        array([[ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00, -6.98136231e-18, -8.26759379e-33,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                -0.00000000e+00, -3.40958859e-01, -0.00000000e+00,
+                 0.00000000e+00],
+               [ 0.00000000e+00,  0.00000000e+00,  4.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00, -0.00000000e+00, -0.00000000e+00,
+                 0.00000000e+00],
+               [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 3.28701304e+00,  0.00000000e+00,  0.00000000e+00,
+                -0.00000000e+00,  0.00000000e+00,  5.63565404e-02,
+                 0.00000000e+00],
+               [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 1.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00],
+               [ 0.00000000e+00,  0.00000000e+00, -0.00000000e+00,
+                -0.00000000e+00, -0.00000000e+00,  0.00000000e+00,
+                -0.00000000e+00, -0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00],
+               [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  1.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00],
+               [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  1.00000000e+00,
+                 0.00000000e+00],
+               [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                -0.00000000e+00,  9.30848307e-18,  3.30703751e-32,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                -0.00000000e+00,  9.92516037e-01, -0.00000000e+00,
+                 0.00000000e+00],
+               [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 1.00000000e+00],
+               [ 0.00000000e+00,  0.00000000e+00, -0.00000000e+00,
+                 1.11095692e+01, -0.00000000e+00,  0.00000000e+00,
+                -1.52341011e+01, -0.00000000e+00, -8.46683843e+00,
+                -2.04638864e-01,  0.00000000e+00, -1.34590803e+00,
+                 0.00000000e+00],
+               [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                 0.00000000e+00, -2.41592608e-16, -0.00000000e+00,
+                 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                -0.00000000e+00, -0.00000000e+00, -0.00000000e+00,
+                -0.00000000e+00],
+               [ 0.00000000e+00,  0.00000000e+00, -0.00000000e+00,
+                 1.04939762e+01, -0.00000000e+00,  0.00000000e+00,
+                 5.61738098e+00, -0.00000000e+00,  1.68341653e+01,
+                 8.26892076e+00,  0.00000000e+00, -1.01980345e+01,
+                 0.00000000e+00],
+               [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,
+                -1.47851073e+01,  0.00000000e+00, -0.00000000e+00,
+                 2.03755703e+01,  0.00000000e+00,  5.11495540e+01,
+                 4.37754540e-01, -0.00000000e+00,  2.54094086e+00,
+                -0.00000000e+00]])
         >>> B
-        array([[ 0.        ,  0.        ],
-               [ 0.        ,  0.        ],
-               [ 0.01071772, -0.06613267],
-               [-0.06613267,  4.42570676]])
+        array([[ 0.        ,  0.        ,  0.        ,  0.        ],
+               [ 0.        ,  0.        ,  0.        ,  0.        ],
+               [ 0.        ,  0.        ,  0.        ,  0.        ],
+               [ 0.        ,  0.        ,  0.        ,  0.        ],
+               [ 0.        ,  0.        ,  0.        ,  0.        ],
+               [ 0.        ,  0.        ,  0.        ,  0.        ],
+               [ 0.        ,  0.        ,  0.        ,  0.        ],
+               [ 0.        ,  0.        ,  0.        ,  0.        ],
+               [ 0.        ,  0.        ,  0.        ,  0.        ],
+               [ 0.02883808,  0.        , -0.11361237, -0.09393174],
+               [ 0.        ,  0.09270584, -0.        , -0.        ],
+               [-0.11361237, -0.        ,  4.59077823,  0.24303462],
+               [-0.09393174, -0.        ,  0.24303462,  0.48717313]])
 
         """
         par, array_keys, array_len = self._parse_parameter_overrides(
@@ -1285,31 +1371,40 @@ class MooreRiderLean2012Model(Meijaard2007Model):
 
         q, u, r = np.zeros(9), np.zeros(4), np.zeros(4)
 
-        # TODO : make this work if any of these parameters are arrays
-        # Linearize about nominal q5 (pitch) angle.
-        q[4] = pitch_from_roll_and_steer(q[3], q[6], mutable_par['rf'],
-                                         mutable_par['rr'], mutable_par['d1'],
-                                         mutable_par['d2'], mutable_par['d3'])
+        v = mutable_par.pop('v')
 
         if array_keys:
-
-            v = mutable_par.pop('v')
 
             A = np.zeros((array_len, 13, 13))
             B = np.zeros((array_len, 13, 4))
 
+            vi = v
+
             for i in range(array_len):
-                for key in array_keys:
-                    if key == 'v' and 'rr' in array_keys:
-                        u[1] = -v[i]/mutable_par['rr'][i]  # u6
-                    elif key == 'v' and 'rr' not in array_keys:
-                        u[1] = -v[i]/mutable_par['rr']  # u6
+                for k in array_keys:
+                    if k == 'v':
+                        vi = v[i]
                     else:
-                        mutable_par[key] = par[key][i]
+                        try:
+                            mutable_par[k] = par[k][i]
+                        except TypeError:
+                            mutable_par[k] = par[k]
+                q[4] = pitch_from_roll_and_steer(q[3], q[6],
+                                                 mutable_par['rf'],
+                                                 mutable_par['rr'],
+                                                 mutable_par['d1'],
+                                                 mutable_par['d2'],
+                                                 mutable_par['d3'])
+                u[1] = -vi/mutable_par['rr']  # u6
                 par_arr = np.array(list(mutable_par.values()))
                 A[i], B[i], _, _ = self._eval_linear(q, u, r, par_arr)
         else:  # scalar parameters
-            v = mutable_par.pop('v')
+            q[4] = pitch_from_roll_and_steer(q[3], q[6],
+                                             mutable_par['rf'],
+                                             mutable_par['rr'],
+                                             mutable_par['d1'],
+                                             mutable_par['d2'],
+                                             mutable_par['d3'])
             u[1] = -v/mutable_par['rr']  # u6
             par_arr = np.array(list(mutable_par.values()))
             A, B, _, _ = self._eval_linear(q, u, r, par_arr)
@@ -1318,16 +1413,17 @@ class MooreRiderLean2012Model(Meijaard2007Model):
 
     def plot_simulation(self, times, initial_conditions, input_func=None,
                         **parameter_overrides):
-        """Returns the state and input trajectories at each time value.
+        """Returns the state and input trajectories at each provided time
+        value.
 
         Parameters
         ==========
-        times : array_like, shape(n,)
+        times : array_like, shape(m,)
             Monotonic increasing time values to simulate over.
-        initial_conditions : array_like, shape(4,)
+        initial_conditions : array_like, shape(13,)
             Initial values of the states.
         input_func : function
-            Takes form u = f(t, x) where u is array_like, shape(2,).
+            Takes form ``u = f(t, x)`` where ``u`` is array_like, shape(4,).
         **parameter_overrides : dictionary
             Parameter keys that map to floats or array_like of floats
             shape(n,). All keys that map to array_like must be of the same
@@ -1335,9 +1431,9 @@ class MooreRiderLean2012Model(Meijaard2007Model):
 
         Returns
         =======
-        axes : ndarray, shape(3,)
-            Three subplots that plot the input trajectories, state angle
-            trajectories, and state angular rates.
+        axes : ndarray, shape(4,)
+            Four subplots that plot the input trajectories, distance
+            trajectories, state angle trajectories, and state angular rates.
 
         Examples
         ========
@@ -1347,14 +1443,16 @@ class MooreRiderLean2012Model(Meijaard2007Model):
            :context: reset
 
            import numpy as np
-           from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
-           from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
-           from bicycleparameters.models import Meijaard2007Model
-           p = Meijaard2007ParameterSet(meijaard2007_browser_jason, True)
-           m = Meijaard2007Model(p)
+
+           from bicycleparameters.parameter_dicts import mooreriderlean2012_browser_jason
+           from bicycleparameters.parameter_sets import MooreRiderLean2012ParameterSet
+           from bicycleparameters.models import MooreRiderLean2012Model
+           p = MooreRiderLean2012ParameterSet(mooreriderlean2012_browser_jason)
+           m = MooreRiderLean2012Model(p)
            times = np.linspace(0.0, 5.0, num=51)
-           x0 = np.deg2rad([10.0, 5.0, 0.0, 0.0])
-           m.plot_simulation(times, x0, v=6.0)
+           x0 = np.zeros(13)
+           x0[6] = np.deg2rad(5.0)  # steer angle
+           m.plot_simulation(times, x0, v=20.0)
 
         """
         res, inputs = self.simulate(times, initial_conditions,
@@ -1366,7 +1464,7 @@ class MooreRiderLean2012Model(Meijaard2007Model):
         axes[0].plot(times, inputs)
         labs = ['$' + lab + '$' for lab in self.input_vars_latex]
         try:
-            axes[0].legend(labs, ncols=len(labs))
+            axes[0].legend(labs, ncols=4), #len(labs))
         except:
             axes[0].legend(labs)
         axes[0].set_ylabel('Torque\n[Nm]')
@@ -1374,7 +1472,7 @@ class MooreRiderLean2012Model(Meijaard2007Model):
         axes[1].plot(times, res[:, :2])
         labs = ['$' + lab + '$' for lab in self.state_vars_latex[:2]]
         try:
-            axes[1].legend(labs, ncols=len(labs))
+            axes[1].legend(labs, ncols=4) #len(labs))
         except:
             axes[1].legend(labs)
         axes[1].set_ylabel('Distance\n[m]')
@@ -1382,7 +1480,7 @@ class MooreRiderLean2012Model(Meijaard2007Model):
         axes[2].plot(times, np.rad2deg(res[:, 2:9]))
         labs = ['$' + lab + '$' for lab in self.state_vars_latex[2:9]]
         try:
-            axes[2].legend(labs, ncols=len(labs))
+            axes[2].legend(labs, ncols=4) #len(labs))
         except:
             axes[2].legend(labs)
         axes[2].set_ylabel('Angle\n[deg]')
@@ -1390,7 +1488,7 @@ class MooreRiderLean2012Model(Meijaard2007Model):
         axes[3].plot(times, np.rad2deg(res[:, 9:]))
         labs = ['$' + lab + '$' for lab in self.state_vars_latex[9:]]
         try:
-            axes[3].legend(labs, ncols=len(labs))
+            axes[3].legend(labs, ncols=4) #len(labs))
         except:
             axes[3].legend(labs)
         axes[3].set_ylabel('Angluar Rate\n[deg/s]')
