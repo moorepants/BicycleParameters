@@ -555,6 +555,7 @@ class Meijaard2007Model(_Model):
 
     def plot_eigenvalue_parts(self, ax=None, colors=None,
                               show_stable_regions=True, hide_zeros=False,
+                              sort_modes=True,
                               **parameter_overrides):
         """Returns a matplotlib axis of the real and imaginary parts of the
         eigenvalues plotted against the provided parameter.
@@ -567,6 +568,8 @@ class Meijaard2007Model(_Model):
             Matplotlib colors for the 4 modes.
         show_stable_regions : boolean, optional
             If true, a grey shaded background will indicate stable regions.
+        sort_modes : boolean, optional
+            Sorting the modes does not always work so you can disable it.
         hide_zeros : boolean or float, optional
             If true, real or imaginary parts that are smaller than 1e-12 will
             not be plotted. Providing a float will set the tolerance.
@@ -597,7 +600,8 @@ class Meijaard2007Model(_Model):
 
         evals, evecs = self.calc_eigen(**parameter_overrides)
         if len(evals.shape) > 1:
-            evals, evecs = sort_eigenmodes(evals, evecs)
+            if sort_modes:
+                evals, evecs = sort_eigenmodes(evals, evecs)
             legend = ['M{}'.format(i + 1) for i in range(evals.shape[1])]*2
         else:
             evals, evecs = np.array([evals]), np.array([evecs])
@@ -615,7 +619,9 @@ class Meijaard2007Model(_Model):
             ax.fill_between(par[array_keys[0]],
                             np.min([np.min(evals.real), np.min(evals.imag)]),
                             np.max([np.max(evals.real), np.max(evals.imag)]),
-                            where=np.all(evals.real < 0.0, axis=1),
+                            # NOTE : include zero here for A matrices that
+                            # produce zero eigenvalues.
+                            where=np.all(evals.real <= 0.0, axis=1),
                             color='grey',
                             alpha=0.25,
                             transform=ax.get_xaxis_transform())
@@ -625,15 +631,22 @@ class Meijaard2007Model(_Model):
             imag_vals = np.abs(np.imag(eval_sequence))
             if hide_zeros:
                 imag_vals[np.abs(imag_vals) < tol] = np.nan
-            ax.plot(par[array_keys[0]], imag_vals, color=color, label=label,
-                    linestyle='--')
+            if sort_modes:
+                line = {'linestyle': '--', 'color': color}
+            else:
+                line = {'linestyle': 'none', 'marker': '.', 'color': 'gray'}
+            ax.plot(par[array_keys[0]], imag_vals, label=label, **line)
 
         # plot the real parts of the eigenvalues
         for eval_sequence, color, label in zip(evals.T, colors, legend):
             real_vals = np.real(eval_sequence)
             if hide_zeros:
                 real_vals[np.abs(real_vals) < tol] = np.nan
-            ax.plot(par[array_keys[0]], real_vals, color=color, label=label)
+            if sort_modes:
+                line = {'linestyle': '-', 'color': color}
+            else:
+                line = {'linestyle': 'none', 'marker': '.', 'color': 'black'}
+            ax.plot(par[array_keys[0]], real_vals, label=label, **line)
 
         # set labels and limits
         ax.set_ylabel('Real and Imaginary Parts of the Eigenvalue [1/s]')
@@ -641,7 +654,8 @@ class Meijaard2007Model(_Model):
 
         ax.grid()
 
-        ax.legend(ncol=5)
+        if sort_modes:
+            ax.legend(ncol=5)
 
         ax.set_xlabel(
             '$' + self.parameter_set.par_strings[array_keys[0]] + '$')

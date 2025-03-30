@@ -52,7 +52,7 @@ evals
 # The eigenvalue parts plotted against speed :math:`v` show that the model is
 # always unstable due to the inverted pendulum eigenmode of the upper body.
 vs = np.linspace(0.0, 10.0, num=401)
-ax = model.plot_eigenvalue_parts(hide_zeros=True, v=vs)
+ax = model.plot_eigenvalue_parts(hide_zeros=True, sort_modes=False, v=vs)
 
 # %%
 # If the stiffness of the rider lean joint is increased, the dyamics should
@@ -62,17 +62,20 @@ ax = model.plot_eigenvalue_parts(hide_zeros=True, v=vs)
 # TODO : The eigsort may be catching on the zero eigenvalues.
 # TODO : Stable region does not show.
 k9s = np.linspace(0.0, 300.0, num=301)
-ax = model.plot_eigenvalue_parts(hide_zeros=True, v=5.5, k9=k9s, c9=50.0)
+ax = model.plot_eigenvalue_parts(hide_zeros=True, sort_modes=False, v=5.5,
+                                 k9=k9s, c9=50.0)
 
 # %%
 # Zoom in to see the where the model becomes stable.
-ax = model.plot_eigenvalue_parts(hide_zeros=True, v=5.5, k9=k9s, c9=50.0)
+ax = model.plot_eigenvalue_parts(hide_zeros=True, sort_modes=False, v=5.5,
+                                 k9=k9s, c9=50.0)
 ax.set_ylim((-5.0, 5.0))
 
 # %%
 # Selecting values for the passive stiffness and damping at the rider upper
 # body joint gives dynamics with a small stable speed range.
-ax = model.plot_eigenvalue_parts(hide_zeros=True, v=vs, k9=128.0, c9=50.0)
+ax = model.plot_eigenvalue_parts(hide_zeros=True, sort_modes=False, v=vs,
+                                 k9=128.0, c9=50.0)
 
 # %%
 # Modes of Motion
