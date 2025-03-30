@@ -1,7 +1,7 @@
 r"""
-=========================================
-Carvallo-Whipple Model with Leaning Rider
-=========================================
+===================
+Leaning Rider Model
+===================
 
 The Carvallo-Whipple bicycle model assumes that the rider is rigidly fixed to
 the rear frame of the bicycle. Here the model is extended to include a rigid
@@ -10,30 +10,26 @@ relative to the rear frame through a single additional degree of freedom.
 
 """
 import numpy as np
+import matplotlib.pyplot as plt
 
-from bicycleparameters.parameter_dicts import (
-    meijaard2007_browser_jasonlegs, mooreriderlean2012_browser_jason)
-from bicycleparameters.parameter_sets import (
-    Meijaard2007ParameterSet, MooreRiderLean2012ParameterSet)
+from bicycleparameters.parameter_dicts import mooreriderlean2012_browser_jason
+from bicycleparameters.parameter_sets import MooreRiderLean2012ParameterSet
 from bicycleparameters.models import MooreRiderLean2012Model
-
-# %%
-par_set = Meijaard2007ParameterSet(meijaard2007_browser_jasonlegs, True)
-par_set.to_parameterization('Moore2012').parameters
 
 # %%
 # Load Parameters
 # ===============
-# Linearize about a constant speed, so include the parameter :math:`v` for
-# speed.
-mooreriderlean2012_browser_jason['v'] = 1.0
 par_set = MooreRiderLean2012ParameterSet(mooreriderlean2012_browser_jason)
 par_set
 
 # %%
+# Construct Model
+# ===============
 model = MooreRiderLean2012Model(par_set)
 
 # %%
+# State Space
+# ===========
 A, B = model.form_state_space_matrices(v=5.5)
 A
 
@@ -41,20 +37,28 @@ A
 B
 
 # %%
+# Eigenvalues and Eigenvectors
+# ============================
 evals, evecs = model.calc_eigen(v=5.5)
 evals
 
 # %%
-# The root locus can be plotted as a function of any model parameter. This plot
-# is most often used to show how stability is dependent on the speed
-# parameter.The blue lines indicate the weave eigenmode, the green the capsize
-# eigenmode, and the orange the caster eigenmode. Vertical dashed lines
-# indicate speeds that are examined further below.
+# The eigenvalue parts plotted against speed show that the model is always
+# unstable due to the inverted pendulum eigenmode of the upper body.
 vs = np.linspace(0.0, 10.0, num=401)
 ax = model.plot_eigenvalue_parts(v=vs)
 
 # %%
-ax = model.plot_eigenvalue_parts(v=vs, k9=128.0, c9=50.0, hide_zeros=True)
+# If the stiffness of the rider lean joint is increased, the dyamics should
+# approach that of the rigid rider model and the self-stability can be brought
+# back.
+k9s = np.linspace(0.0, 300.0, num=301)
+ax = model.plot_eigenvalue_parts(hide_zeros=True, v=5.5, k9=k9s, c9=50.0)
+
+# %%
+# Selecting values for the passive stiffness and damping at the rider upper
+# body joint gives dynamics with a small stable speed range.
+ax = model.plot_eigenvalue_parts(hide_zeros=True, v=vs, k9=128.0, c9=50.0,)
 
 # %%
 # Modes of Motion
@@ -69,7 +73,7 @@ ax = model.plot_eigenvalue_parts(v=vs, k9=128.0, c9=50.0, hide_zeros=True)
 #
 # Before the bifurcation point into the weave mode, there are four real
 # eigenvalues that describe the motion.
-ax = model.plot_eigenvectors(v=0.0, k9=128.0, c9=50.0)
+ax = model.plot_eigenvectors(hide_zeros=True, v=0.0, k9=128.0, c9=50.0)
 
 # %%
 # The unstable eigenmodes dominate the motion and this results in the steer
@@ -78,11 +82,10 @@ times = np.linspace(0.0, 1.0)
 ax = model.plot_mode_simulations(times, hide_zeros=True, v=0.0, k9=128.0,
                                  c9=50.0)
 
-
 # %%
 # The total motion shows that the bicycle falls over, as expected.
 x0 = np.zeros(13)
-x0[3] = 0.01  # q4
+x0[3] = np.deg2rad(1.0)  # q4
 ax = model.plot_simulation(times, x0, v=0.0, k9=128.0, c9=50.0)
 
 # %%
@@ -95,7 +98,7 @@ ax = model.plot_simulation(times, x0, v=0.0, k9=128.0, c9=50.0)
 # degrees phase. The other two stable real valued eigenmodes are called
 # "capsize" and "caster", with capsize being primarily a roll motion and caster
 # a steer motion.
-ax = model.plot_eigenvectors(v=2.0, k9=128.0, c9=50.0)
+ax = model.plot_eigenvectors(hide_zeros=True, v=2.0, k9=128.0, c9=50.0)
 # %%
 times = np.linspace(0.0, 1.0)
 ax = model.plot_mode_simulations(times, hide_zeros=True, v=2.0, k9=128.0,
@@ -110,10 +113,11 @@ ax = model.plot_mode_simulations(times, hide_zeros=True, v=2.0, k9=128.0,
 # regime where this is true is called the "self-stable" speed range given that
 # stability arises with no active control. The weave steer-roll phase is almost
 # aligned and the caster time constant is becoming very fast.
-ax = model.plot_eigenvectors(v=5.0, k9=128.0, c9=50.0)
+ax = model.plot_eigenvectors(hide_zeros=True, v=5.5, k9=128.0, c9=50.0)
+
 # %%
 times = np.linspace(0.0, 5.0, num=501)
-ax = model.plot_mode_simulations(times, hide_zeros=True, v=5.0, k9=128.0,
+ax = model.plot_mode_simulations(times, hide_zeros=True, v=5.5, k9=128.0,
                                  c9=50.0)
 
 # %%
@@ -123,12 +127,11 @@ ax = model.plot_mode_simulations(times, hide_zeros=True, v=5.0, k9=128.0,
 # If the speed is increased further, the system becomes unstable due to the
 # capsize mode. The weave steer and roll are mostly aligned in phase but the
 # roll dominated capsize shows that the bicycle slowly falls over.
-ax = model.plot_eigenvectors(v=8.0, k9=128.0, c9=50.0)
+ax = model.plot_eigenvectors(hide_zeros=True, v=8.0, k9=128.0, c9=50.0)
 
 # %%
 ax = model.plot_mode_simulations(times, hide_zeros=True, v=8.0, k9=128.0,
                                  c9=50.0)
-
 # %%
 # Total Motion Simulation
 # -----------------------
@@ -137,11 +140,19 @@ ax = model.plot_mode_simulations(times, hide_zeros=True, v=8.0, k9=128.0,
 # used in [Meijaard2007]_ within the stable speed range at 4.6 m/s.
 x0 = np.zeros(13)
 x0[9] = 0.5  # u4
-ax = model.plot_simulation(times, x0, v=6.0, k9=128.0, c9=50.0)
+x0[10] = -5.5/model.parameter_set.parameters['rr']  # u6
+ax = model.plot_simulation(times, x0, v=5.5, k9=128.0, c9=50.0)
 
 # %%
 # A constant steer torque puts the model into a turn.
-times = np.linspace(0.0, 10.0, num=1001)
+times = np.linspace(0.0, 10.0, num=101)
+res, inputs = model.simulate(times, x0,
+                             input_func=lambda t, x: [0.0, 0.0, 1.0, 0.0],
+                             v=5.5, k9=128.0, c9=50.0)
+fig, ax = plt.subplots()
+ax.plot(res[:, 0], res[:, 1])
+
+# %%
 ax = model.plot_simulation(times, x0,
                            input_func=lambda t, x: [0.0, 0.0, 1.0, 0.0],
-                           v=6.0, k9=128.0, c9=50.0)
+                           v=5.5, k9=128.0, c9=50.0)

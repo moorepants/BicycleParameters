@@ -117,6 +117,7 @@ mooreriderlean2012_browser_jason = {
     'mg': 48.816,
     'rf': 0.34352982332,
     'rr': 0.340958858855,
+    'v': 1.0,
 }
 
 # NOTE : This is Jason sitting on the Browser but only with the inertia of

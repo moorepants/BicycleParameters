@@ -1716,6 +1716,7 @@ class MooreRiderLean2012ParameterSet(ParameterSet):
         'mg': r'm_g',
         'rf': r'r_f',
         'rr': r'r_r',
+        'v': 'v',
     }
 
     body_labels = ['c', 'd', 'e', 'f', 'g']
