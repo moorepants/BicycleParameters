@@ -959,6 +959,8 @@ class Meijaard2007Model(_Model):
         results = self.simulate_modes(times, **parameter_overrides)
         evals, evecs = self.calc_eigen(**parameter_overrides)
 
+        unique_units = list(set(self.state_units))
+
         plot = np.ones_like(evals)
         if hide_zeros:
             tol = hide_zeros if isinstance(hide_zeros, float) else 1e-14
@@ -966,30 +968,33 @@ class Meijaard2007Model(_Model):
                 if np.abs(ev) < tol:
                     plot[i] = 0
 
-        fig, axes = plt.subplots(np.count_nonzero(plot), 2, sharex=True,
-                                 figsize=(8, np.count_nonzero(plot)*2.0),
+        fig, axes = plt.subplots(np.count_nonzero(plot),
+                                 len(unique_units), sharex=True,
+                                 figsize=(len(unique_units)*3.0,
+                                          np.count_nonzero(plot)*2.0),
                                  layout='constrained')
 
         i = 0
         for res, e_val, pl in zip(results, evals, plot):
             if pl:
-                axes[i, 0].plot(times, np.rad2deg(res[:, :9]))
-                #axes[i, 0].legend(['$' + lab + '$'
-                                   #for lab in self.state_vars_latex[:9]])
-                axes[i, 0].set_ylabel('Angle\n[deg]')
-                axes[i, 1].plot(times, np.rad2deg(res[:, 9:]))
-                #axes[i, 1].legend(['$' + lab + '$'
-                                   #for lab in self.state_vars_latex[9:]])
-                axes[i, 1].set_ylabel('Angular Rate\n[deg/s]')
+                for state_traj, unit, name in zip(res.T, self.state_units,
+                                                  self.state_vars_latex):
+                    if 'rad' in unit:
+                        state_traj = np.rad2deg(state_traj)
+                    axes[i, unique_units.index(unit)].plot(
+                        times, state_traj, label='$' + name + '$')
+
+
                 msg = r'Eigenvalue: {:1.3f}'
                 if e_val.real >= 0.0:
                     fontcolor = 'red'  # red indicates unstable
                 else:
                     fontcolor = 'black'
-                axes[i, 0].set_title(msg.format(e_val),
-                                     fontdict={'color': fontcolor})
-                axes[i, 1].set_title(msg.format(e_val),
-                                     fontdict={'color': fontcolor})
+                for j, unit in enumerate(unique_units):
+                    axes[i, j].set_ylabel('[{}]'.format(unit))
+                    axes[i, j].set_title(msg.format(e_val),
+                                         fontdict={'color': fontcolor})
+                    axes[i, j].legend()
                 i += 1
 
         axes[-1, 0].set_xlabel('Time [s]')
