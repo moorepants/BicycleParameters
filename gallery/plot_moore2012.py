@@ -142,15 +142,21 @@ ax = model.plot_simulation(times, x0, v=5.5, k9=128.0, c9=50.0)
 
 # %%
 # A constant steer torque puts the model into a turn.
-times = np.linspace(0.0, 10.0, num=101)
+times = np.linspace(0.0, 5.0, num=101)
+x0 = np.zeros(13)
+x0[10] = -5.5/model.parameter_set.parameters['rr']  # u6
 res, inputs = model.simulate(times, x0,
-                             input_func=lambda t, x: [0.0, 0.0, 1.0, 0.0],
+                             input_func=lambda t, x: [0.0, 0.0, 0.2, 0.0],
                              v=5.5, k9=128.0, c9=50.0)
 fig, ax = plt.subplots()
 ax.plot(res[:, 0], res[:, 1])
+ax.set_xlabel('$q_1$ [m]')
+ax.set_ylabel('$q_2$ [m]')
+ax.set_aspect('equal')
 ax.grid()
+
 
 # %%
 ax = model.plot_simulation(times, x0,
-                           input_func=lambda t, x: [0.0, 0.0, 1.0, 0.0],
+                           input_func=lambda t, x: [0.0, 0.0, 0.2, 0.0],
                            v=5.5, k9=128.0, c9=50.0)

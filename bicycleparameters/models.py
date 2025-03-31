@@ -1495,27 +1495,50 @@ class MooreRiderLean2012Model(Meijaard2007Model):
                                     input_func=input_func,
                                     **parameter_overrides)
 
-        fig, axes = plt.subplots(4, sharex=True, layout='constrained')
+        fig, axes = plt.subplots(5, sharex=True, layout='constrained')
 
+        # roll, wheel, steer, lean torques
         axes[0].plot(times, inputs)
         labs = ['$' + lab + '$' for lab in self.input_vars_latex]
-        axes[0].legend(labs, ncol=4)
+        axes[0].legend(labs, ncol=5)
         axes[0].set_ylabel('Torque\n[Nm]')
 
+        # x, y of rear wheel contact
         axes[1].plot(times, res[:, :2])
         labs = ['$' + lab + '$' for lab in self.state_vars_latex[:2]]
-        axes[1].legend(labs, ncol=4)
+        axes[1].legend(labs, ncol=5)
         axes[1].set_ylabel('Distance\n[m]')
 
-        axes[2].plot(times, np.rad2deg(res[:, 2:9]))
-        labs = ['$' + lab + '$' for lab in self.state_vars_latex[2:9]]
-        axes[2].legend(labs, ncol=4)
+        # wheel angles
+        idxs = [5, 7]
+        axes[2].plot(times, np.rad2deg(res[:, idxs]))
+        labs = ['$' + self.state_vars_latex[i] + '$' for i in idxs]
+        axes[2].legend(labs, ncol=5)
         axes[2].set_ylabel('Angle\n[deg]')
 
-        axes[3].plot(times, np.rad2deg(res[:, 9:]))
-        labs = ['$' + lab + '$' for lab in self.state_vars_latex[9:]]
-        axes[3].legend(labs, ncol=4)
-        axes[3].set_ylabel('Angluar Rate\n[deg/s]')
-        axes[3].set_xlabel('Time [s]')
+        # roll, pitch, steer, lean angles
+        idxs = [3, 4, 6, 8]
+        axes[3].plot(times, np.rad2deg(res[:, idxs]))
+        labs = ['$' + self.state_vars_latex[i] + '$' for i in idxs]
+        axes[3].legend(labs, ncol=5)
+        axes[3].set_ylabel('Angle\n[deg]')
+
+        # yaw
+        ax = axes[3].twinx()
+        ax.plot(times, np.rad2deg(res[:, 2]), color='C4')
+        ax.set_ylabel('$' + self.state_vars_latex[2] + '$ [deg]')
+
+        # roll, steer, lean rates
+        idxs = [9, 11, 12]
+        axes[4].plot(times, np.rad2deg(res[:, idxs]))
+        labs = ['$' + self.state_vars_latex[i] + '$' for i in idxs]
+        axes[4].legend(labs, ncol=5)
+        axes[4].set_ylabel('Angluar Rate\n[deg/s]')
+        axes[4].set_xlabel('Time [s]')
+
+        # wheel rate
+        ax = axes[4].twinx()
+        ax.plot(times, np.rad2deg(res[:, 10]), color='C3')
+        ax.set_ylabel('$' + self.state_vars_latex[10] + '$ [deg/s]')
 
         return axes
