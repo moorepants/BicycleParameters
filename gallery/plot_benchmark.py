@@ -97,7 +97,7 @@ K2
 # indicate speeds that are examined further below.
 v = np.linspace(0.0, 10.0, num=401)
 ax = model.plot_eigenvalue_parts(v=v,
-                                 colors=['C0', 'C1', 'C1', 'C1'],
+                                 colors=['C0', 'C0', 'C1', 'C2'],
                                  hide_zeros=True)
 for vi in [0.0, 2.0, 5.0, 8.0]:
     ax.axvline(vi, color='k', linestyle='--')
