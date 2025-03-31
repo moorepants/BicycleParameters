@@ -21,6 +21,11 @@ np.set_printoptions(precision=3, suppress=True)
 # %%
 # Load Parameters
 # ===============
+#
+# These parameters include the inertia of the rider's lower body rigidly afixed
+# to the bicycle's rear frame :math:`C` and the inertia of the rider's upper
+# body is associated with the inverted compound pendulum :math:`G` that leans
+# relative to the rear frame of the bicycle :math:`C`.
 par_set = MooreRiderLean2012ParameterSet(mooreriderlean2012_browser_jason)
 par_set
 
@@ -58,9 +63,6 @@ ax = model.plot_eigenvalue_parts(hide_zeros=True, sort_modes=False, v=vs)
 # If the stiffness of the rider lean joint is increased, the dyamics should
 # approach that of the rigid rider model and the self-stability can be brought
 # back.
-
-# TODO : The eigsort may be catching on the zero eigenvalues.
-# TODO : Stable region does not show.
 k9s = np.linspace(0.0, 300.0, num=301)
 ax = model.plot_eigenvalue_parts(hide_zeros=True, sort_modes=False, v=5.5,
                                  k9=k9s, c9=50.0)
@@ -154,7 +156,6 @@ ax.set_xlabel('$q_1$ [m]')
 ax.set_ylabel('$q_2$ [m]')
 ax.set_aspect('equal')
 ax.grid()
-
 
 # %%
 ax = model.plot_simulation(times, x0,
