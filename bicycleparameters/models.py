@@ -617,9 +617,6 @@ class Meijaard2007Model(_Model):
         par, array_keys, _ = self._parse_parameter_overrides(
             **parameter_overrides)
 
-        if colors is None:
-            colors = itertools.cycle(mplcolors.TABLEAU_COLORS)
-
         if show_stable_regions:
             ax.fill_between(par[array_keys[0]],
                             np.min([np.min(evals.real), np.min(evals.imag)]),
@@ -631,6 +628,9 @@ class Meijaard2007Model(_Model):
                             alpha=0.25,
                             transform=ax.get_xaxis_transform())
 
+        if colors is None:
+            colors = itertools.cycle(mplcolors.TABLEAU_COLORS)
+
         # imaginary components
         for eval_sequence, color, label in zip(evals.T, colors, legend):
             imag_vals = np.abs(np.imag(eval_sequence))
@@ -640,8 +640,12 @@ class Meijaard2007Model(_Model):
                 line = {'linestyle': '--', 'color': color}
             else:
                 line = {'linestyle': 'none', 'marker': '.', 'markersize': 1,
-                        'color': 'gray'}
+                        'color': 'C1'}
             ax.plot(par[array_keys[0]], imag_vals, label=label, **line)
+
+        if sort_modes:
+            # reset the cycle
+            colors = itertools.cycle(mplcolors.TABLEAU_COLORS)
 
         # plot the real parts of the eigenvalues
         for eval_sequence, color, label in zip(evals.T, colors, legend):
