@@ -1617,6 +1617,35 @@ class Moore2012ParameterSet(ParameterSet):
     parameters : dictionary
         A dictionary mapping variable names to values that contains the
         following keys:
+
+        - 'd1'
+        - 'd2'
+        - 'd3'
+        - 'g'
+        - 'ic11'
+        - 'ic22'
+        - 'ic31'
+        - 'ic33'
+        - 'id11'
+        - 'id22'
+        - 'ie11'
+        - 'ie22'
+        - 'ie31'
+        - 'ie33'
+        - 'if11'
+        - 'if22'
+        - 'l1'
+        - 'l2'
+        - 'l3'
+        - 'l4'
+        - 'mc'
+        - 'md'
+        - 'me'
+        - 'mf'
+        - 'rf'
+        - 'rr'
+        - 'v'
+
     includes_rider : boolean
         True if body C is the combined rear frame and rider in terms of
         mass and inertia values.
@@ -1626,20 +1655,10 @@ class Moore2012ParameterSet(ParameterSet):
     par_strings : dictionary
         Maps ASCII strings to their LaTeX string.
     body_labels : list of strings
-        Single capital letters that correspond to the four rigid bodies in the
-        model.
-
-    References
-    ==========
-
-    .. [Meijaard2007] Meijaard J.P, Papadopoulos Jim M, Ruina Andy and Schwab
-       A.L, 2007, Linearized dynamics equations for the balance and steer of a
-       bicycle: a benchmark and review, Proc. R. Soc. A., 463:1955–1982
-       http://doi.org/10.1098/rspa.2007.1857
+        Single letters that correspond to the four rigid bodies in the model.
 
     """
 
-    # maps "Python" string to LaTeX version
     par_strings = {
         'd1': r'd_1',
         'd2': r'd_2',
@@ -1680,6 +1699,68 @@ class Moore2012ParameterSet(ParameterSet):
 
 
 class MooreRiderLean2012ParameterSet(ParameterSet):
+    """Represents the parameters of the Carvallo-Whipple model with a leaning
+    rider presented in [Moore2012]_.
+
+    The four bodies are:
+
+    - C: rear frame + rigid rider
+    - D: rear wheel
+    - E: front frame (fork & handlebars)
+    - F: front wheel
+
+    Parameters
+    ==========
+    parameters : dictionary
+        A dictionary mapping variable names to values that contains the
+        following keys:
+
+       - 'c9'
+       - 'd1'
+       - 'd2'
+       - 'd3'
+       - 'd4'
+       - 'g'
+       - 'ic11'
+       - 'ic22'
+       - 'ic31'
+       - 'ic33'
+       - 'id11'
+       - 'id22'
+       - 'ie11'
+       - 'ie22'
+       - 'ie31'
+       - 'ie33'
+       - 'if11'
+       - 'if22'
+       - 'ig11'
+       - 'ig22'
+       - 'ig31'
+       - 'ig33'
+       - 'k9'
+       - 'l1'
+       - 'l2'
+       - 'l3'
+       - 'l4'
+       - 'l5'
+       - 'l6'
+       - 'mc'
+       - 'md'
+       - 'me'
+       - 'mf'
+       - 'mg'
+       - 'rf'
+       - 'rr'
+       - 'v'
+
+    Attributes
+    ==========
+    par_strings : dictionary
+        Maps ASCII strings to their LaTeX string.
+    body_labels : list of strings
+        Single letters that correspond to the four rigid bodies in the model.
+
+    """
     par_strings = {
         'c9': r'c_9',
         'd1': r'd_1',
@@ -1720,7 +1801,7 @@ class MooreRiderLean2012ParameterSet(ParameterSet):
         'v': 'v',
     }
 
-    body_labels = ['c', 'd', 'e', 'f', 'g']
+    body_labels = ['C', 'D', 'E', 'F', 'G']
 
     def __init__(self, parameters):
         super().__init__(parameters)
