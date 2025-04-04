@@ -100,7 +100,7 @@ ax = model.plot_mode_simulations(times, hide_zeros=True, v=0.0, k9=128.0,
 
 # %%
 # The total motion shows that the bicycle falls over.
-x0 = np.zeros(13)
+x0 = np.zeros(12)
 x0[3] = np.deg2rad(1.0)  # q4
 ax = model.plot_simulation(times, x0, v=0.0, k9=128.0, c9=50.0)
 
@@ -137,18 +137,16 @@ ax = model.plot_mode_simulations(times, hide_zeros=True, v=8.0, k9=128.0,
 #
 # The following plot shows the total motion with a perturbed initial condition
 # at 5.5 m/s.
-x0 = np.zeros(13)
-x0[9] = 0.5  # u4
-x0[10] = -5.5/model.parameter_set.parameters['rr']  # u6
+x0 = np.zeros(12)
+x0[8] = 0.5  # u4
 ax = model.plot_simulation(times, x0, v=5.5, k9=128.0, c9=50.0)
 
 # %%
 # A constant steer torque puts the model into a turn.
 times = np.linspace(0.0, 5.0, num=101)
-x0 = np.zeros(13)
-x0[10] = -5.5/model.parameter_set.parameters['rr']  # u6
+x0 = np.zeros(12)
 res, inputs = model.simulate(times, x0,
-                             input_func=lambda t, x: [0.0, 0.0, 0.2, 0.0],
+                             input_func=lambda t, x: [0.0, 0.2, 0.0],
                              v=5.5, k9=128.0, c9=50.0)
 fig, ax = plt.subplots()
 ax.plot(res[:, 0], res[:, 1])
@@ -159,5 +157,5 @@ ax.grid()
 
 # %%
 ax = model.plot_simulation(times, x0,
-                           input_func=lambda t, x: [0.0, 0.0, 0.2, 0.0],
+                           input_func=lambda t, x: [0.0, 0.2, 0.0],
                            v=5.5, k9=128.0, c9=50.0)

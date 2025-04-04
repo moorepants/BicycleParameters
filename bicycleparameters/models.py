@@ -1236,51 +1236,44 @@ class MooreRiderLean2012Model(_Model):
 
     This specific model is described in [Moore2012]_ and the equations of
     motion linearized about the nominal upright configuration at a constant
-    longitudinal speed where extracted from the source code from the
+    longitudinal speed were extracted from the source code from the
     dissertation and integrated here.
 
-    Thirteen States:
+    **12 States**:
 
-    - :math:`q_1`: First Cartesian coordinate in the ground plane to rear wheel
-      contact [m]
-    - :math:`q_2`: Second Cartesian coordinate in the ground plane to rear
+    - :math:`q_1`, 0: First Cartesian coordinate in the ground plane to rear
       wheel contact [m]
-    - :math:`q_3`: rear frame yaw angle [rad]
-    - :math:`q_4`: rear frame roll angle [rad]
-    - :math:`q_5`: rear frame pitch angle [rad]
-    - :math:`q_6`: rear wheel angle relative to rear frame [rad]
-    - :math:`q_7`: steer angle (front frame relative to rear frame) [rad]
-    - :math:`q_8`: front wheel angle relative to front frame [rad]
-    - :math:`q_9`: rider lean angle relative to rear frame [rad]
-    - :math:`u_4`: rear frame roll rate [rad/s]
+    - :math:`q_2`, 1: Second Cartesian coordinate in the ground plane to rear
+      wheel contact [m]
+    - :math:`q_3`, 2: rear frame yaw angle [rad]
+    - :math:`q_4`, 3: rear frame roll angle [rad]
+    - :math:`q_6`, 4: rear wheel angle relative to rear frame [rad]
+    - :math:`q_7`, 5: steer angle (front frame relative to rear frame) [rad]
+    - :math:`q_8`, 6: front wheel angle relative to front frame [rad]
+    - :math:`q_9`, 7: rider lean angle relative to rear frame [rad]
+    - :math:`u_4`, 8: rear frame roll rate [rad/s]
     - :math:`u_6`: rear wheel angular rate relative to rear frame [rad/s]
-    - :math:`u_7`: steer angular rate relative to the rear frame [rad/s]
-    - :math:`u_9`: rider lean angular rate relative to the rear frame [rad/s]
+    - :math:`u_7`, 9: steer angular rate relative to the rear frame [rad/s]
+    - :math:`u_9`, 10: rider lean angular rate relative to the rear frame
+      [rad/s]
 
-    Four Inputs:
+    **3 Inputs**:
 
-    - :math:`T_4`: roll torque (between rear frame and ground) [Nm]
-    - :math:`T_6`: propulsion torque (between rear wheel and rear frame) [Nm]
-    - :math:`T_7`: steer torque (between rear and front frames [Nm]
-    - :math:`T_9`: rider lean torque (between rider upper body and rear frame)
-      [Nm]
+    - :math:`T_4`, 0: roll torque (between rear frame and ground) [Nm]
+    - :math:`T_7`, 1: steer torque (between rear and front frames [Nm]
+    - :math:`T_9`, 2: rider lean torque (between rider upper body and rear
+      frame) [Nm]
 
     """
-    # TODO : If linearizing about constant speed, u6 and T6, should probably
-    # not be present as they do not effect the dynamics.
-
-    # TODO : Linearizing about the nominal config sets q5 pitch, so that should
-    # probably not be settable by the user either.
-
-    input_vars = ['T4', 'T6', 'T7', 'T9']
-    state_vars = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9',
+    input_vars = ['T4', 'T7', 'T9']
+    state_vars = ['q1', 'q2', 'q3', 'q4', 'q6', 'q7', 'q8', 'q9',
                   'u4', 'u6', 'u7', 'u9']
-    input_units = ['N-m', 'N-m', 'N-m', 'N-m']
-    state_units = ['m', 'm', 'rad', 'rad', 'rad', 'rad', 'rad', 'rad', 'rad',
-                   'rad/s', 'rad/s', 'rad/s', 'rad/s']
-    input_vars_latex = ['T_4', 'T_6', 'T_7', 'T_9']
-    state_vars_latex = ['q_1', 'q_2', 'q_3', 'q_4', 'q_5', 'q_6', 'q_7', 'q_8',
-                        'q_9', 'u_4', 'u_6', 'u_7', 'u_9']
+    input_units = ['N-m', 'N-m', 'N-m']
+    state_units = ['m', 'm', 'rad', 'rad', 'rad', 'rad', 'rad', 'rad',
+                   'rad/s', 'rad/s', 'rad/s', ]
+    input_vars_latex = ['T_4', 'T_7', 'T_9']
+    state_vars_latex = ['q_1', 'q_2', 'q_3', 'q_4', 'q_6', 'q_7', 'q_8', 'q_9',
+                        'u_4', 'u_6', 'u_7', 'u_9']
 
     def __init__(self, parameter_set):
 
@@ -1418,10 +1411,15 @@ class MooreRiderLean2012Model(_Model):
 
         v = mutable_par.pop('v')
 
+        # NOTE : eval_linear returns the A (13, 13) and B (13, 4) but we can
+        # exclude q5, T6. These are the indices to keep.
+        a_idxs = [0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12]
+        b_idxs = [0, 2, 3]
+
         if array_keys:
 
-            A = np.zeros((array_len, 13, 13))
-            B = np.zeros((array_len, 13, 4))
+            A = np.zeros((array_len, 12, 12))
+            B = np.zeros((array_len, 12, 3))
 
             vi = v
 
@@ -1446,7 +1444,9 @@ class MooreRiderLean2012Model(_Model):
                     for k in self.parameter_set.par_strings.keys()
                     if k in mutable_par.keys()
                 ])
-                A[i], B[i], _, _ = self._eval_linear(q, u, r, par_arr)
+                A_, B_, _, _ = self._eval_linear(q, u, r, par_arr)
+                A[i] = A_[a_idxs][:, a_idxs]
+                B[i] = B_[a_idxs][:, b_idxs]
         else:  # scalar parameters
             q[4] = pitch_from_roll_and_steer(q[3], q[6],
                                              mutable_par['rf'],
@@ -1460,9 +1460,23 @@ class MooreRiderLean2012Model(_Model):
                 for k in self.parameter_set.par_strings.keys()
                 if k in mutable_par.keys()
             ])
-            A, B, _, _ = self._eval_linear(q, u, r, par_arr)
+            A_, B_, _, _ = self._eval_linear(q, u, r, par_arr)
+            A = np.zeros((12, 12))
+            B = np.zeros((12, 3))
+            A, B = A_[a_idxs][:, a_idxs], B_[a_idxs][:, b_idxs]
 
         return A, B
+
+    def simulate(self, times, initial_conditions, input_func=None,
+                 **parameter_overrides):
+        par, array_keys, array_len = self._parse_parameter_overrides(
+            **parameter_overrides)
+
+        # u6 has to be consistent with v
+        initial_conditions[9] = -par['v']/par['rr']
+
+        return super().simulate(times, initial_conditions,
+                                input_func=input_func, **parameter_overrides)
 
     def plot_simulation(self, times, initial_conditions, input_func=None,
                         **parameter_overrides):
@@ -1473,10 +1487,12 @@ class MooreRiderLean2012Model(_Model):
         ==========
         times : array_like, shape(m,)
             Monotonic increasing time values to simulate over.
-        initial_conditions : array_like, shape(13,)
-            Initial values of the states.
+        initial_conditions : array_like, shape(12,)
+            Initial values of the states: ``[q1, q2, q3, q4, q6, q7, q8, q9,
+            u4, u6, u7, u9]``.
         input_func : function
-            Takes form ``u = f(t, x)`` where ``u`` is array_like, shape(4,).
+            Takes form ``r = f(t, x)`` where ``r`` is array_like, shape(4,).
+            with ``r = [T4, T7, T9]``.
         **parameter_overrides : dictionary
             Parameter keys that map to floats or array_like of floats
             shape(n,). All keys that map to array_like must be of the same
@@ -1503,25 +1519,16 @@ class MooreRiderLean2012Model(_Model):
            p = MooreRiderLean2012ParameterSet(mooreriderlean2012_browser_jason)
            m = MooreRiderLean2012Model(p)
            times = np.linspace(0.0, 5.0, num=51)
-           x0 = np.zeros(13)
-           x0[6] = np.deg2rad(5.0)  # steer angle
+           x0 = np.zeros(12)
+           x0[5] = np.deg2rad(5.0)  # steer angle
            m.plot_simulation(times, x0, v=20.0)
 
         """
         par, array_keys, array_len = self._parse_parameter_overrides(
             **parameter_overrides)
 
-        # ensure pitch angle is correct regardless of what the user passes in
-        q = initial_conditions.copy()
-        initial_conditions[4] = pitch_from_roll_and_steer(
-            q[3],
-            q[6],
-            par['rf'],
-            par['rr'],
-            par['d1'],
-            par['d2'],
-            par['d3'],
-        )
+        # u6 has to be consistent with v
+        initial_conditions[9] = -par['v']/par['rr']
 
         res, inputs = self.simulate(times, initial_conditions,
                                     input_func=input_func,
@@ -1529,7 +1536,7 @@ class MooreRiderLean2012Model(_Model):
 
         fig, axes = plt.subplots(5, sharex=True, layout='constrained')
 
-        # roll, wheel, steer, lean torques
+        # roll, steer, lean torques
         axes[0].plot(times, inputs)
         labs = ['$' + lab + '$' for lab in self.input_vars_latex]
         axes[0].legend(labs, ncol=5)
@@ -1542,17 +1549,16 @@ class MooreRiderLean2012Model(_Model):
         axes[1].set_ylabel('Distance\n[m]')
 
         # wheel angles
-        idxs = [5, 7]
+        idxs = [4, 6]
         axes[2].plot(times, np.rad2deg(res[:, idxs]))
         labs = ['$' + self.state_vars_latex[i] + '$' for i in idxs]
         axes[2].legend(labs, ncol=5)
         axes[2].set_ylabel('Angle\n[deg]')
 
-        # roll, pitch, steer, lean angles
-        idxs = [3, 4, 6, 8]
+        # roll, steer, lean angles
+        idxs = [3, 5, 7]
         axes[3].plot(times, np.rad2deg(res[:, idxs]))
         labs = ['$' + self.state_vars_latex[i] + '$' for i in idxs]
-        axes[3].legend(labs, ncol=5)
         axes[3].set_ylabel('Angle\n[deg]')
 
         # yaw
@@ -1560,17 +1566,20 @@ class MooreRiderLean2012Model(_Model):
         ax.plot(times, np.rad2deg(res[:, 2]), color='C4')
         ax.set_ylabel('$' + self.state_vars_latex[2] + '$ [deg]')
 
+        axes[3].legend(labs, ncol=5)
+
         # roll, steer, lean rates
-        idxs = [9, 11, 12]
+        idxs = [8, 10, 11]
         axes[4].plot(times, np.rad2deg(res[:, idxs]))
         labs = ['$' + self.state_vars_latex[i] + '$' for i in idxs]
-        axes[4].legend(labs, ncol=5)
         axes[4].set_ylabel('Angluar Rate\n[deg/s]')
         axes[4].set_xlabel('Time [s]')
 
-        # wheel rate
+        # wheel speed
         ax = axes[4].twinx()
-        ax.plot(times, np.rad2deg(res[:, 10]), color='C3')
-        ax.set_ylabel('$' + self.state_vars_latex[10] + '$ [deg/s]')
+        ax.plot(times, np.rad2deg(res[:, 9]), color='C3')
+        ax.set_ylabel('$' + self.state_vars_latex[9] + '$ [deg]')
+
+        axes[4].legend(labs, ncol=5)
 
         return axes
