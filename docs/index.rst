@@ -4,11 +4,11 @@
    contain the root `toctree` directive.
 
 ==================================
-BicycleParameters's documentation!
+BicycleParameters's Documentation!
 ==================================
 
-The **bicycleparameters** package is a python program designed to produce and
-manipulate the basic parameters needed for basic bicycle dynamic models.
+The **bicycleparameters** package is a Python program designed to produce and
+manipulate the basic parameters needed for bicycle dynamic models.
 
 Table of Contents
 =================
@@ -18,9 +18,9 @@ Table of Contents
 
    description.rst
    installation.rst
+   data.rst
    examples.rst
    gallery/index.rst
-   data.rst
    app.rst
    bicycleparameters.rst
 

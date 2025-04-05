@@ -10,7 +10,7 @@ setup(
     author='Jason K. Moore',
     author_email='moorepants@gmail.com',
     packages=find_packages(),
-    url='http://pypi.python.org/pypi/BicycleParameters',
+    url='https://bicycleparameters.readthedocs.io',
     license='LICENSE.txt',
     description='Generates and manipulates the physical parameters of a bicycle.',
     long_description=open('README.rst').read(),

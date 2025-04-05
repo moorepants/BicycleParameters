@@ -1,98 +1,17 @@
-bicycleparameters Package
-=========================
+API reference for the bicycleparameters Package
+===============================================
 
-:mod:`main` Module
-------------------
+.. toctree::
 
-.. automodule:: bicycleparameters.main
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-:mod:`com` Module
------------------
-
-.. automodule:: bicycleparameters.com
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-:mod:`bicycle` Module
----------------------
-
-.. automodule:: bicycleparameters.bicycle
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-:mod:`geometry` Module
-----------------------
-
-.. automodule:: bicycleparameters.geometry
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-:mod:`inertia` Module
----------------------
-
-.. automodule:: bicycleparameters.inertia
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-:mod:`io` Module
-----------------
-
-.. automodule:: bicycleparameters.io
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-:mod:`models` Module
---------------------
-
-.. automodule:: bicycleparameters.models
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-:mod:`parameter_sets` Module
-----------------------------
-
-.. automodule:: bicycleparameters.parameter_sets
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-:mod:`period` Module
---------------------
-
-.. automodule:: bicycleparameters.period
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-:mod:`plot` Module
-------------------
-
-.. automodule:: bicycleparameters.plot
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-:mod:`rider` Module
--------------------
-
-.. automodule:: bicycleparameters.rider
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-:mod:`tables` Module
---------------------
-
-.. automodule:: bicycleparameters.tables
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   api/bicycle.rst
+   api/com.rst
+   api/geometry.rst
+   api/inertia.rst
+   api/io.rst
+   api/main.rst
+   api/models.rst
+   api/parameter_sets.rst
+   api/period.rst
+   api/plot.rst
+   api/rider.rst
+   api/tables.rst
