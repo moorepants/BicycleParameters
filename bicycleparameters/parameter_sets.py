@@ -1689,7 +1689,7 @@ class Moore2012ParameterSet(ParameterSet):
         'v': 'v',
     }
 
-    body_labels = ['c', 'd', 'e', 'f']
+    body_labels = ['C', 'D', 'E', 'F']
 
     def __init__(self, parameters, includes_rider):
         super().__init__(parameters)
