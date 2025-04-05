@@ -38,6 +38,22 @@ def ab_matrix(M, C1, K0, K2, v, g):
     The inputs are [roll torque,
                     steer torque]
 
+    Examples
+    --------
+
+    >>> from bicycleparameters.parameter_dicts import meijaard2007_browser_jason
+    >>> from bicycleparameters.bicycle import benchmark_par_to_canonical, ab_matrix
+    >>> M, C1, K0, K2 = benchmark_par_to_canonical(meijaard2007_browser_jason)
+    >>> ab_matrix(M, C1, K0, K2, 5.0, 9.81)
+    (array([[  0.        ,   0.        ,   1.        ,   0.        ],
+            [  0.        ,   0.        ,   0.        ,   1.        ],
+            [  8.26150335, -17.52187211,  -0.1488979 ,  -1.07153674],
+            [ 17.66475151, -22.88692074,   9.96449204, -14.22097935]]),
+     array([[ 0.        ,  0.        ],
+            [ 0.        ,  0.        ],
+            [ 0.01071772, -0.06613267],
+            [-0.06613267,  4.42570676]]))
+
     '''
 
     invM = (1. / (M[0, 0] * M[1, 1] - M[0, 1] * M[1, 0]) *
