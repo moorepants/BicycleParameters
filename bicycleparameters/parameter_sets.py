@@ -5,6 +5,7 @@ import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import patches
+from dtk.bicycle import benchmark_to_moore
 
 from .com import total_com
 from .geometry import fundamental_geometry_plot_data
@@ -333,6 +334,9 @@ class Meijaard2007ParameterSet(ParameterSet):
         """
         if name == self.parameterization:
             return self
+        elif name == 'Moore2012':
+            moore_par = benchmark_to_moore(self.parameters)
+            return Moore2012ParameterSet(moore_par, self.includes_rider)
         elif name == 'Meijaard2007WithFeedback':
             par = self.parameters.copy()
             gain_names = ['kTphi_phi', 'kTphi_del', 'kTphi_phid', 'kTphi_deld',
@@ -1595,3 +1599,211 @@ class Moore2019ParameterSet(ParameterSet):
         z = p['z{}'.format(body)]
 
         return np.array([x, y, z])
+
+
+class Moore2012ParameterSet(ParameterSet):
+    """Represents the parameters of the Carvallo-Whipple model presented in
+    [Moore2012]_.
+
+    The four bodies are:
+
+    - C: rear frame + rigid rider
+    - D: rear wheel
+    - E: front frame (fork & handlebars)
+    - F: front wheel
+
+    Parameters
+    ==========
+    parameters : dictionary
+        A dictionary mapping variable names to values that contains the
+        following keys:
+
+        - 'd1'
+        - 'd2'
+        - 'd3'
+        - 'g'
+        - 'ic11'
+        - 'ic22'
+        - 'ic31'
+        - 'ic33'
+        - 'id11'
+        - 'id22'
+        - 'ie11'
+        - 'ie22'
+        - 'ie31'
+        - 'ie33'
+        - 'if11'
+        - 'if22'
+        - 'l1'
+        - 'l2'
+        - 'l3'
+        - 'l4'
+        - 'mc'
+        - 'md'
+        - 'me'
+        - 'mf'
+        - 'rf'
+        - 'rr'
+        - 'v'
+
+    includes_rider : boolean
+        True if body C is the combined rear frame and rider in terms of
+        mass and inertia values.
+
+    Attributes
+    ==========
+    par_strings : dictionary
+        Maps ASCII strings to their LaTeX string.
+    body_labels : list of strings
+        Single letters that correspond to the four rigid bodies in the model.
+
+    """
+
+    par_strings = {
+        'd1': r'd_1',
+        'd2': r'd_2',
+        'd3': r'd_3',
+        'g': r'g',
+        'ic11': r'I_{C11}',
+        'ic22': r'I_{C22}',
+        'ic31': r'I_{C31}',
+        'ic33': r'I_{C33}',
+        'id11': r'I_{D11}',
+        'id22': r'I_{D22}',
+        'ie11': r'I_{D11}',
+        'ie22': r'I_{E22}',
+        'ie31': r'I_{E31}',
+        'ie33': r'I_{E33}',
+        'if11': r'I_{F11}',
+        'if22': r'I_{F22}',
+        'l1': r'l_1',
+        'l2': r'l_2',
+        'l3': r'l_3',
+        'l4': r'l_4',
+        'mc': r'm_C',
+        'md': r'm_D',
+        'me': r'm_E',
+        'mf': r'm_F',
+        'rf': r'r_f',
+        'rr': r'r_r',
+        'v': 'v',
+    }
+
+    body_labels = ['C', 'D', 'E', 'F']
+
+    def __init__(self, parameters, includes_rider):
+        super().__init__(parameters)
+        self.parameters = parameters
+        self.includes_rider = includes_rider
+        self._generate_body_colors()
+
+
+class MooreRiderLean2012ParameterSet(ParameterSet):
+    """Represents the parameters of the Carvallo-Whipple model with a leaning
+    rider presented in [Moore2012]_.
+
+    The four bodies are:
+
+    - C: rear frame + rigid rider
+    - D: rear wheel
+    - E: front frame (fork & handlebars)
+    - F: front wheel
+
+    Parameters
+    ==========
+    parameters : dictionary
+        A dictionary mapping variable names to values that contains the
+        following keys:
+
+       - 'c9'
+       - 'd1'
+       - 'd2'
+       - 'd3'
+       - 'd4'
+       - 'g'
+       - 'ic11'
+       - 'ic22'
+       - 'ic31'
+       - 'ic33'
+       - 'id11'
+       - 'id22'
+       - 'ie11'
+       - 'ie22'
+       - 'ie31'
+       - 'ie33'
+       - 'if11'
+       - 'if22'
+       - 'ig11'
+       - 'ig22'
+       - 'ig31'
+       - 'ig33'
+       - 'k9'
+       - 'l1'
+       - 'l2'
+       - 'l3'
+       - 'l4'
+       - 'l5'
+       - 'l6'
+       - 'mc'
+       - 'md'
+       - 'me'
+       - 'mf'
+       - 'mg'
+       - 'rf'
+       - 'rr'
+       - 'v'
+
+    Attributes
+    ==========
+    par_strings : dictionary
+        Maps ASCII strings to their LaTeX string.
+    body_labels : list of strings
+        Single letters that correspond to the four rigid bodies in the model.
+
+    """
+    par_strings = {
+        'c9': r'c_9',
+        'd1': r'd_1',
+        'd2': r'd_2',
+        'd3': r'd_3',
+        'd4': r'd_4',
+        'g': r'g',
+        'ic11': r'I_{C11}',
+        'ic22': r'I_{C22}',
+        'ic31': r'I_{C31}',
+        'ic33': r'I_{C33}',
+        'id11': r'I_{D11}',
+        'id22': r'I_{D22}',
+        'ie11': r'I_{D11}',
+        'ie22': r'I_{E22}',
+        'ie31': r'I_{E31}',
+        'ie33': r'I_{E33}',
+        'if11': r'I_{F11}',
+        'if22': r'I_{F22}',
+        'ig11': r'I_{G11}',
+        'ig22': r'I_{G22}',
+        'ig31': r'I_{G31}',
+        'ig33': r'I_{G33}',
+        'k9': r'k_9',
+        'l1': r'l_1',
+        'l2': r'l_2',
+        'l3': r'l_3',
+        'l4': r'l_4',
+        'l5': r'l_5',
+        'l6': r'l_6',
+        'mc': r'm_C',
+        'md': r'm_D',
+        'me': r'm_E',
+        'mf': r'm_F',
+        'mg': r'm_G',
+        'rf': r'r_f',
+        'rr': r'r_r',
+        'v': 'v',
+    }
+
+    body_labels = ['C', 'D', 'E', 'F', 'G']
+
+    def __init__(self, parameters):
+        super().__init__(parameters)
+        self.parameters = parameters
+        self._generate_body_colors()

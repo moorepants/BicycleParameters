@@ -72,3 +72,85 @@ moore2019_browser_jason = {
     'zH': -0.748236400835,
     'zP': -1.0989885659819278,
 }
+
+# NOTE : These are the values used for the rider lean model in Jason Moore's
+# 2012 dissertation. The BrowserLegs = Browser Bike + Jason's legs (from Yeadon
+# calcs) for the rigid body C. The upper body G is from Jason's torso, arms,
+# head (from Yeadon calcs).
+# BrowserLegs data is taken from https://doi.org/10.6084/m9.figshare.1198429.v2
+# and originally used in
+# https://github.com/moorepants/dissertation/tree/master/src/extensions/lean.
+mooreriderlean2012_browser_jason = {
+    'c9': 0.0,
+    'd1': 0.9631492634872098,
+    'd2': 0.4338396131640938,
+    'd3': 0.0705000000001252,
+    'd4': -1.011421527346159 + 0.340958858855,  # + rr
+    'g': 9.81,
+    'ic11': 2.296859222953584,
+    'ic22': 2.9922715238,
+    'ic31': 0.01594448114273473,
+    'ic33': 1.5101858377464155,
+    'id11': 0.0904106601579,
+    'id22': 0.152467620286,
+    'ie11': 0.2811355367159554,
+    'ie22': 0.246138810935,
+    'ie31': 0.0063377219110826045,
+    'ie33': 0.06782113764394461,
+    'if11': 0.0883819364527,
+    'if22': 0.149389340425,
+    'ig11': 2.038073562525466,
+    'ig22': 1.692108544034995,
+    'ig31': 0.002113501449812,
+    'ig33': 1.100753962972129,
+    'k9': 0.0,
+    'l1': 0.47759794513190806,
+    'l2': -0.1680324796714025,
+    'l3': -0.07654646159268344,
+    'l4': -0.47166687226492093,
+    'l5': 0.231223496809401,
+    'l6': -1.283035074598082 + 0.340958858855 - (-1.011421527346159 + 0.340958858855),  # rr - d4
+    'mc': 33.044,
+    'md': 3.11,
+    'me': 3.22,
+    'mf': 2.02,
+    'mg': 48.816,
+    'rf': 0.34352982332,
+    'rr': 0.340958858855,
+    'v': 1.0,
+}
+
+# NOTE : This is Jason sitting on the Browser but only with the inertia of
+# Jason's legs included in the mass distribution properties of the rear frame.
+# Taken from https://doi.org/10.6084/m9.figshare.1198429.v2 and originally used
+# in
+# https://github.com/moorepants/dissertation/tree/master/src/extensions/lean.
+meijaard2007_browser_jasonlegs = {
+    'IBxx': 2.18917391377,
+    'IBxz': -0.27087131147,
+    'IByy': 2.9922715238,
+    'IBzz': 1.61787114693,
+    'IFxx': 0.0883819364527,
+    'IFyy': 0.149389340425,
+    'IHxx': 0.253379594731,
+    'IHxz': -0.0720452391817,
+    'IHyy': 0.246138810935,
+    'IHzz': 0.0955770796289,
+    'IRxx': 0.0904106601579,
+    'IRyy': 0.152467620286,
+    'c': 0.0685808540382,
+    'g': 9.81,
+    'lam': 0.399680398707,
+    'mB': 33.044,
+    'mF': 2.02,
+    'mH': 3.22,
+    'mR': 3.11,
+    'rF': 0.34352982332,
+    'rR': 0.340958858855,
+    'v': 1.0,
+    'w': 1.121,
+    'xB': 0.374570794542,
+    'xH': 0.866949640247,
+    'zB': -0.681592725778,
+    'zH': -0.748236400835,
+}
