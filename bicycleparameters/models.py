@@ -1279,7 +1279,7 @@ class MooreRiderLean2012Model(_Model):
 
         # NOTE : this import is here because it is a bit slow loading into
         # memory, so it only loads if someone uses this class.
-        from bicycleparameters.mooreriderlean2012 import eval_linear
+        from bicycleparameters._mooreriderlean2012 import eval_linear
 
         self._eval_linear = eval_linear
 
