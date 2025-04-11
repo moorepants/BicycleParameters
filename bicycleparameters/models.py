@@ -210,7 +210,10 @@ class _Model(abc.ABC):
                             transform=ax.get_xaxis_transform())
 
         if colors is None:
+            colors_was_none = True
             colors = itertools.cycle(mplcolors.TABLEAU_COLORS)
+        else:
+            colors_was_none = False
 
         # imaginary components
         for eval_sequence, color, label in zip(evals.T, colors, legend):
@@ -224,7 +227,7 @@ class _Model(abc.ABC):
                         'color': 'C1'}
             ax.plot(par[array_keys[0]], imag_vals, label=label, **line)
 
-        if sort_modes:
+        if sort_modes and colors_was_none:
             # reset the cycle
             colors = itertools.cycle(mplcolors.TABLEAU_COLORS)
 
