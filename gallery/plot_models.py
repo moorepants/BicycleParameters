@@ -92,7 +92,7 @@ ax = model.plot_eigenvalue_parts(v=speeds,
                                  hide_zeros=True)
 ax.set_ylim((-10.0, 10.0))
 _ = ax.legend(['Weave Im', None, None, None,
-               'Weave Re', None, 'Capsize', 'Caster'], ncol=4)
+               'Weave Re', None, 'Caster', 'Capsize'], ncol=4)
 
 # %%
 # You can choose any parameter in the dictionary to generate the root locus and
