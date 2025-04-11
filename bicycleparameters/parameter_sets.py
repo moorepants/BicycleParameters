@@ -11,6 +11,15 @@ from .com import total_com
 from .geometry import fundamental_geometry_plot_data
 from .conversions import _convert_principal_to_benchmark
 
+__all__ = [
+    'Meijaard2007ParameterSet',
+    'Meijaard2007WithFeedbackParameterSet',
+    'Moore2012ParameterSet',
+    'Moore2019ParameterSet',
+    'MooreRiderLean2012ParameterSet',
+    'ParameterSet',
+]
+
 
 def _com_symbol(ax, center, radius, color='b', label=None):
     """Returns matplotlib axis with center of mass symbol and possibly a label
@@ -160,7 +169,7 @@ class ParameterSet(ABC):
         if name == self.parameterization:
             return self
         else:
-            msg = '{} is not an avaialble parameter set'
+            msg = '{} is not an avaialble parameter set.'
             raise ValueError(msg.format(name))
 
     def to_yaml(self, fname):
@@ -199,12 +208,13 @@ class ParameterSet(ABC):
             f.write(text)
 
     def _repr_html_(self):
-        opening = r'<table><caption>{}</caption><tr><th>Variable</th><th>Value</th></tr>'
+        opening = (r'<table><caption>{}</caption><tr><th>Variable</th>'
+                   r'<th>Value</th></tr>')
         lines = opening.format(self.parameterization)
-        for k, v in self.parameters.items():
-            latex_var = r'\({}\)'.format(self.par_strings[k])
+        for k, v in self.par_strings.items():
+            latex_var = r'\({}\)'.format(v)
             row_str = r'<tr><td>{}</td><td>{:1.3f}</td></tr>'
-            lines += row_str.format(latex_var, v)
+            lines += row_str.format(latex_var, self.parameters[k])
         lines += r'</table>'
         return lines
 
@@ -336,6 +346,7 @@ class Meijaard2007ParameterSet(ParameterSet):
             return self
         elif name == 'Moore2012':
             moore_par = benchmark_to_moore(self.parameters)
+            moore_par['v'] = self.parameters['v']
             return Moore2012ParameterSet(moore_par, self.includes_rider)
         elif name == 'Meijaard2007WithFeedback':
             par = self.parameters.copy()
@@ -1129,7 +1140,7 @@ class Moore2019ParameterSet(ParameterSet):
         elif name == 'Meijaard2007WithFeedback':
             b = _convert_principal_to_benchmark(self.parameters)
             # Moore2019 always includes the rider
-            par_set = Meijaard2007ParameterSet(b, True)
+            par_set = Meijaard2007WithFeedbackParameterSet(b, True)
             return par_set.to_parameterization(name)
         else:
             msg = '{} is not an available parameter set'
