@@ -143,6 +143,9 @@ bicycle.steer_assembly_moment_of_inertia(aboutSteerAxis=True)
 bicycle.plot_bicycle_geometry()
 
 # %%
+_ = bicycle.plot_bode(3.0, 1, 2)
+
+# %%
 # For visualization of the linear analysis you can plot the root loci of the
 # real and imaginary parts of the eigenvalues as a function of speed:
 speeds = np.linspace(0., 10., num=100)
