@@ -1260,6 +1260,8 @@ class Bicycle(object):
 
         if fig is None:
             fig, ax = plt.subplots(figsize=figsize)
+        else:
+            ax = fig.axes[0]
 
         evals, evecs = self.eig(speeds)
 
