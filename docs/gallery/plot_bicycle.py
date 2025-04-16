@@ -11,25 +11,6 @@ import numpy as np
 import bicycleparameters as bp
 from bicycleparameters import Bicycle, tables
 
-
-def tree(dir_path, prefix=''):
-    # https://stackoverflow.com/questions/9727673/list-directory-tree-structure-in-python
-    space = '    '
-    branch = '│   '
-    tee = '├── '
-    last = '└── '
-    contents = list(dir_path.iterdir())
-    pointers = [tee] * (len(contents) - 1) + [last]
-    for pointer, path in zip(pointers, contents):
-        yield prefix + pointer + path.name
-        if path.is_dir():
-            extension = branch if pointer == tee else space
-            yield from tree(path, prefix=prefix+extension)
-
-
-for line in tree(Path('../data/bicycles')):
-    print(line)
-
 # %%
 # Loading Bicycle Data
 # ====================
