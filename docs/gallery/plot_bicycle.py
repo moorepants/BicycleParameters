@@ -1,34 +1,57 @@
 """
-======================
+==============
 Using Bicycles
-======================
+==============
 
-Loading bicycle data
-====================
-
-The easiest way to load a bicycle is:
 """
+import pprint
+from pathlib import Path
 
 import numpy as np
 import bicycleparameters as bp
-from bicycleparameters import tables
+from bicycleparameters import Bicycle, tables
 
-bicycle = bp.Bicycle('Stratos', pathToData='../data')
+
+def tree(dir_path, prefix=''):
+    # https://stackoverflow.com/questions/9727673/list-directory-tree-structure-in-python
+    space = '    '
+    branch = '│   '
+    tee = '├── '
+    last = '└── '
+    contents = list(dir_path.iterdir())
+    pointers = [tee] * (len(contents) - 1) + [last]
+    for pointer, path in zip(pointers, contents):
+        yield prefix + pointer + path.name
+        if path.is_dir():
+            extension = branch if pointer == tee else space
+            yield from tree(path, prefix=prefix+extension)
+
+
+for line in tree(Path('../data/bicycles')):
+    print(line)
+
+# %%
+# Loading Bicycle Data
+# ====================
+#
+# To load the data from one of the bicycles in the data folder, instantiate a
+# :py:class:`~bicycleparameters.main.Bicycle` object using the bicycle's name:
+bicycle = Bicycle('Stratos', pathToData='../data')
 
 # %%
 # This will create an instance of the Bicycle class in the variable bicycle
-# based ``./bicycles/Stratos/Parameters/``. If so, it loads the data, if not it
-# looks calculate the periods. If no data is there, then you get an error.
-# doesn't then the program will look for the series of ``.mat`` files need to
+# based off of input data from the ``./bicycles/Stratos/`` directory. The
+# program first looks to see if there are any parameter sets in
+# ``./bicycles/Stratos/Parameters/``. If so, it loads the data, if not it looks
 # for ``./bicycles/Stratos/RawData/StratosMeasurments.txt`` so that it can
 # generate the parameter set. The raw measurement file may or may not contain
-# the looks to see if there are any parameter sets in off of input data from
-# the ``./bicycles/Stratos/`` directory. The program first oscillation period
-# data for the bicycle moment of inertia calculations. If it
+# the oscillation period data for the bicycle moment of inertia calculations.
+# If it doesn't then the program will look for the series of ``.mat`` files
+# need to calculate the periods. If no data is there, then you get an error.
 #
 # There are other loading options::
 #
-#     bicycle = bp.Bicycle('Stratos', pathToData='..', forceRawCalc=True,
+#     bicycle = Bicycle('Stratos', pathToData='..', forceRawCalc=True,
 #                          forcePeriodCalc=True)
 #
 # The ``pathToData`` option allows you specify a directory other than the
@@ -39,28 +62,37 @@ bicycle = bp.Bicycle('Stratos', pathToData='../data')
 # option forces the period calculation from the ``.mat`` files regardless if
 # they already exist in the raw measurement file.
 #
-# Exploring bicycle parameter data
+# Exploring Bicycle Parameter Data
 # ================================
 #
 # The bicycle has a name:
 bicycle.bicycleName
 
 # %%
-# and a directory where its data is stored:
+# and a directory where its data is sourced:
 bicycle.directory
 
 # %%
-# The benchmark bicycle parameters are the fundamental parameter set that is
-# used behind the scenes for calculations. To access them type:
-bPar = bicycle.parameters['Benchmark']
-bPar['xB']
+# The benchmark bicycle parameters from [Meijaard2007]_ are the fundamental
+# parameter set that is used behind the scenes for calculations. To access them
+# type:
+b_par = bicycle.parameters['Benchmark']
+pprint.pprint(b_par)
+
+# %%
+b_par['xB']
 
 # %%
 # The program automatically calculates the uncertainties in the parameters
 # based on the raw measurements or the uncertainties provided in the parameter
-# files.  If you'd like to work with the pure values you can remove them:
-bParPure = bp.io.remove_uncertainties(bPar)
-bParPure['xB']
+# files. If you'd like to work with the pure values you can remove them from
+# the entire dictionary:
+b_par_pure = bp.io.remove_uncertainties(b_par)
+b_par_pure['xB']
+
+# %%
+# or any single uncertainity quantity's nominal value can be extracted with:
+b_par['xB'].nominal_value
 
 # %%
 # That goes the same for all values with uncertainties. Check out the
@@ -69,27 +101,29 @@ bParPure['xB']
 #
 # If the bicycle was calculated from raw data measurements you can access them
 # by:
-bicycle.parameters['Measured']
+pprint.pprint(bicycle.parameters['Measured'])
 
 # %%
 # All parameter sets are stored in the parameter dictionary of the bicycle
-# instance.
-#
-# To modify a parameter type:
-bicycle.parameters['Benchmark']['mB'] = 50.
+# instance, which is mutable. To modify a parameter type:
+bicycle.parameters['Benchmark']['mB'] = 50.0
+bicycle.parameters['Benchmark']['mB']
 
 # %%
 # You can regenerate the parameter sets from the raw data stored in the
-# bicycle's directory by calling:
-bicycle.calculate_from_measured()
+# bicycle's directory by calling and resetting the parameters:
+par, extra = bicycle.calculate_from_measured()
+bicycle.parameters['Benchmark'] = par
+bicycle.parameters['Benchmark']['mB']
 
 # %%
-# Basic Analysis
-# ==============
-# The program has some basic bicycle analysis tools based on the Whipple
-# bicycle model which has been linearized about the upright configuration.
+# Basic Linear Model Analysis
+# ===========================
 #
-# The canonical matrices for the equations of motion can be computed:
+# The :py:class:`~bicycleparameters.main.Bicycle` object has some basic bicycle
+# analysis tools based on the linear Carvallo-Whipple bicycle model which has
+# been linearized about the upright configuration. For example, the canonical
+# coefficient matrices for the equations of motion can be computed:
 M, C1, K0, K2 = bicycle.canonical()
 M
 
@@ -104,8 +138,7 @@ K2
 
 # %%
 # as well as the state and input matrices for state space form at a particular
-# speed (1.34 m/s):
-
+# speed, here 1.34 m/s:
 A, B = bicycle.state_space(1.34)
 A
 
@@ -113,15 +146,16 @@ A
 B
 
 # %%
-# You can calculate the eigenvalues and eigenvectors at any speed by calling:
-w, v = bicycle.eig(4.28)  # the speed should be in meters/second
+# You can calculate the eigenvalues and eigenvectors at any speed, e.g. 4.28
+# m/s, by calling:
+w, v = bicycle.eig(4.28)
 
 # %%
-# eigenvalues
+# eigenvalues:
 w
 
 # %%
-# eigenvectors
+# eigenvectors:
 v
 
 # %%
@@ -136,29 +170,30 @@ bicycle.steer_assembly_moment_of_inertia(aboutSteerAxis=True)
 
 # %%
 # Plots
-# -----
+# =====
 # You can plot the geometry of the bicycle and include the mass centers of the
 # various bodies, the inertia ellipsoids and the torsional pendulum axes from
 # the raw measurement data:
-bicycle.plot_bicycle_geometry()
+_ = bicycle.plot_bicycle_geometry()
 
 # %%
+# A Bode plot for any input output pair can be generated with:
 _ = bicycle.plot_bode(3.0, 1, 2)
 
 # %%
 # For visualization of the linear analysis you can plot the root loci of the
 # real and imaginary parts of the eigenvalues as a function of speed:
 speeds = np.linspace(0., 10., num=100)
-bicycle.plot_eigenvalues_vs_speed(speeds)
+_ = bicycle.plot_eigenvalues_vs_speed(speeds)
 
 # %%
 # You can also compare the eigenvalues of two or more bicycles:
-yellowrev = bp.Bicycle('Yellowrev', pathToData='../data')
-bp.plot_eigenvalues([bicycle, yellowrev], speeds)
+yellowrev = Bicycle('Yellowrev', pathToData='../data')
+_ = bp.plot_eigenvalues([bicycle, yellowrev], speeds)
 
 # %%
 # Tables
-# ------
+# ======
 # You can generate reStructuredText tables of the bicycle parameters with the
 # ``Table`` class:
 tab = tables.Table('Benchmark', False, (bicycle, yellowrev))
@@ -226,10 +261,10 @@ print(rst)
 # | zH       | -0.730  | 0.002  | -0.816  | 0.002  |
 # +----------+---------+--------+---------+--------+
 #
-# Rigid Rider
-# ===========
+# Adding a Rigid Rider
+# ====================
 # The program also allows one to add the inertial affects of a rigid rider to
-# the Whipple bicycle system.
+# the Whipple bicycle model.
 #
 # Rider Data
 # ----------
@@ -250,11 +285,10 @@ bicycle.add_rider('Jason')
 # %%
 # The program first looks for a parameter for for Jason sitting on the Stratos
 # and if it can't find one, it looks for the raw data for Jason and computes
-# the inertial parameters. You can force calculation from raw data with:
-bicycle = bp.Bicycle('Stratos', pathToData='../data')
-bicycle.add_rider('Jason', reCalc=True)
-
-# %%
+# the inertial parameters. You can force calculation from raw data with::
+#
+#    bicycle.add_rider('Jason', reCalc=True)
+#
 # Exploring the rider
 # -------------------
 # The bicycle has a few new attributes now that it has a rider:
@@ -264,10 +298,15 @@ bicycle.hasRider
 bicycle.riderName
 
 # %%
-bicycle.riderPar  # inertial parmeters of the rider
+# inertial parmeters of the rider
+pprint.pprint(bicycle.riderPar)
 
 # %%
-bicycle.human  # this is a yeadon.human object representing the Jason
+# this is a yeadon.human object representing the Jason
+bicycle.human
+
+# %%
+bicycle.human.print_properties()
 
 # %%
 # The bicycle parameters now reflect that a rigid rider has been added to the
@@ -290,18 +329,12 @@ bicycle.parameters['Benchmark']['mB']
 # -----
 # The bicycle geometry plot now reflects that there is a rider on the bicycle
 # and displays a simplified depiction:
-bicycle.plot_bicycle_geometry()
+_ = bicycle.plot_bicycle_geometry()
 
 # %%
-# The eigenvalue plot also reflects the changes:
-bicycle.plot_eigenvalues_vs_speed(speeds)
+# The Bode plot reflects the changes:
+_ = bicycle.plot_bode(3.0, 1, 2)
 
 # %%
-# Rider Visualization
-# -------------------
-# If you have the optional dependency, visual python, for yeadon installed then
-# you can output a three dimensional picture of the Yeadon model configured to
-# be seated on the bicycle. This is a bit buggy due to the nature of visual
-# python, but is useful none-the-less.:
-bicycle = bp.Bicycle('Stratos', pathToData='../data')
-bicycle.add_rider('Jason', draw=True)
+# The eigenvalue plot reflects the changes:
+_ = bicycle.plot_eigenvalues_vs_speed(speeds)
