@@ -1,3 +1,8 @@
+# sphinx and sphinx gallery output
+docs/_build/
+docs/gallery/
+docs/sg_execution_times.rst
+
 # vim
 .*.sw[a-z]
 *.un~
