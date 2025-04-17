@@ -287,7 +287,10 @@ pprint.pprint(bicycle.riderPar)
 bicycle.human
 
 # %%
-bicycle.human.print_properties()
+try:
+    bicycle.human.print_properties()
+except:
+    pass
 
 # %%
 # The bicycle parameters now reflect that a rigid rider has been added to the
