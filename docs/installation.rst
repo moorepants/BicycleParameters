@@ -1,11 +1,9 @@
-==============================
-Bicycleparameters Installation
-==============================
+============
+Installation
+============
 
 Dependencies
 ============
-These are the versions that I tested the code with, but the code will most
-likely work with older versions.
 
 Required
 --------
