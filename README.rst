@@ -112,7 +112,7 @@ Example Code
     >>> speeds = np.linspace(0., 10., num=100)
     >>> rigid.plot_eigenvalues_vs_speed(speeds)
 
-See `example usage <https://bicycleparameters.readthedocs.io/examples.html>`_ in the
+See `example usage <https://bicycleparameters.readthedocs.io/stable/examples.html>`_ in the
 documentation.
 
 Sample Data
