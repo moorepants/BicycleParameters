@@ -29,6 +29,8 @@ These are required to build the documentation:
 
 - `Sphinx >= 4.3.2 <http://sphinx.pocoo.org/>`_
 - `Numpydoc >= 1.2 <http://pypi.python.org/pypi/numpydoc>`_
+- `sphinx-reredirects <https://documatt.com/sphinx-reredirects/>`_
+- `Sphinx-Gallery <https://sphinx-gallery.github.io/stable/index.html>`_
 
 Installation
 ============
