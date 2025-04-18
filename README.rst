@@ -27,7 +27,7 @@ of the bicycle dynamics models.
 .. |GHCI| image:: https://github.com/moorepants/BicycleParameters/actions/workflows/test.yml/badge.svg
 
 .. |RTD| image:: https://readthedocs.org/projects/bicycleparameters/badge/?version=latest
-   :target: https://bicycleparameters.readthedocs.io/en/latest/?badge=latest
+   :target: https://bicycleparameters.readthedocs.io/
    :alt: Documentation Status
 
 .. |Render| image:: https://img.shields.io/badge/Bicycle_Dynamics_App-Render.io-blue
