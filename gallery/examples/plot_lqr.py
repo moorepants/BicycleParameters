@@ -126,6 +126,7 @@ ax = model.plot_eigenvalue_parts(v=speeds,
                                  kTdel_deld=Ks[:, 1, 3])
 ax.set_ylim((-10.0, 10.0))
 
+# %%
 # This is stable over a wide speed range and retains the weave eigenfrequency
 # of the uncontrolled system.
 x0 = np.deg2rad([5.0, -3.0, 0.0, 0.0])
