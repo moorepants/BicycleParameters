@@ -3,5 +3,7 @@ include *.txt
 include bicycleparameters/assets/*
 recursive-include bicycleparameters/app-data/ *.txt
 recursive-include docs *.rst
+recursive-include gallery/ *.rst
+recursive-include gallery/ *.py
 recursive-include bicycleparameters/ *.yml
 include AUTHORS
