@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+1.3.0
+-----
+
+- Drop support for Python 3.8.
+- Moved example usage into a Sphinx Gallery and created a number of examples.
+- Added a new rider lean linear model and example demonstrating its use.
+- Added a new model that implements full state feedback on the linear
+  Carvallo-Whipple model and example demonstrating its use.
+
 1.2.0
 -----
 
