@@ -32,7 +32,7 @@ from bicycleparameters.models import Meijaard2007WithFeedbackModel
 # and create a
 # :class:`~bicycleparameters.parameter_sets.Meijaard2007ParameterSet`.
 
-data_dir = "../data"
+data_dir = "../../data"
 
 bicycle = Bicycle("Balanceassistv1", pathToData=data_dir)
 par = remove_uncertainties(bicycle.parameters['Benchmark'])

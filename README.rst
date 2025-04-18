@@ -3,7 +3,7 @@ BicycleParameters
 =================
 
 A Python program designed to generate, manipulate, and visualize the parameters
-of the Whipple-Carvallo bicycle model.
+of the bicycle dynamics models.
 
 .. list-table::
 
@@ -60,6 +60,8 @@ These are required to build the documentation:
 
 - `Sphinx >= 4.3.2 <http://sphinx.pocoo.org/>`_
 - `Numpydoc >= 1.2 <http://pypi.python.org/pypi/numpydoc>`_
+- `sphinx-reredirects <https://documatt.com/sphinx-reredirects/>`_
+- `Sphinx-Gallery <https://sphinx-gallery.github.io/stable/index.html>`_
 
 Installation
 ============
@@ -109,6 +111,9 @@ Example Code
     >>> rigid.plot_bicycle_geometry()
     >>> speeds = np.linspace(0., 10., num=100)
     >>> rigid.plot_eigenvalues_vs_speed(speeds)
+
+See `example usage <https://bicycleparameters.readthedocs.io/gallery>`_ in the
+documentation.
 
 Sample Data
 ===========

@@ -1,3 +1,4 @@
+=============================
 Bicycle Dynamics Analysis App
 =============================
 
@@ -7,7 +8,7 @@ code into HTML/CSS/JS which is nicely rendered within a web browser. The
 application is available at https://bicycle-dynamics.onrender.com/.
 
 Directory Structure
--------------------
+===================
 
 Within the ``BicycleParameters/bicycleparameters/`` directory, the primary
 module for the application is ``app.py`` and it is written entirely in Python.
@@ -19,7 +20,7 @@ read more about the purpose of the ``/assets/`` folder on the `Dash
 documentation <https://dash.plotly.com/external-resources>`__.
 
 Development
------------
+===========
 
 To develop the application, you need to have an environment which contains all
 the necessary dependencies for running ``app.py``. If you are using ``conda``,
@@ -67,7 +68,7 @@ inspect element tool available with most browsers to debug things live within
 your browser.
 
 Additional Resources
---------------------
+====================
 
 Here are some resources that I found very useful when first developing this
 application:

@@ -16,7 +16,7 @@ from bicycleparameters.io import remove_uncertainties
 from bicycleparameters.parameter_sets import Meijaard2007ParameterSet
 from bicycleparameters.models import Meijaard2007Model
 
-data_dir = "../data"
+data_dir = "../../data"
 
 # %%
 # Benchmark Parameter Values

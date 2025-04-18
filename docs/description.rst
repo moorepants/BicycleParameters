@@ -6,15 +6,15 @@ This is code based off of the work done to measure the physical parameters of a
 bicycle and rider at both the `UCD Sports Biomechanics Lab`_ and the `TU Delft
 Bicycle Dynamics Lab`_. Physical parameters include but are not limited to the
 geometry, mass, mass location and mass distribution of the bicycle rider
-system. The code is structured around the Whipple bicycle model and
-fundamentally works with and produces the parameters presented in Meijaard 2007
+system. The code is structured around the Carvallo-Whipple bicycle model and
+fundamentally works with and produces the parameters presented in
 [Meijaard2007]_, due to the fact that these parameters have been widely adopted
 as a benchmark. But the software is also capable of generating parameter sets
 for more complex rider biomechanical models. More detail can be found in our
 papers and the website_ and in :ref:`references`.
 
 .. _UCD Sports Biomechanics Lab: http://biosport.ucdavis.edu
-.. _TU Delft Bicycle Dynamics Lab: http://bicycle.tudelft.edu
+.. _TU Delft Bicycle Dynamics Lab: http://bicycle.tudelft.nl
 .. _website: http://biosport.ucdavis.edu/research-projects/bicycle/bicycle-parameter-measurement
 
 Features

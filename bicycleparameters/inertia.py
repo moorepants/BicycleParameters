@@ -172,7 +172,7 @@ def part_inertia_tensor(par, part):
     documentation.
 
     '''
-    if isinstance(par['mB'], UFloat):
+    if isinstance(par['IBxx'], UFloat):
         dtype = object
     else:
         dtype = 'float64'

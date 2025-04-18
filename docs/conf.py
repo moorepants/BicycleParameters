@@ -34,11 +34,12 @@ REPO_DIR = os.path.realpath(os.path.join(DOCS_DIR, '..'))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     'matplotlib.sphinxext.plot_directive',
-    'sphinx.ext.mathjax',
     'numpydoc',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    'sphinx.ext.mathjax',
     'sphinx_gallery.gen_gallery',
+    'sphinx_reredirects',
 ]
 
 numpydoc_show_class_members = False
@@ -109,6 +110,12 @@ sphinx_gallery_conf = {
     'matplotlib_animations': True,
     'copyfile_regex': r'.*\.svg',
     'remove_config_comments': True,
+}
+
+
+# sphinx-reredirects
+redirects = {
+    'examples': 'gallery/index.html',
 }
 
 # -- Options for HTML output ---------------------------------------------------

@@ -52,7 +52,7 @@ B
 
 # %%
 # Most all methods on models accept override values for the parameters. So if
-# you want the state and input matrices with :math:`v=14,g=5.1' and :math:`w=2'
+# you want the state and input matrices with :math:`v=14,g=5.1` and :math:`w=2`
 # pass them in as keyword arguments:
 A, B = model.form_state_space_matrices(v=14.0, g=5.1, w=2.0)
 A

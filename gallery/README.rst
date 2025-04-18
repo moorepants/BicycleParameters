@@ -1,3 +1,6 @@
-===============
-Example Gallery
+=============
+Example Usage
+=============
+
+Getting Started
 ===============
