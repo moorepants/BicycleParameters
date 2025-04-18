@@ -10,6 +10,12 @@ BicycleParameters's Documentation!
 The **bicycleparameters** package is a Python program designed to produce and
 manipulate the basic parameters needed for bicycle dynamic models.
 
+.. list-table:: Example Bicycle Inertia Plot and Corresponding Eigenvalue Speed
+   Plot
+
+   * - .. image:: _images/sphx_glr_plot_benchmark_001.png
+     - .. image:: _images/sphx_glr_plot_benchmark_002.png
+
 Table of Contents
 =================
 
