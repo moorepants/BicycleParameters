@@ -15,10 +15,10 @@ setup(
     description='Generates and manipulates the physical parameters of a bicycle.',
     long_description=open('README.rst').read(),
     project_urls={
-        'Web Application': 'https://bicycle-dynamics.onrender.com',
         'Documentation': 'http://bicycleparameters.readthedocs.io',
-        'Source Code': 'https://github.com/moorepants/BicycleParameters',
         'Issue Tracker': 'https://github.com/moorepants/BicycleParameters/issues',
+        'Source Code': 'https://github.com/moorepants/BicycleParameters',
+        'Web Application': 'https://bicycle-dynamics.onrender.com',
     },
     include_package_data=True,  # includes things in MANIFEST.in
     install_requires=[
@@ -30,7 +30,7 @@ setup(
         'uncertainties>=3.1.5',
         'yeadon>=1.3.0',
     ],
-    python_requires='>=3.8',
+    python_requires='>=3.9',
     extras_require={
         'doc': [
             'numpydoc>=1.2'
@@ -39,15 +39,14 @@ setup(
             'sphinx>=4.3.2',
         ],
         'app': [
-            'dash>=2',
             'dash-bootstrap-components',
+            'dash>=2',
             'pandas>=1.3.5'
         ],
     },
     entry_points={'console_scripts':
                   ['bicycleparameters = bicycleparameters.app:app.run_server']},
     classifiers=['Programming Language :: Python',
-                 'Programming Language :: Python :: 3.8',
                  'Programming Language :: Python :: 3.9',
                  'Programming Language :: Python :: 3.10',
                  'Programming Language :: Python :: 3.11',
