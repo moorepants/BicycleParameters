@@ -34,8 +34,8 @@ setup(
     extras_require={
         'doc': [
             'numpydoc>=1.2'
-            'sphinx-gallery',
-            'sphinx-reredirects',
+            'sphinx_gallery',
+            'sphinx_reredirects',
             'sphinx>=4.3.2',
         ],
         'app': [
