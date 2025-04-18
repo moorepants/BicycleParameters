@@ -35,6 +35,9 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
+	-rm -rf gallery/
+	-rm -rf sg_execution_times.rst
+	-rm -rf tmpz_*.html
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
