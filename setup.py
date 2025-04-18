@@ -33,9 +33,9 @@ setup(
     python_requires='>=3.9',
     extras_require={
         'doc': [
-            'numpydoc>=1.2'
-            'sphinx_gallery',
-            'sphinx_reredirects',
+            'numpydoc>=1.2',
+            'sphinx-gallery',
+            'sphinx-reredirects',
             'sphinx>=4.3.2',
         ],
         'app': [
