@@ -33,8 +33,10 @@ setup(
     python_requires='>=3.8',
     extras_require={
         'doc': [
-            'sphinx>=4.3.2',
             'numpydoc>=1.2'
+            'sphinx-gallery',
+            'sphinx-reredirects',
+            'sphinx>=4.3.2',
         ],
         'app': [
             'dash>=2',
