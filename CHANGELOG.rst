@@ -9,6 +9,7 @@ Release Notes
 - Added a new rider lean linear model and example demonstrating its use.
 - Added a new model that implements full state feedback on the linear
   Carvallo-Whipple model and example demonstrating its use.
+- Fixed numerous bugs in models.py to support models with more state variables.
 
 1.2.0
 -----
