@@ -1,9 +1,17 @@
-include *.rst
-include *.txt
-include bicycleparameters/assets/*
-recursive-include bicycleparameters/app-data/ *.txt
-recursive-include docs *.rst
-recursive-include gallery/ *.rst
-recursive-include gallery/ *.py
-recursive-include bicycleparameters/ *.yml
 include AUTHORS
+include CHANGELOG.rst
+include LICENSE.txt
+include README.rst
+include bicycleparameters/assets/*
+include bicycleparameters/tests/sample_data/*.mat
+include docs/Makefile
+include docs/conf.py
+include docs/make.bat
+recursive-include bicycleparameters/ *.yml
+recursive-include bicycleparameters/app-data/ *.txt
+recursive-include data/ *.txt
+recursive-include docs *.rst
+recursive-include gallery/ *.py
+recursive-include gallery/ *.rst
+prune docs/gallery/
+prune docs/sg_execution_times.rst
