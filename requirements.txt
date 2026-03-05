@@ -1,10 +1,12 @@
 # build dependencies for running the app on heroku or render
-DynamicistToolKit
-dash>=2
+DynamicistToolKit>=0.5.3
 dash-bootstrap-components
+dash>=2
 gunicorn
-numpy
-pandas
-scipy
-uncertainties
-yeadon
+matplotlib>=3.5.1
+numpy>=1.21.5
+pandas>=1.3.5
+pyyaml>=5.4.1
+scipy>=1.8.0
+uncertainties>=3.1.5
+yeadon>=1.3.0
