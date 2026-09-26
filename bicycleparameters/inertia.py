@@ -212,8 +212,8 @@ def principal_axes(I):
     '''
     Ip, C = np.linalg.eig(I)
     indices = np.argsort(Ip)
-    Ip = Ip[indices]
-    C = C.T[indices]
+    Ip = np.real(Ip[indices])
+    C = np.real(C.T[indices])
     return Ip, C
 
 
