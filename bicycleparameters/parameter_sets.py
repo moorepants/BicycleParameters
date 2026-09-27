@@ -639,8 +639,8 @@ class Meijaard2007ParameterSet(ParameterSet):
         idxs = np.argsort(evals)
 
         # NOTE : min is first entry, max is second entry
-        evals = evals[idxs]
-        evecs = evecs[:, idxs]
+        evals = np.real(evals[idxs])
+        evecs = np.real(evecs[:, idxs])
 
         # NOTE : The negative sign on the z value ensures the sign of the
         # rotation about the Y axis is correct, i.e. arctan2 is thinking you
