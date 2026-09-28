@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+1.5.0
+-----
+
+- Added pyproject.toml.
+
 1.4.0
 -----
 
