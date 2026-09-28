@@ -16,7 +16,7 @@ the basic parameters needed for bicycle dynamic models.
    * - .. image:: _images/sphx_glr_plot_benchmark_001.png
      - .. image:: _images/sphx_glr_plot_benchmark_002.png
 
-.. figure:: https://objects-us-east-1.dream.io/mechmotum/bicycleparameters-app.png
+.. figure:: https://mechmotum.s3.us-east-005.dream.io/bicycleparameters-app.png
    :target: https://bicycle-dynamics.onrender.com/
 
    `Bicycle Dynamics Analysis App <https://bicycle-dynamics.onrender.com/>`_ Powered by BicycleParameters

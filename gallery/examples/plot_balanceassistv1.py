@@ -10,7 +10,7 @@ measurements from an inertial measurement unit mounted on the rear frame, a
 steer angle sensor, and a speed sensor. The bicycle is based on an e-bike model
 from Royal Dutch Gazelle:
 
-.. figure:: https://objects-us-east-1.dream.io/mechmotum/balance-assist-bicycle-400x400.jpg
+.. figure:: https://mechmotum.s3.us-east-005.dream.io/balance-assist-bicycle-400x400.jpg
    :align: center
 
    Gazelle Grenoble/Arroyo E-Bike modified with a steering motor. Battery in
