@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+1.4.0
+-----
+
+- Drop support for Python 3.9.
+- Add support for Python 3.14.
+- Bump minimum dependency versions to align with those in Ubuntu 24.04 LTS.
+
 1.3.0
 -----
 
