@@ -29,7 +29,7 @@ setup(
         'pyyaml>=6.0.1',
         'scipy>=1.11.4',
         'uncertainties>=3.1.7',
-        'yeadon>=1.3.0',
+        'yeadon>=1.4.0',
     ],
     python_requires='>=3.10',
     extras_require={

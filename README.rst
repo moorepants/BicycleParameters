@@ -45,7 +45,7 @@ Required
 - `Python >= 3.10 <http://www.python.org/>`_
 - `SciPy >= 1.11.4 <https://scipy.org/>`_
 - `Uncertainties >= 3.1.7 <https://pythonhosted.org/uncertainties/>`_
-- `yeadon >= 1.3.0 <http://pypi.python.org/pypi/yeadon/>`_
+- `yeadon >= 1.4.0 <http://pypi.python.org/pypi/yeadon/>`_
 
 Optional
 --------
