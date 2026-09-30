@@ -28,7 +28,6 @@ from dash import dash_table as tbl
 from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
-from dash.exceptions import ObsoleteAttributeException
 import numpy as np
 
 # TODO : should this be a relative import?
@@ -105,6 +104,9 @@ GENERAL_LABELS = ['Wheel Base [m]:',
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.COSMO])
 app.title = 'Bicycle Dynamics Analysis App'
 server = app.server  # needed for heroku or render
+# NOTE: run_server() was removed at dash 3.0 in favor of run()
+if 'run_server' not in dir(app):
+    app.run_server = app.run
 
 
 # app.layout defines the visual GUI elements on the website
@@ -419,9 +421,4 @@ def input_triggers_spinner2(value):
 # omit the `dev_tools_ui` parameter to display debug info in the browser rather
 # than in the terminal
 if __name__ == '__main__':
-    try:
-        app.run_server(debug=True, dev_tools_ui=False)
-    # NOTE: run_server() was removed at dash 3.0 in favor of run()
-    except ObsoleteAttributeException:
-        app.run_server = app.run
-        app.run_server(debug=True, dev_tools_ui=False)
+    app.run_server(debug=True, dev_tools_ui=False)
