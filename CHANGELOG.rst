@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+1.5.1
+-----
+
+- ``python bicycleparameters/app.py`` now compatible with Dash >= 3.0. Dash's
+  removed ``run_server()`` replaced with ``run()``.
+
 1.5.0
 -----
 
