@@ -28,6 +28,7 @@ from dash import dash_table as tbl
 from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
+from dash.exceptions import ObsoleteAttributeException
 import numpy as np
 
 # TODO : should this be a relative import?
@@ -418,4 +419,9 @@ def input_triggers_spinner2(value):
 # omit the `dev_tools_ui` parameter to display debug info in the browser rather
 # than in the terminal
 if __name__ == '__main__':
-    app.run_server(debug=True, dev_tools_ui=False)
+    try:
+        app.run_server(debug=True, dev_tools_ui=False)
+    # NOTE: run_server() was removed at dash 3.0 in favor of run()
+    except ObsoleteAttributeException:
+        app.run_server = app.run
+        app.run_server(debug=True, dev_tools_ui=False)
