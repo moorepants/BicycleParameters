@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+1.5.2
+-----
+
+- Ensure the ``run_server()`` replacement happens outside of ``__main__`` so
+  that it works with the entry point script.
+
 1.5.1
 -----
 
